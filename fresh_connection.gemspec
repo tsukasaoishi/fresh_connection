@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.date = %q{2010-10-16}
   s.description = %q{MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.}
   s.email = ["tsukasa.oishi@gmail.com"]
-  s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README"]
+  s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.rdoc"]
   s.files = %w|
     Rakefile
     fresh_connection.gemspec
