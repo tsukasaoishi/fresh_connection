@@ -1,14 +1,14 @@
 = FreshConnection
 
- * https://github.com/tsukasaoishi/fresh_connection
+* https://github.com/tsukasaoishi/fresh_connection
 
 == Description
 
- FreshConnection supports of connect with Mysql slave servers via Load Balancers.
- Currently, I have only tested with Rails2.3.14.
- In the future, I plan to support Rails3.
+FreshConnection supports of connect with Mysql slave servers via Load Balancers.
+Currently, I have only tested with Rails2.3.14.
+In the future, I plan to support Rails3.
 
- All connections will be disconnected every time at the end of the action.
+All connections will be disconnected every time at the end of the action.
 
 == How to use at Rails
 
