@@ -1,0 +1,9 @@
+History.txt
+Manifest.txt
+README
+Rakefile
+fresh_connection.gemspec
+lib/fresh_connection.rb
+lib/fresh_connection/slave_connection.rb
+lib/fresh_connection/rack/connection_management.rb
+rails/initializers/active_record_base.rb
