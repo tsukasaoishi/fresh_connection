@@ -13,7 +13,7 @@ All connections will be disconnected every time at the end of the action.
 == How to use at Rails
 
 === Gemfile
-  gem "fresh_connection", "=0.0.1"
+  gem "fresh_connection", "=0.0.2"
 
 === config/database.yml
   production:
@@ -31,16 +31,19 @@ All connections will be disconnected every time at the end of the action.
       username: slave
       password: slave
       host: slave
-      max_connection: 5
 
 slave is config to connect to slave servers.
-max_connection is max connection number to connect to slave.
 Others will use the master setting. If you want to change, write in the slave.
 
 
 === config/environment.rb
   require 'fresh_connection'
   ActionController::Dispatcher.middleware.swap ActiveRecord::ConnectionAdapters::ConnectionManagement, FreshConnection::Rack::ConnectionManagement
+
+=== config/initializers/fresh_connection.rb
+  FreshConnection::SlaveConnection.ignore_models = %w|Model1 Model2|
+
+If models that ignore access to slave servers is exist, You can write model name at FreshConnection::SlaveConnection.ignore_models.
 
 == Synopis
 Read query will be access to slave server.

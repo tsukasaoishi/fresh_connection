@@ -64,27 +64,34 @@ module ActiveRecord
       private
 
       def run_on_db(options)
-        in_run_on_db[:go_slave] = go_slave?(options) if in_run_on_db[:count] == 0
-        in_run_on_db[:count] += 1
-
-        in_run_on_db[:go_slave] ? run_on_readonly_db{yield} : yield
+        in_run_on_db(options)
+        run_on_db_status[:go_slave] ? run_on_readonly_db{yield} : yield
       ensure
-        in_run_on_db[:count] -= 1
+        out_run_on_db
       end
 
-      def in_run_on_db
-        Thread.current[:in_run_on_db] ||= {:count => 0, :go_slave => false}
+      def in_run_on_db(options)
+        run_on_db_status[:go_slave] = go_slave?(options) if run_on_db_status[:count] == 0
+        run_on_db_status[:count] += 1
+      end
+
+      def out_run_on_db
+        run_on_db_status[:count] -= 1
+      end
+
+      def run_on_db_status
+        Thread.current[:run_on_db_status] ||= {:count => 0, :go_slave => false}
       end
 
       def go_slave?(options)
-        connection.open_transactions == 0 && (!options.is_a?(Hash) || !options.key?(:readonly) || options[:readonly].nil? || options[:readonly])
+        !FreshConnection::SlaveConnection.ignore_model?(self.name) && connection.open_transactions == 0 &&
+          (!options.is_a?(Hash) || !options.key?(:readonly) || options[:readonly].nil? || options[:readonly])
       end
 
       def run_on_readonly_db
         FreshConnection::SlaveConnection.slave_access_in
         yield
       ensure
-        FreshConnection::SlaveConnection.shift_slave_pointer
         FreshConnection::SlaveConnection.slave_access_out
       end
     end

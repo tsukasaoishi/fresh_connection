@@ -2,3 +2,8 @@
 
 * 1 major enhancement:
   * Initial release
+
+== 0.0.2 2011-10-18
+
+* Ignore setting support
+* Abolish multi connection

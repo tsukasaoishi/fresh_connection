@@ -2,12 +2,12 @@
 
 Gem::Specification.new do |s|
   s.name = %q{fresh_connection}
-  s.version = "0.0.1"
+  s.version = "0.0.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Tsukasa OISHI"]
   s.date = %q{2010-10-16}
-  s.description = %q{MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.}
+  s.description = %q{FreshConnection supports of connect with Mysql slave servers via Load Balancers.}
   s.email = ["tsukasa.oishi@gmail.com"]
   s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.rdoc"]
   s.files = %w|
@@ -19,11 +19,10 @@ Gem::Specification.new do |s|
     rails/initializers/active_record_base.rb
   |
   s.has_rdoc = true
-  s.homepage = %q{http://www.kaeruspoon.net/keywords/MiyazakiResistance}
-  s.post_install_message = %q{PostInstall.txt}
+  s.homepage = %q{https://github.com/tsukasaoishi/fresh_connection}
   s.rdoc_options = ["--main", "README.rdoc"]
   s.require_paths = ["lib"]
-  s.rubyforge_project = %q{miyazakiresistance}
+  s.rubyforge_project = %q{fresh_connection}
   s.rubygems_version = %q{1.3.1}
-  s.summary = %q{MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.}
+  s.summary = %q{FreshConnection supports of connect with Mysql slave servers via Load Balancers.}
 end

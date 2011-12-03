@@ -2,51 +2,49 @@ module FreshConnection
   class SlaveConnection
     class << self
       def connection
-        slave_connections[slave_pointer] ||= new_connection
+        slave_connection
       end
 
       def clear_all_connections!
         if @slave_connections.present?
-          @slave_connections.values.each{|conns| conns.each{|c| c.disconnect!}}
+          @slave_connections.each_value{|c| c && c.disconnect! rescue nil}
         end
         @slave_connections = {}
       end
 
       def slave_access_in
-        Thread.current[:slave_access] = true
+        Thread.current[:fresh_connection_slave_access] = true
       end
 
       def slave_access_out
-        Thread.current[:slave_access] = false
+        Thread.current[:fresh_connection_slave_access] = false
       end
 
       def slave_access?
-        Thread.current[:slave_access] ||= false
+        Thread.current[:fresh_connection_slave_access] ||= false
       end
 
-      def shift_slave_pointer
-        Thread.current[:slave_pointer] = slave_pointer + 1
-        Thread.current[:slave_pointer] = 0 if slave_pointer > max_slave_pointer
+      def ignore_models=(model_names)
+        @ignore_models = model_names
       end
-      
+
+      def ignore_model?(model_name)
+        (@ignore_models || []).include?(model_name)
+      end
+
       private
+
+      def slave_connection
+        @slave_connections ||= {}
+        @slave_connections[current_thread_id] ||= new_connection
+      end
+
+      def clear_slave_connection
+        @slave_connections[current_thread_id] = nil
+      end
 
       def new_connection
         ActiveRecord::Base.send("#{spec["adapter"]}_connection", spec)
-      end
-
-      def slave_connections
-        @slave_connections ||= {}
-        @slave_connections[current_thread_id] ||= []
-      end
-
-
-      def slave_pointer
-        Thread.current[:slave_pointer] ||= 0
-      end
-
-      def max_slave_pointer
-        @max_slave_pointer ||= (spec["max_connection"] || 1) - 1
       end
 
       def spec
