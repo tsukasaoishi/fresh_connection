@@ -32,6 +32,14 @@ module FreshConnection
         (@ignore_models || []).include?(model_name)
       end
 
+      def ignore_configure_connection?
+        !!@ignore_configure_connection
+      end
+
+      def ignore_configure_connection=(flag)
+        @ignore_configure_connection = flag
+      end
+
       private
 
       def slave_connection

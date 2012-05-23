@@ -7,3 +7,7 @@
 
 * Ignore setting support
 * Abolish multi connection
+
+== 0.0.3 2012-05-23
+
+* Ignore Configure Connection
