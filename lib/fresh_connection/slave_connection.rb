@@ -1,6 +1,8 @@
 module FreshConnection
   class SlaveConnection
     class << self
+      attr_writer :ignore_models, :ignore_configure_connection, :master_clear_connection
+
       def connection
         slave_connection
       end
@@ -24,10 +26,6 @@ module FreshConnection
         Thread.current[:fresh_connection_slave_access] ||= false
       end
 
-      def ignore_models=(model_names)
-        @ignore_models = model_names
-      end
-
       def ignore_model?(model_name)
         (@ignore_models || []).include?(model_name)
       end
@@ -36,8 +34,8 @@ module FreshConnection
         !!@ignore_configure_connection
       end
 
-      def ignore_configure_connection=(flag)
-        @ignore_configure_connection = flag
+      def master_clear_connection?
+        @master_clear_connection.nil? ? true : @master_clear_connection
       end
 
       private

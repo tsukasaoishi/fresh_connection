@@ -1,5 +1,5 @@
 module FreshConnection
-  VERSION = "0.0.4"
+  VERSION = "0.0.5"
 end
 
 require "fresh_connection/slave_connection"
