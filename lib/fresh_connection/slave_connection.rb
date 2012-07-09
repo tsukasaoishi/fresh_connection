@@ -35,7 +35,7 @@ module FreshConnection
       end
 
       def master_clear_connection?
-        @master_clear_connection.nil? ? true : @master_clear_connection
+        @master_clear_connection.nil? || @master_clear_connection
       end
 
       private

@@ -9,7 +9,11 @@ module FreshConnection
         @app.call(env)
       ensure
         unless env.key?("rack.test")
-          ActiveRecord::Base.clear_all_connections! if FreshConnection::SlaveConnection.master_clear_connection?
+	  if FreshConnection::SlaveConnection.master_clear_connection?
+	    ActiveRecord::Base.clear_active_connections!
+	  else
+            ActiveRecord::Base.clear_all_connections!
+	  end
           FreshConnection::SlaveConnection.clear_all_connections!
         end
       end
