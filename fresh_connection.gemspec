@@ -1,28 +1,23 @@
-# -*- encoding: utf-8 -*-
+# coding: utf-8
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'fresh_connection/version'
 
-Gem::Specification.new do |s|
-  s.name = %q{fresh_connection}
-  s.version = "0.0.7"
+Gem::Specification.new do |spec|
+  spec.name          = "fresh_connection"
+  spec.version       = FreshConnection::VERSION
+  spec.authors       = ["Tsukasa OISHI"]
+  spec.email         = ["tsukasa.oishi@gmail.com"]
+  spec.description   = %q{https://github.com/tsukasaoishi/fresh_connection}
+  spec.summary       = %q{FreshConnection supports to connect with Mysql slave servers via Load Balancers.}
+  spec.homepage      = "https://github.com/tsukasaoishi/fresh_connection"
+  spec.license       = "MIT"
 
-  s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Tsukasa OISHI"]
-  s.date = %q{2010-10-16}
-  s.description = %q{FreshConnection supports of connect with Mysql slave servers via Load Balancers.}
-  s.email = ["tsukasa.oishi@gmail.com"]
-  s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.rdoc"]
-  s.files = %w|
-    Rakefile
-    fresh_connection.gemspec
-    lib/fresh_connection.rb
-    lib/fresh_connection/slave_connection.rb
-    lib/fresh_connection/rack/connection_management.rb
-    rails/initializers/active_record_base.rb
-  |
-  s.has_rdoc = true
-  s.homepage = %q{https://github.com/tsukasaoishi/fresh_connection}
-  s.rdoc_options = ["--main", "README.rdoc"]
-  s.require_paths = ["lib"]
-  s.rubyforge_project = %q{fresh_connection}
-  s.rubygems_version = %q{1.3.1}
-  s.summary = %q{FreshConnection supports of connect with Mysql slave servers via Load Balancers.}
+  spec.files         = `git ls-files`.split($/)
+  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
+  spec.require_paths = ["lib"]
+
+  spec.add_development_dependency "bundler", "~> 1.3"
+  spec.add_development_dependency "rake"
 end
