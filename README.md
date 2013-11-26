@@ -44,26 +44,16 @@ Or install it yourself as:
 slave is config to connect to slave servers.
 Others will use the master setting. If you want to change, write in the slave.
 
-### config/application.rb
-
-    module MyApp
-      class Application < Rails::Application
-        ...
-        config.middleware.swap ActiveRecord::ConnectionAdapters::ConnectionManagement,
-          FreshConnection::Rack::ConnectionManagement
-      end
-    end
-
-use config/environment.rb if rails2.3
-
-    require 'fresh_connection'
-    ActionController::Dispatcher.middleware.swap ActiveRecord::ConnectionAdapters::ConnectionManagement, FreshConnection::Rack::ConnectionManagement
-
 ### config/initializers/fresh_connection.rb
 
     FreshConnection::SlaveConnection.ignore_models = %w|Model1 Model2|
 
 If models that ignore access to slave servers is exist, You can write model name at FreshConnection::SlaveConnection.ignore models.
+
+### use config/environment.rb if rails2.3
+
+    require 'fresh_connection'
+    ActionController::Dispatcher.middleware.swap ActiveRecord::ConnectionAdapters::ConnectionManagement, FreshConnection::Rack::ConnectionManagement
 
 ## Usage
 Read query will be access to slave server.
