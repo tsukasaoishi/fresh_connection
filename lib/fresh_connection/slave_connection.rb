@@ -45,10 +45,6 @@ module FreshConnection
         @slave_connections[current_thread_id] ||= new_connection
       end
 
-      def clear_slave_connection
-        @slave_connections[current_thread_id] = nil
-      end
-
       def new_connection
         ActiveRecord::Base.send("#{spec["adapter"]}_connection", spec)
       end

@@ -1,3 +1,4 @@
+=begin
 module ActiveRecord
   class Base
     class << self
@@ -60,3 +61,4 @@ module ActiveRecord
     end
   end
 end
+=end
