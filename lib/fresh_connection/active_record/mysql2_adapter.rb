@@ -1,6 +1,6 @@
 module ActiveRecord
   module ConnectionAdapters
-    class AbstractMysqlAdapter < AbstractAdapter
+    class Mysql2Adapter < AbstractMysqlAdapter
       private
 
       def configure_connection_with_ignore
