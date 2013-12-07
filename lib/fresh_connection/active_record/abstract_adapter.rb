@@ -1,15 +1,14 @@
 module ActiveRecord
   module ConnectionAdapters
     class AbstractAdapter
-      def select_all_with_slave_cluster(*args)
-        Rails.logger.info "1111111111 : #{open_transactions}"
+      def select_all_with_slave_cluster(arel, name = nil, binds = [])
         if FreshConnection::SlaveConnection.slave_access?
-          change_connection {select_all_without_slave_cluster(*args)}
+          change_connection {select_all_without_slave_connection(arel, "[slave] #{name}", binds)}
         else
-          select_all_without_slave_cluster(*args)
+          select_all_without_slave_connection(arel, name, binds)
         end
       end
-      alias_method_chain :select_all, :slave_cluster
+      alias_method_chain :select_all, :slave_connection
 
       private
 

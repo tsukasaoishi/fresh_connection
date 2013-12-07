@@ -1,3 +1,5 @@
+require 'active_record/connection_adapters/mysql2_adapter'
+
 module ActiveRecord
   module ConnectionAdapters
     class Mysql2Adapter < AbstractMysqlAdapter

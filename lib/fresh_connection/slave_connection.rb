@@ -14,12 +14,11 @@ module FreshConnection
         @slave_connections = {}
       end
 
-      def slave_access_in
-        Thread.current[:fresh_connection_slave_access] = true
-      end
-
-      def slave_access_out
-        Thread.current[:fresh_connection_slave_access] = false
+      def slave_access
+        slave_access_in
+        yield
+      ensure
+        slave_access_out
       end
 
       def slave_access?
@@ -39,6 +38,14 @@ module FreshConnection
       end
 
       private
+
+      def slave_access_in
+        Thread.current[:fresh_connection_slave_access] = true
+      end
+
+      def slave_access_out
+        Thread.current[:fresh_connection_slave_access] = false
+      end
 
       def slave_connection
         @slave_connections ||= {}
