@@ -6,7 +6,7 @@ module ActiveRecord
       return @records if loaded?
 
       if FreshConnection::SlaveConnection.ignore_model?(@klass.name)
-        exec_queries_without_slave_connection
+        FreshConnection::SlaveConnection.force_master_access { exec_queries_without_slave_connection }
       elsif go_slave?
         FreshConnection::SlaveConnection.slave_access { exec_queries_without_slave_connection }
       else

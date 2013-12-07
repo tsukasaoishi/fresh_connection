@@ -31,6 +31,14 @@ module FreshConnection
         access_out
       end
 
+      def force_master_access
+        now_target = Thread.current[TARGET]
+        Thread.current[TARGET] = :master
+        yield
+      ensure
+        Thread.current[TARGET] = now_target
+      end
+
       def slave_access?
         Thread.current[TARGET] == :slave
       end
