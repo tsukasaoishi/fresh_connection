@@ -1,7 +1,7 @@
 module ActiveRecord
   module ConnectionAdapters
     class AbstractAdapter
-      def select_all_with_slave_cluster(arel, name = nil, binds = [])
+      def select_all_with_slave_connection(arel, name = nil, binds = [])
         if FreshConnection::SlaveConnection.slave_access?
           change_connection {select_all_without_slave_connection(arel, "[slave] #{name}", binds)}
         else
