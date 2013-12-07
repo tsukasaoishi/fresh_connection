@@ -5,7 +5,7 @@ All connections will be disconnected every time at the end of the action.
 
 ## Installation
 
-### For Rails3 and 4
+### For Rails3
 Add this line to your application's Gemfile:
 
     gem "fresh_connection"
