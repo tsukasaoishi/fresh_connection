@@ -1,21 +1,10 @@
 module FreshConnection
   module Rack
-    class ConnectionManagement
-      def initialize(app)
-        @app = app
-      end
-
+    class ConnectionManagement < ActiveRecord::ConnectionAdapters::ConnectionManagement
       def call(env)
-        @app.call(env)
+        super
       ensure
-        unless env.key?("rack.test")
-          if FreshConnection::SlaveConnection.master_clear_connection?
-            ActiveRecord::Base.clear_all_connections!
-          else
-            ActiveRecord::Base.clear_active_connections!
-          end
-          FreshConnection::SlaveConnection.clear_all_connections!
-        end
+        FreshConnection::SlaveConnection.put_aside! unless env.key?("rack.test")
       end
     end
   end

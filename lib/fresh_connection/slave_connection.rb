@@ -4,17 +4,18 @@ module FreshConnection
     TARGET = :fresh_connection_access_target
 
     class << self
-      attr_writer :ignore_models, :ignore_configure_connection, :master_clear_connection
+      attr_writer :ignore_models, :ignore_configure_connection
 
       def raw_connection
         slave_connection.raw_connection
       end
 
-      def clear_all_connections!
-        if @slave_connections.present?
-          @slave_connections.each_value{|c| c && c.disconnect! rescue nil}
-        end
-        @slave_connections = {}
+      def slave_connection
+        connection_manager.slave_connection
+      end
+
+      def put_aside!
+        connection_manager.put_aside!
       end
 
       def manage_access(model_name, go_slave, &block)
@@ -43,8 +44,8 @@ module FreshConnection
         !!@ignore_configure_connection
       end
 
-      def master_clear_connection?
-        @master_clear_connection || false
+      def connection_manager=(manager)
+        @connection_manager_class = manager
       end
 
       private
@@ -70,26 +71,9 @@ module FreshConnection
         end
       end
 
-      def slave_connection
-        @slave_connections ||= {}
-        @slave_connections[current_thread_id] ||= new_connection
-      end
-
-      def new_connection
-        ActiveRecord::Base.send("#{spec["adapter"]}_connection", spec)
-      end
-
-      def spec
-        @spec ||= get_spec
-      end
-
-      def get_spec
-        ret = ActiveRecord::Base.configurations[Rails.env]
-        ret.merge(ret["slave"] || {})
-      end
-
-      def current_thread_id
-        Thread.current.object_id
+      def connection_manager
+        @connection_manager ||=
+          (@connection_manager_class || FreshConnection::ConnectionManager).new
       end
     end
   end
