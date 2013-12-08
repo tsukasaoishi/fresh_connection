@@ -6,8 +6,8 @@ module FreshConnection
     class << self
       attr_writer :ignore_models, :ignore_configure_connection, :master_clear_connection
 
-      def connection
-        slave_connection
+      def raw_connection
+        slave_connection.raw_connection
       end
 
       def clear_all_connections!
@@ -17,26 +17,18 @@ module FreshConnection
         @slave_connections = {}
       end
 
-      def slave_access
-        access_in(:slave)
-        yield
-      ensure
-        access_out
-      end
-
-      def master_access
-        access_in(:master)
-        yield
-      ensure
-        access_out
-      end
-
-      def force_master_access
-        now_target = Thread.current[TARGET]
-        Thread.current[TARGET] = :master
-        yield
-      ensure
-        Thread.current[TARGET] = now_target
+      def manage_access(model_name, go_slave, &block)
+        if ignore_model?(model_name)
+          force_master_access(&block)
+        else
+          target = go_slave ? :slave : :master
+          begin
+            access_in(target)
+            block.call
+          ensure
+            access_out
+          end
+        end
       end
 
       def slave_access?
@@ -57,6 +49,14 @@ module FreshConnection
 
       private
 
+      def force_master_access
+        now_target = Thread.current[TARGET]
+        Thread.current[TARGET] = :master
+        yield
+      ensure
+        Thread.current[TARGET] = now_target
+      end
+
       def access_in(target)
         Thread.current[COUNT] = (Thread.current[COUNT] || 0) + 1
         Thread.current[TARGET] ||= target
@@ -69,7 +69,6 @@ module FreshConnection
           Thread.current[COUNT] = nil
         end
       end
-
 
       def slave_connection
         @slave_connections ||= {}

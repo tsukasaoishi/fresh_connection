@@ -13,11 +13,11 @@ module ActiveRecord
       private
 
       def change_connection
-        master_con, @connection =
-          @connection, FreshConnection::SlaveConnection.connection.raw_connection
+        master_connection, @connection =
+          @connection, FreshConnection::SlaveConnection.raw_connection
         yield
       ensure
-        @connection = master_con
+        @connection = master_connection
       end
     end
   end
