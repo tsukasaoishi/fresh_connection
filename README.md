@@ -23,7 +23,7 @@ Or install it yourself as:
     $ gem install fresh_connection -v 0.0.7
 
 ## Config
-#### config/database.yml
+### config/database.yml
 
     production:
       adapter: mysql2
@@ -50,10 +50,24 @@ Others will use the master setting. If you want to change, write in the slave.
 
 If models that ignore access to slave servers is exist, You can write model name at FreshConnection::SlaveConnection.ignore models.
 
-### use config/environment.rb if rails2.3
+### Slave Connection Manager
+Default slave connection manager is FreshConnection::ConnectionManager.
+If you would like to change slave connection manager, assign yourself slave connection manager.
 
-    require 'fresh_connection'
-    ActionController::Dispatcher.middleware.swap ActiveRecord::ConnectionAdapters::ConnectionManagement, FreshConnection::Rack::ConnectionManagement
+#### config/initializers/fresh_connection.rb
+
+    FreshConnection::SlaveConnection.connection_manager = MySlaveConnection
+
+
+Yourself Slave Connection Manager is required any instance methods.
+
+    def slave_connection
+      # must return object of ActiveRecord::ConnectionAdapters::Mysql2Adapter
+    end
+
+    def put_aside!
+      # called when end of Rails controller action
+    end
 
 ## Usage
 Read query will be access to slave server.
@@ -69,6 +83,7 @@ In transaction, Always will be access to master server.
     Article.transaction do
       Article.where(:id => 1)
     end
+
 
 
 ## Contributing
