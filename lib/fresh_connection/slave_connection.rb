@@ -18,8 +18,8 @@ module FreshConnection
         connection_manager.put_aside!
       end
 
-      def manage_access(model_name, go_slave, &block)
-        if ignore_model?(model_name)
+      def manage_access(model_klass, go_slave, &block)
+        if ignore_model?(model_klass)
           force_master_access(&block)
         else
           target = go_slave ? :slave : :master
@@ -36,8 +36,17 @@ module FreshConnection
         Thread.current[TARGET] == :slave
       end
 
-      def ignore_model?(model_name)
-        (@ignore_models || []).include?(model_name)
+      def ignore_model?(model_klass)
+        (@ignore_models || []).one? do |ignore_model|
+          case ignore_model
+          when String
+            ignore_model == model_klass.name
+          when ActiveRecord::Base
+            model_klass.ancestors.include?(ignore_model)
+          else
+            false
+          end
+        end
       end
 
       def ignore_configure_connection?

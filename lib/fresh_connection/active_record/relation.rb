@@ -5,7 +5,7 @@ module ActiveRecord
     def exec_queries_with_slave_connection
       return @records if loaded?
 
-      FreshConnection::SlaveConnection.manage_access(@klass.name, go_slave?) do
+      FreshConnection::SlaveConnection.manage_access(@klass, go_slave?) do
         exec_queries_without_slave_connection
       end
     end
