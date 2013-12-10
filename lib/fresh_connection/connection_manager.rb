@@ -1,15 +1,23 @@
 module FreshConnection
   class ConnectionManager
+    def initialize
+      @mutex = Mutex.new
+    end
+
     def slave_connection
-      @slave_connections ||= {}
-      @slave_connections[current_thread_id] ||= new_connection
+      @mutex.synchronize do
+        @slave_connections ||= {}
+        @slave_connections[current_thread_id] ||= new_connection
+      end
     end
 
     def put_aside!
-      if @slave_connections.present?
-        @slave_connections.each_value{|c| c && c.disconnect! rescue nil}
+      @mutex.synchronize do
+        if @slave_connections.present?
+          @slave_connections.each_value{|c| c && c.disconnect! rescue nil}
+        end
+        @slave_connections = {}
       end
-      @slave_connections = {}
     end
 
     private
