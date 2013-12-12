@@ -1,5 +1,12 @@
 module ActiveRecord
   class Relation
+    def calculate_with_slave_connection(operation, column_name, options = {})
+      FreshConnection::SlaveConnection.manage_access(@klass, (go_slave? && options[:readonly] != false)) do
+        calculate_without_slave_connection(operation, column_name, options)
+      end
+    end
+    alias_method_chain :calculate, :slave_connection
+
     private
 
     def exec_queries_with_slave_connection
