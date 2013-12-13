@@ -13,10 +13,10 @@ module FreshConnection
 
     def put_aside!
       @mutex.synchronize do
-        if @slave_connections.present?
-          @slave_connections.each_value{|c| c && c.disconnect! rescue nil}
+        @slave_connections ||= {}
+        if c = @slave_connections.delete(current_thread_id)
+          c.disconnect! rescue nil
         end
-        @slave_connections = {}
       end
     end
 
