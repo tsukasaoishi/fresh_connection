@@ -13,9 +13,24 @@ module ActiveRecord
       private
 
       def change_connection
-        master_connection, @connection =
-          @connection, FreshConnection::SlaveConnection.raw_connection
-        yield
+        retry_count = 0
+        master_connection = @connection
+        begin
+          slave_connection = FreshConnection::SlaveConnection.slave_connection
+          @connection = slave_connection.raw_connection
+          yield
+        rescue ActiveRecord::StatementInvalid => exception
+          if FreshConnection::SlaveConnection.recoverable? &&
+            exception.message =~ /MySQL server has gone away|closed MySQL connection|Can't connect to local MySQL server/
+
+            if FreshConnection::SlaveConnection.recovery(slave_connection, exception)
+              retry_count += 1
+              retry if retry_count < FreshConnection::SlaveConnection.retry_limit
+            end
+          end
+
+          raise
+        end
       ensure
         @connection = master_connection
       end

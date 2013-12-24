@@ -1,26 +1,35 @@
-module FreshConnection
-  class ConnectionManager
-    def initialize
-      @mutex = Mutex.new
-    end
+require 'fresh_connection/abstract_connection_manager'
 
+module FreshConnection
+  class ConnectionManager < AbstractConnectionManager
     def slave_connection
-      @mutex.synchronize do
-        @slave_connections ||= {}
-        @slave_connections[current_thread_id] ||= new_connection
+      synchronize do
+        slave_connections[current_thread_id] ||= new_connection
       end
     end
 
     def put_aside!
-      @mutex.synchronize do
-        @slave_connections ||= {}
-        if c = @slave_connections.delete(current_thread_id)
+      synchronize do
+        if c = slave_connections.delete(current_thread_id)
           c.disconnect! rescue nil
         end
       end
     end
 
+    def recoverable?
+      true
+    end
+
+    def recovery(failure_connection, exception)
+      put_aside!
+      true
+    end
+
     private
+
+    def slave_connections
+      @slave_connections ||= {}
+    end
 
     def new_connection
       ActiveRecord::Base.send("#{spec["adapter"]}_connection", spec)
@@ -33,10 +42,6 @@ module FreshConnection
     def get_spec
       ret = ActiveRecord::Base.configurations[Rails.env]
       ret.merge(ret["slave"] || {})
-    end
-
-    def current_thread_id
-      Thread.current.object_id
     end
   end
 end

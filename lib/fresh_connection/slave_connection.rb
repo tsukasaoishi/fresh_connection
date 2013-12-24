@@ -2,21 +2,12 @@ module FreshConnection
   class SlaveConnection
     COUNT = :fresh_connection_access_count
     TARGET = :fresh_connection_access_target
+    RETRY_LIMIT = 10
 
     class << self
       attr_writer :ignore_models, :ignore_configure_connection
 
-      def raw_connection
-        slave_connection.raw_connection
-      end
-
-      def slave_connection
-        connection_manager.slave_connection
-      end
-
-      def put_aside!
-        connection_manager.put_aside!
-      end
+      delegate :slave_connection, :put_aside!, :recoverable?, :recovery, :to => :connection_manager
 
       def manage_access(model_klass, go_slave, &block)
         if ignore_model?(model_klass)
@@ -55,6 +46,10 @@ module FreshConnection
 
       def connection_manager=(manager)
         @connection_manager_class = manager
+      end
+
+      def retry_limit
+        RETRY_LIMIT
       end
 
       private
