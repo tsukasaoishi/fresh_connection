@@ -1,5 +1,5 @@
 module FreshConnection
-  class ConnectionManagerBase
+  class AbstractConnectionManager
     def initialize
       @mutex = Mutex.new
     end
