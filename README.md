@@ -59,14 +59,20 @@ If you would like to change slave connection manager, assign yourself slave conn
     FreshConnection::SlaveConnection.connection_manager = MySlaveConnection
 
 
-Yourself Slave Connection Manager is required any instance methods.
+Yourself Slave Connection Manager should be inherited FreshConnection::AbstractConnectionManager
 
-    def slave_connection
-      # must return object of ActiveRecord::ConnectionAdapters::Mysql2Adapter
-    end
+    class MySlaveConnection < FreshConnection::AbstractConnectionManager
+      def slave_connection
+        # must return object of ActiveRecord::ConnectionAdapters::Mysql2Adapter
+      end
 
-    def put_aside!
-      # called when end of Rails controller action
+      def put_aside!
+        # called when end of Rails controller action
+      end
+
+      def recovery(failure_connection, exception)
+        # called when raise exception to access slave server
+      end
     end
 
 ## Usage
