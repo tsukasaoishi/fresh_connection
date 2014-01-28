@@ -28,16 +28,10 @@ module FreshConnection
       end
 
       def ignore_model?(model_klass)
-        (@ignore_models || []).one? do |ignore_model|
-          case ignore_model
-          when String
-            ignore_model == model_klass.name
-          when ActiveRecord::Base
-            model_klass.ancestors.include?(ignore_model)
-          else
-            false
-          end
-        end
+        @cached_ignore_model ||= {}
+        return @cached_ignore_model[model_klass] if @cached_ignore_model.has_key?(model_klass)
+
+        @cached_ignore_model[model_klass] = check_ignore_model(model_klass)
       end
 
       def ignore_configure_connection?
@@ -78,6 +72,18 @@ module FreshConnection
       def connection_manager
         @connection_manager ||=
           (@connection_manager_class || FreshConnection::ConnectionManager).new
+      end
+
+      def check_ignore_model(model_klass)
+        (@ignore_models || []).one? do |ignore_model|
+          if ignore_model.is_a?(String)
+            ignore_model == model_klass.name
+          elsif ignore_model.ancestors.include?(ActiveRecord::Base)
+            model_klass.ancestors.include?(ignore_model)
+          else
+            false
+          end
+        end
       end
     end
   end
