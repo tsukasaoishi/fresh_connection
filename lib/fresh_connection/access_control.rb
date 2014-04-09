@@ -3,9 +3,7 @@ module FreshConnection
     RETRY_LIMIT = 10
 
     class << self
-      attr_writer :ignore_configure_connection
-
-      delegate :slave_connection, :put_aside!, :recoverable?, :recovery, :to => :connection_manager
+      delegate :slave_connection, :put_aside!, :recovery, :to => :connection_manager
 
       def manage_access(model_klass, enable_slave_access, &block)
         if model_klass.master_db_only?
@@ -24,16 +22,12 @@ module FreshConnection
         access_db == :slave
       end
 
-      def ignore_configure_connection?
-        !!@ignore_configure_connection
+      def retry_limit
+        RETRY_LIMIT
       end
 
       def connection_manager=(manager)
-        @connection_manager_class = manager
-      end
-
-      def retry_limit
-        RETRY_LIMIT
+        @connection_manager = manager.new
       end
 
       private
@@ -57,8 +51,7 @@ module FreshConnection
       end
 
       def connection_manager
-        @connection_manager ||=
-          (@connection_manager_class || FreshConnection::ConnectionManager).new
+        @connection_manager ||= ConnectionManager.new
       end
 
       def access_db

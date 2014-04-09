@@ -4,7 +4,7 @@ module FreshConnection
       def call(env)
         super
       ensure
-        FreshConnection::SlaveConnection.put_aside! unless env.key?("rack.test")
+        FreshConnection.put_aside! unless env.key?("rack.test")
       end
     end
   end

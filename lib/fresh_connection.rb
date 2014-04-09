@@ -1,7 +1,21 @@
 require 'active_record'
+require "fresh_connection/version"
+require "fresh_connection/connection_manager"
+require "fresh_connection/access_control"
 
 module FreshConnection
   class << self
+    delegate :manage_access, :slave_access?, :retry_limit, :connection_manager=,
+      :slave_connection, :put_aside!, :recovery, :to => AccessControl
+
+    def ignore_configure_connection!
+      @ignore_configure_connection = true
+    end
+
+    def ignore_configure_connection?
+      !!@ignore_configure_connection
+    end
+
     def rails_3?
       ActiveRecord::VERSION::MAJOR == 3
     end
@@ -12,8 +26,4 @@ module FreshConnection
   end
 end
 
-require "fresh_connection/version"
-require "fresh_connection/connection_manager"
-require "fresh_connection/access_control"
-require "fresh_connection/rack/connection_management"
 require "fresh_connection/railtie.rb"
