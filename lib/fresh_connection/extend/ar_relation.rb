@@ -13,7 +13,7 @@ module FreshConnection
 
       def calculate(operation, column_name, options = {})
         slave_access = enable_slave_access && options[:readonly] != false
-        FreshConnection.manage_access(@klass, slave_access) { super }
+        @klass.manage_access(slave_access) { super }
       end
 
       private
@@ -21,7 +21,7 @@ module FreshConnection
       def exec_queries_with_fresh_connection
         return @records if loaded?
 
-        FreshConnection.manage_access(@klass, enable_slave_access) do
+        @klass.manage_access(enable_slave_access) do
           exec_queries_without_fresh_connection
         end
       end

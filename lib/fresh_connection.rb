@@ -5,8 +5,7 @@ require "fresh_connection/access_control"
 
 module FreshConnection
   class << self
-    delegate :manage_access, :slave_access?, :retry_limit, :connection_manager=,
-      :slave_connection, :put_aside!, :recovery, :to => AccessControl
+    delegate :connection_manager=, :to => AccessControl
 
     def ignore_configure_connection!
       @ignore_configure_connection = true

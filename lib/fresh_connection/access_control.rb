@@ -5,17 +5,19 @@ module FreshConnection
     class << self
       delegate :slave_connection, :put_aside!, :recovery, :to => :connection_manager
 
-      def manage_access(model_klass, enable_slave_access, &block)
-        if model_klass.master_db_only?
-          force_master_access(&block)
-        else
-          begin
-            access_in(enable_slave_access ? :slave : :master)
-            block.call
-          ensure
-            access_out
-          end
-        end
+      def force_master_access
+        db = access_db
+        access_to(:master)
+        yield
+      ensure
+        access_to(db)
+      end
+
+      def access(enable_slave_access)
+        access_in(enable_slave_access ? :slave : :master)
+        yield
+      ensure
+        access_out
       end
 
       def slave_access?
@@ -42,13 +44,6 @@ module FreshConnection
         access_to(nil) if access_count == 0
       end
 
-      def force_master_access
-        db = access_db
-        access_to(:master)
-        yield
-      ensure
-        access_to(db)
-      end
 
       def connection_manager
         @connection_manager ||= ConnectionManager.new
