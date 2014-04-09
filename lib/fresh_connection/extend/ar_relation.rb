@@ -11,26 +11,33 @@ module FreshConnection
         end
       end
 
+      def calculate(operation, column_name, options = {})
+        slave_access = enable_slave_access && options[:readonly] != false
+        FreshConnection::AccessControl.manage_access(@klass, slave_access) do
+          super
+        end
+      end
+
       private
 
       def exec_queries_with_fresh_connection
         return @records if loaded?
 
-        FreshConnection::SlaveConnection.manage_access(@klass, go_slave?) do
+        FreshConnection::AccessControl.manage_access(@klass, enable_slave_access) do
           exec_queries_without_fresh_connection
         end
       end
 
       module ForRails4
         private
-        def go_slave?
+        def enable_slave_access
           connection.open_transactions == 0 && (readonly_value.nil? || readonly_value)
         end
       end
 
       module ForRails3
         private
-        def go_slave?
+        def enable_slave_access
           connection.open_transactions == 0 && (@readonly_value.nil? || @readonly_value)
         end
       end

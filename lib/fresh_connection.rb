@@ -9,12 +9,11 @@ module FreshConnection
     def rails_4?
       ActiveRecord::VERSION::MAJOR == 4
     end
-
   end
 end
 
 require "fresh_connection/version"
 require "fresh_connection/connection_manager"
-require "fresh_connection/slave_connection"
+require "fresh_connection/access_control"
 require "fresh_connection/rack/connection_management"
 require "fresh_connection/railtie.rb"

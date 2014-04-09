@@ -6,7 +6,7 @@ module FreshConnection
       end
 
       def select_all(arel, name = nil, binds = [])
-        if FreshConnection::SlaveConnection.slave_access?
+        if FreshConnection::AccessControl.slave_access?
           change_connection do
             super(arel, "[slave] #{name}", binds)
           end
@@ -21,13 +21,13 @@ module FreshConnection
         retry_count = 0
         master_connection = @connection
         begin
-          slave_connection = FreshConnection::SlaveConnection.slave_connection
+          slave_connection = FreshConnection::AccessControl.slave_connection
           @connection = slave_connection.raw_connection
           yield
         rescue ActiveRecord::StatementInvalid => exception
-          if FreshConnection::SlaveConnection.recovery(slave_connection, exception)
+          if FreshConnection::AccessControl.recovery(slave_connection, exception)
             retry_count += 1
-            retry if retry_count < FreshConnection::SlaveConnection.retry_limit
+            retry if retry_count < FreshConnection::AccessControl.retry_limit
           end
 
           raise
@@ -37,7 +37,7 @@ module FreshConnection
       end
 
       def configure_connection_with_fresh_connection
-        unless FreshConnection::SlaveConnection.ignore_configure_connection?
+        unless FreshConnection::AccessControl.ignore_configure_connection?
           configure_connection_without_fresh_connection
         end
       end
