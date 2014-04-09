@@ -1,14 +1,19 @@
-module ActiveRecord
-  module ConnectionAdapters
-    class AbstractAdapter
-      def select_all_with_slave_connection(arel, name = nil, binds = [])
+module FreshConnection
+  module Extend
+    module Mysql2Adapter
+      def self.included(base)
+        base.alias_method_chain :configure_connection, :fresh_connection
+      end
+
+      def select_all(arel, name = nil, binds = [])
         if FreshConnection::SlaveConnection.slave_access?
-          change_connection {select_all_without_slave_connection(arel, "[slave] #{name}", binds)}
+          change_connection do
+            super(arel, "[slave] #{name}", binds)
+          end
         else
-          select_all_without_slave_connection(arel, name, binds)
+          super
         end
       end
-      alias_method_chain :select_all, :slave_connection
 
       private
 
@@ -29,6 +34,12 @@ module ActiveRecord
         end
       ensure
         @connection = master_connection
+      end
+
+      def configure_connection_with_fresh_connection
+        unless FreshConnection::SlaveConnection.ignore_configure_connection?
+          configure_connection_without_fresh_connection
+        end
       end
     end
   end
