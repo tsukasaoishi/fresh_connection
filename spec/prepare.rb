@@ -23,4 +23,5 @@ end
 
 class Tel < ActiveRecord::Base
   belongs_to :user
+  establish_fresh_connection :slave2
 end
