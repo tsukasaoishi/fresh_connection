@@ -13,11 +13,14 @@ module ActiveRecord
 end
 
 class User < ActiveRecord::Base
+  has_one :address
+  has_many :tels
 end
 
 class Address < ActiveRecord::Base
+  belongs_to :user
 end
 
 class Tel < ActiveRecord::Base
+  belongs_to :user
 end
-
