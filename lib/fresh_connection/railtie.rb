@@ -1,4 +1,5 @@
-require "fresh_connection/rack/connection_management"
+require 'rails'
+require 'fresh_connection/rack/connection_management'
 require 'fresh_connection/extend/ar_base'
 require 'fresh_connection/extend/ar_relation'
 require 'fresh_connection/extend/connection_handler'
