@@ -3,7 +3,7 @@ module FreshConnection
     RETRY_LIMIT = 10
 
     class << self
-      delegate :slave_connection, :put_aside!, :recovery, :to => :connection_manager
+      attr_writer :connection_manager
 
       def force_master_access
         db = access_db
@@ -28,8 +28,8 @@ module FreshConnection
         RETRY_LIMIT
       end
 
-      def connection_manager=(manager)
-        @connection_manager = manager.new
+      def connection_manager
+        @connection_manager || ConnectionManager
       end
 
       private
@@ -42,11 +42,6 @@ module FreshConnection
       def access_out
         decrement_access_count
         access_to(nil) if access_count == 0
-      end
-
-
-      def connection_manager
-        @connection_manager ||= ConnectionManager.new
       end
 
       def access_db

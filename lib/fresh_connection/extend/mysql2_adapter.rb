@@ -2,6 +2,7 @@ module FreshConnection
   module Extend
     module Mysql2Adapter
       def self.included(base)
+        base.__send__(:attr_writer, :model_class)
         base.alias_method_chain :configure_connection, :fresh_connection
       end
 
@@ -21,11 +22,11 @@ module FreshConnection
         retry_count = 0
         master_connection = @connection
         begin
-          slave_connection = FreshConnection::AccessControl.slave_connection
+          slave_connection = @model_class.slave_connection
           @connection = slave_connection.raw_connection
           yield
         rescue ActiveRecord::StatementInvalid => exception
-          if FreshConnection::AccessControl.recovery(slave_connection, exception)
+          if @model_class.recovery(slave_connection, exception)
             retry_count += 1
             retry if retry_count < FreshConnection::AccessControl.retry_limit
           end

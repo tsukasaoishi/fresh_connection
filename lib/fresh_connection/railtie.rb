@@ -1,6 +1,7 @@
 require "fresh_connection/rack/connection_management"
 require 'fresh_connection/extend/ar_base'
 require 'fresh_connection/extend/ar_relation'
+require 'fresh_connection/extend/connection_handler'
 require 'fresh_connection/extend/mysql2_adapter'
 
 module FreshConnection
@@ -16,9 +17,15 @@ module FreshConnection
 
         ActiveRecord::Relation.__send__(:include, FreshConnection::Extend::ArRelation)
 
+        ActiveRecord::ConnectionAdapters::ConnectionHandler.__send__(
+          :include, FreshConnection::Extend::ConnectionHandler
+        )
+
         ActiveRecord::ConnectionAdapters::Mysql2Adapter.__send__(
           :include, FreshConnection::Extend::Mysql2Adapter
         )
+
+        ActiveRecord::Base.establish_fresh_connection
       end
     end
   end

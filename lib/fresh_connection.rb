@@ -2,6 +2,7 @@ require 'active_record'
 require "fresh_connection/version"
 require "fresh_connection/connection_manager"
 require "fresh_connection/access_control"
+require "fresh_connection/slave_connection_handler"
 
 module FreshConnection
   class << self
