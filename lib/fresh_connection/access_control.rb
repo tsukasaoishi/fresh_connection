@@ -1,10 +1,6 @@
 module FreshConnection
   class AccessControl
-    RETRY_LIMIT = 10
-
     class << self
-      attr_writer :connection_manager
-
       def force_master_access
         db = access_db
         access_to(:master)
@@ -22,14 +18,6 @@ module FreshConnection
 
       def slave_access?
         access_db == :slave
-      end
-
-      def retry_limit
-        RETRY_LIMIT
-      end
-
-      def connection_manager
-        @connection_manager || ConnectionManager
       end
 
       private

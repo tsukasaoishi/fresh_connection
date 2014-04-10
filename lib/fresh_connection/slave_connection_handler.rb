@@ -5,7 +5,7 @@ module FreshConnection
     end
 
     def establish_connection(name, slave_group)
-      @class_to_pool[name] = AccessControl.connection_manager.new
+      @class_to_pool[name] = FreshConnection.connection_manager.new
     end
 
     def connection(klass)
