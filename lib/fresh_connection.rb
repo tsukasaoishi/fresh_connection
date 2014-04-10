@@ -1,4 +1,6 @@
 require 'active_record'
+require 'active_support/core_ext'
+
 require "fresh_connection/version"
 require "fresh_connection/connection_manager"
 require "fresh_connection/access_control"
