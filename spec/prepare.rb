@@ -1,7 +1,7 @@
 require 'yaml'
 
 %w|master slave1 slave2|.each do |db|
-  system("mysql -uroot fresh_connection_test_#{db} < spec/support/db_schema.sql")
+  system("mysql -uroot fresh_connection_test_#{db} < spec/db_schema.sql")
 end
 
 module ActiveRecord
