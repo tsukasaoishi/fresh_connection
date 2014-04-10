@@ -9,7 +9,7 @@ module FreshConnection
       def select_all(arel, name = nil, binds = [])
         if FreshConnection::AccessControl.slave_access?
           change_connection do
-            super(arel, "[slave] #{name}", binds)
+            super(arel, "[#{@model_class.slave_group}] #{name}", binds)
           end
         else
           super

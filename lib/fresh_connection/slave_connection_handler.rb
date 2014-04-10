@@ -5,7 +5,7 @@ module FreshConnection
     end
 
     def establish_connection(name, slave_group)
-      @class_to_pool[name] = FreshConnection.connection_manager.new
+      @class_to_pool[name] = FreshConnection.connection_manager.new(slave_group)
     end
 
     def connection(klass)
@@ -19,8 +19,11 @@ module FreshConnection
     end
 
     def recovery(klass, failure_connection, exception)
-      connection_manager = detect_connection_manager(klass)
-      connection_manager.recovery(failure_connection, exception)
+      detect_connection_manager(klass).recovery(failure_connection, exception)
+    end
+
+    def slave_group(klass)
+      detect_connection_manager(klass).slave_group
     end
 
     private

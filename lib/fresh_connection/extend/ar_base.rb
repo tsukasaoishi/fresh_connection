@@ -38,6 +38,10 @@ module FreshConnection
       def recovery(failure_connection, exception)
         slave_connection_handler.recovery(self, failure_connection, exception)
       end
+
+      def slave_group
+        slave_connection_handler.slave_group(self)
+      end
     end
   end
 end

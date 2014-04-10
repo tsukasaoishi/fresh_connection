@@ -6,8 +6,11 @@ module FreshConnection
       "Can't connect to local MySQL server"
     ].map{|msg| Regexp.escape(msg)}.join("|")
 
-    def initialize
+    attr_reader :slave_group
+
+    def initialize(slave_group = "slave")
       @mutex = Mutex.new
+      @slave_group = (slave_group.presence || "slave").to_s
     end
 
     def slave_connection
