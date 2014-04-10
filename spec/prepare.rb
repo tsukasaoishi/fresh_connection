@@ -1,8 +1,6 @@
 require 'yaml'
 
-%w|master slave1 slave2|.each do |db|
-  system("mysql -uroot fresh_connection_test_#{db} < spec/db_schema.sql")
-end
+system("mysql -uroot < spec/db_schema.sql")
 
 module ActiveRecord
   class Base
@@ -10,6 +8,15 @@ module ActiveRecord
     establish_connection
     establish_fresh_connection :slave1
   end
+end
+
+class Parent < ActiveRecord::Base
+  self.abstract_class = true
+end
+
+class Slave2 < ActiveRecord::Base
+  self.abstract_class = true
+  establish_fresh_connection :slave2
 end
 
 class User < ActiveRecord::Base
@@ -21,7 +28,6 @@ class Address < ActiveRecord::Base
   belongs_to :user
 end
 
-class Tel < ActiveRecord::Base
+class Tel < Slave2
   belongs_to :user
-  establish_fresh_connection :slave2
 end
