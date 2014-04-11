@@ -3,3 +3,4 @@
 .ruby-version
 Gemfile.lock
 bundle
+log/sql.log
