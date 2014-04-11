@@ -36,7 +36,7 @@ module FreshConnection
     end
 
     def new_connection
-      ActiveRecord::Base.send("#{spec["adapter"]}_connection", spec)
+      ActiveRecord::Base.send("mysql2_connection", spec)
     end
 
     def spec
