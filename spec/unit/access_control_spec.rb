@@ -16,7 +16,8 @@ describe FreshConnection::AccessControl do
           end
         end
       end
-      ret.should be_all{|item| item}
+
+      expect(ret).to be_all{|item| item}
     end
 
     it "persisted first state(master)" do
@@ -29,7 +30,8 @@ describe FreshConnection::AccessControl do
           end
         end
       end
-      ret.should_not be_all{|item| item}
+
+      expect(ret).to_not be_all{|item| item}
     end
 
     it "outside is always master" do
@@ -37,7 +39,8 @@ describe FreshConnection::AccessControl do
       ret << @ac.slave_access?
       @ac.access(true){}
       ret << @ac.slave_access?
-      ret.should_not be_all{|item| item}
+
+      expect(ret).to_not be_all{|item| item}
     end
   end
 
@@ -45,7 +48,7 @@ describe FreshConnection::AccessControl do
     it "forced master state" do
       @ac.access(true) do
         @ac.force_master_access do
-          @ac.slave_access?.should be_false
+          expect(@ac.slave_access?).to be_false
         end
       end
     end
@@ -53,7 +56,7 @@ describe FreshConnection::AccessControl do
     it "not effect outside" do
       @ac.access(true) do
         @ac.force_master_access {}
-        @ac.slave_access?.should be_true
+        expect(@ac.slave_access?).to be_true
       end
     end
   end
