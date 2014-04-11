@@ -5,6 +5,7 @@ require "fresh_connection/version"
 require "fresh_connection/connection_manager"
 require "fresh_connection/access_control"
 require "fresh_connection/slave_connection_handler"
+require "fresh_connection/slave_connection"
 
 module FreshConnection
   class << self
