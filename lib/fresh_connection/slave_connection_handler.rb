@@ -5,6 +5,10 @@ module FreshConnection
     end
 
     def establish_connection(name, slave_group)
+      if cm = @class_to_pool[name]
+        cm.put_aside!
+      end
+
       @class_to_pool[name] = FreshConnection.connection_manager.new(slave_group)
     end
 
