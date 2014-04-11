@@ -64,4 +64,33 @@ describe FreshConnection do
       ].should be_all {|n| n.include?("master")}
     end
   end
+
+  context "master_db_only model always access to master" do
+    class Address3 < ActiveRecord::Base
+      self.table_name = "addresses"
+      master_db_only!
+    end
+
+    class Master < ActiveRecord::Base
+      self.abstract_class = true
+      master_db_only!
+    end
+
+    class Tel3 < Master
+      self.table_name = "tels"
+    end
+
+    it "self is master_db_only model" do
+      Address3.first.prefecture.should be_include("master")
+    end
+
+    it "parent is master_db_only model" do
+      Tel3.first.number.should be_include("master")
+    end
+
+    it "not effect other models" do
+      Address.first.prefecture.should be_include("slave1")
+      Tel.first.number.should be_include("slave2")
+    end
+  end
 end
