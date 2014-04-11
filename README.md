@@ -18,9 +18,6 @@ Or install it yourself as:
 
     $ gem install fresh_connection
 
-### For Rails2.3
-
-    $ gem install fresh_connection -v 0.0.7
 
 ## Config
 ### config/database.yml
@@ -44,11 +41,14 @@ Or install it yourself as:
 slave is config to connect to slave servers.
 Others will use the master setting. If you want to change, write in the slave.
 
-### config/initializers/fresh_connection.rb
+### Declare model that doesn't use slave db
 
-    FreshConnection::SlaveConnection.ignore_models = %w|Model1 Model2|
+    class SomethingModel < ActiveRecord::Base
+      master_db_only!
+    end
 
-If models that ignore access to slave servers is exist, You can write model name at FreshConnection::SlaveConnection.ignore models.
+If model that always access to master servers is exist, You may want to write ```master_db_only!```  in model.
+The model that master_db_only model's child is always access to master db.
 
 ### Slave Connection Manager
 Default slave connection manager is FreshConnection::ConnectionManager.
@@ -56,7 +56,7 @@ If you would like to change slave connection manager, assign yourself slave conn
 
 #### config/initializers/fresh_connection.rb
 
-    FreshConnection::SlaveConnection.connection_manager = MySlaveConnection
+    FreshConnection.connection_manager = MySlaveConnection
 
 
 Yourself Slave Connection Manager should be inherited FreshConnection::AbstractConnectionManager
