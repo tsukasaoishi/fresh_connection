@@ -36,7 +36,7 @@ module FreshConnection
     end
 
     def new_connection
-      ActiveRecord::Base.send("#{spec["adapter"]}_connection", spec)
+      ActiveRecord::Base.send("mysql2_connection", spec)
     end
 
     def spec
@@ -45,7 +45,7 @@ module FreshConnection
 
     def get_spec
       ret = ActiveRecord::Base.configurations[Rails.env]
-      ret.merge(ret["slave"] || {})
+      ret.merge(ret[@slave_group] || {})
     end
   end
 end

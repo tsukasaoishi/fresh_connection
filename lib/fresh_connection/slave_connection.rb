@@ -1,89 +1,53 @@
+require 'active_support/deprecation'
+
 module FreshConnection
+  #
+  # This class has been deprecated.
+  # It will delete at next version.
+  #
   class SlaveConnection
-    COUNT = :fresh_connection_access_count
-    TARGET = :fresh_connection_access_target
-    RETRY_LIMIT = 10
-
     class << self
-      attr_writer :ignore_models, :ignore_configure_connection
-
-      delegate :slave_connection, :put_aside!, :recoverable?, :recovery, :to => :connection_manager
-
-      def manage_access(model_klass, go_slave, &block)
-        if ignore_model?(model_klass)
-          force_master_access(&block)
-        else
-          target = go_slave ? :slave : :master
-          begin
-            access_in(target)
-            block.call
-          ensure
-            access_out
+      def ignore_models=(models)
+        deprecation("ignore_models=", "ActiveRecord::Base.master_db_only!")
+        models.each do |model|
+          if model.is_a?(String)
+            model.constantize.master_db_only!
+          elsif model.ancestors.include?(ActiveRecord::Base)
+            model.master_db_only!
           end
         end
       end
 
-      def slave_access?
-        Thread.current[TARGET] == :slave
-      end
-
-      def ignore_model?(model_klass)
-        @cached_ignore_model ||= {}
-        return @cached_ignore_model[model_klass] if @cached_ignore_model.has_key?(model_klass)
-
-        @cached_ignore_model[model_klass] = check_ignore_model(model_klass)
-      end
-
-      def ignore_configure_connection?
-        !!@ignore_configure_connection
+      def ignore_configure_connection=(flag)
+        deprecation("ignore_configure_connection=", "FreshConnection.ignore_configure_connection=")
+        FreshConnection.ignore_configure_connection = flag
       end
 
       def connection_manager=(manager)
-        @connection_manager_class = manager
+        deprecation("connection_manager=", "FreshConnection.connection_manager=")
+        FreshConnection.connection_manager = manager
       end
 
-      def retry_limit
-        RETRY_LIMIT
+      def slave_connection
+        raise_deprecation_exception("slave_connection", "ArtiveRecord::Base.slave_connection")
       end
 
       private
 
-      def force_master_access
-        now_target = Thread.current[TARGET]
-        Thread.current[TARGET] = :master
-        yield
-      ensure
-        Thread.current[TARGET] = now_target
+      def deprecation(method_name, instead_method)
+        ActiveSupport::Deprecation.warn(deprecation_message(method_name, instead_method))
       end
 
-      def access_in(target)
-        Thread.current[COUNT] = (Thread.current[COUNT] || 0) + 1
-        Thread.current[TARGET] ||= target
-      end
-
-      def access_out
-        Thread.current[COUNT] -= 1
-        if Thread.current[COUNT] == 0
-          Thread.current[TARGET] = nil
-          Thread.current[COUNT] = nil
+      def raise_deprecation_exception(method_name, instead_method)
+        if defined?(ActiveSupport::DeprecationException)
+          raise ActiveSupport::DeprecationException, deprecation_message(method_name, instead_method)
+        else
+          raise "ActiveSupport::DeprecationException: #{deprecation_message(method_name, instead_method)}"
         end
       end
 
-      def connection_manager
-        @connection_manager ||=
-          (@connection_manager_class || FreshConnection::ConnectionManager).new
-      end
-
-      def check_ignore_model(model_klass)
-        (@ignore_models || []).one? do |ignore_model|
-          if ignore_model.is_a?(String)
-            ignore_model == model_klass.name
-          elsif ignore_model.ancestors.include?(ActiveRecord::Base)
-            model_klass.ancestors.include?(ignore_model)
-          else
-            false
-          end
-        end
+      def deprecation_message(method_name, instead_method)
+        "FreshConnection::SlaveConnection.#{method_name} has been deprecated. Use #{instead_method} instead"
       end
     end
   end

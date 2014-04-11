@@ -18,9 +18,6 @@ Or install it yourself as:
 
     $ gem install fresh_connection
 
-### For Rails2.3
-
-    $ gem install fresh_connection -v 0.0.7
 
 ## Config
 ### config/database.yml
@@ -41,14 +38,62 @@ Or install it yourself as:
         password: slave
         host: slave
 
-slave is config to connect to slave servers.
+```slave``` is config to connect to slave servers.
 Others will use the master setting. If you want to change, write in the slave.
 
-### config/initializers/fresh_connection.rb
+### use multiple slave servers group
+If you may want to user multiple slave group, write multiple slave group to config/database.yml. 
 
-    FreshConnection::SlaveConnection.ignore_models = %w|Model1 Model2|
+    production:
+      adapter: mysql2
+      encoding: utf8
+      reconnect: true
+      database: kaeru
+      pool: 5
+      username: master
+      password: master
+      host: localhost
+      socket: /var/run/mysqld/mysqld.sock
 
-If models that ignore access to slave servers is exist, You can write model name at FreshConnection::SlaveConnection.ignore models.
+      slave:
+        username: slave
+        password: slave
+        host: slave
+
+      admin_slave:
+        username: slave
+        password: slave
+        host: admin_slaves
+
+And call establish_fresh_connection method in model that access to ```admin_slave``` slave group.
+
+    class AdminUser < ActiveRecord::Base
+      establish_fresh_connection :admin_slave
+    end
+
+The children is access to same slave group of parent.
+
+    class Parent < ActiveRecord::Base
+      establish_fresh_connection :admin_slave
+    end
+
+    class AdminUser < Parent
+    end
+
+    class Benefit < Parent
+    end
+
+AdminUser and Benefit access to ```admin_slave``` slave group.
+
+
+### Declare model that doesn't use slave db
+
+    class SomethingModel < ActiveRecord::Base
+      master_db_only!
+    end
+
+If model that always access to master servers is exist, You may want to write ```master_db_only!```  in model.
+The model that master_db_only model's child is always access to master db.
 
 ### Slave Connection Manager
 Default slave connection manager is FreshConnection::ConnectionManager.
@@ -56,7 +101,7 @@ If you would like to change slave connection manager, assign yourself slave conn
 
 #### config/initializers/fresh_connection.rb
 
-    FreshConnection::SlaveConnection.connection_manager = MySlaveConnection
+    FreshConnection.connection_manager = MySlaveConnection
 
 
 Yourself Slave Connection Manager should be inherited FreshConnection::AbstractConnectionManager
@@ -99,3 +144,22 @@ In transaction, Always will be access to master server.
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+## Test
+
+I'm glad that you would do test!
+To run the test suite, you need mysql installed.
+How to setup your test environment.
+
+```bash
+bundle install --path bundle
+GEM_HOME=bundle/ruby/(your ruby version) gem install bundler --pre
+bundle exec appraisal install
+```
+
+This command run the spec suite for all rails versions supported.
+
+```base
+bundle exec appraisal rake spec
+```
+

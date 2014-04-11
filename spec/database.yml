@@ -1,0 +1,14 @@
+test:
+  adapter: mysql2
+  encoding: utf8
+  database: fresh_connection_test_master
+  pool: 5
+  username: root
+  password:
+
+  slave1:
+    database: fresh_connection_test_slave1
+
+  slave2:
+    database: fresh_connection_test_slave2
+
