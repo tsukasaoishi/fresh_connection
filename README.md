@@ -41,6 +41,51 @@ Or install it yourself as:
 slave is config to connect to slave servers.
 Others will use the master setting. If you want to change, write in the slave.
 
+### use multiple slave servers group
+If you may want to user multiple slave group, write multiple slave group to config/database.yml. 
+
+    production:
+      adapter: mysql2
+      encoding: utf8
+      reconnect: true
+      database: kaeru
+      pool: 5
+      username: master
+      password: master
+      host: localhost
+      socket: /var/run/mysqld/mysqld.sock
+
+      slave:
+        username: slave
+        password: slave
+        host: slave
+
+      admin_slave:
+        username: slave
+        password: slave
+        host: slave_for_bot
+
+And call establish_fresh_connection method in model that access to ```admin_slave``` slave group.
+
+    class AdminUser < ActiveRecord::Base
+      establish_fresh_connection :admin_slave
+    end
+
+The children is access to same slave group of parent.
+
+    class Parent < ActiveRecord::Base
+      establish_fresh_connection :admin_slave
+    end
+
+    class AdminUser < Parent
+    end
+
+    class Benefit < Parent
+    end
+
+AdminUser and Benefit access to ```admin_slave``` slave group.
+
+
 ### Declare model that doesn't use slave db
 
     class SomethingModel < ActiveRecord::Base
