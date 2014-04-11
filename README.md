@@ -99,3 +99,22 @@ In transaction, Always will be access to master server.
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+## Test
+
+I'm glad that you would do test!
+To run the test suite, you need mysql installed.
+How to setup your test environment.
+
+```bash
+bundle install --path bundle
+GEM_HOME=bundle/ruby/(your ruby version) gem install bundler --pre
+bundle exec appraisal install
+```
+
+This command run the spec suite for all rails versions supported.
+
+```base
+bundle exec appraisal rake spec
+```
+
