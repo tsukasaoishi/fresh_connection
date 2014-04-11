@@ -38,7 +38,7 @@ Or install it yourself as:
         password: slave
         host: slave
 
-slave is config to connect to slave servers.
+```slave``` is config to connect to slave servers.
 Others will use the master setting. If you want to change, write in the slave.
 
 ### use multiple slave servers group
@@ -63,7 +63,7 @@ If you may want to user multiple slave group, write multiple slave group to conf
       admin_slave:
         username: slave
         password: slave
-        host: slave_for_bot
+        host: admin_slaves
 
 And call establish_fresh_connection method in model that access to ```admin_slave``` slave group.
 
