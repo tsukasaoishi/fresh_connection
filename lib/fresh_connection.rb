@@ -1,13 +1,16 @@
 require 'active_record'
 require 'active_support/core_ext'
-
-require "fresh_connection/version"
-require "fresh_connection/connection_manager"
-require "fresh_connection/access_control"
-require "fresh_connection/slave_connection_handler"
-require "fresh_connection/slave_connection"
+require 'active_support/dependencies/autoload'
 
 module FreshConnection
+  extend ActiveSupport::Autoload
+
+  autoload :AccessControl
+  autoload :ConnectionManager
+  autoload :SlaveConnectionHandler
+  autoload :Initializer
+  autoload :SlaveConnection
+
   class << self
     attr_writer :connection_manager, :ignore_configure_connection, :retry_limit
 

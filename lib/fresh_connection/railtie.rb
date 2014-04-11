@@ -1,5 +1,4 @@
 require 'rails'
-require 'fresh_connection/initializer'
 
 module FreshConnection
   class Railtie < Rails::Railtie
