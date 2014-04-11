@@ -2,5 +2,7 @@
 .bundle
 .ruby-version
 Gemfile.lock
+gemfiles/*.lock
 bundle
-log/sql.log
+log/*
+.*.sw[a-z]
