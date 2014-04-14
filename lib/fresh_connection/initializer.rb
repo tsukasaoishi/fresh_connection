@@ -1,4 +1,3 @@
-require 'active_record/connection_adapters/mysql2_adapter'
 require 'fresh_connection/rack/connection_management'
 require 'fresh_connection/extend/ar_base'
 require 'fresh_connection/extend/ar_relation'
@@ -24,6 +23,7 @@ module FreshConnection
           :include, FreshConnection::Extend::ConnectionHandler
         )
 
+        require 'active_record/connection_adapters/mysql2_adapter'
         ActiveRecord::ConnectionAdapters::Mysql2Adapter.__send__(
           :include, FreshConnection::Extend::Mysql2Adapter
         )
