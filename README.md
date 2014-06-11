@@ -1,11 +1,11 @@
 # FreshConnection
 
 FreshConnection supports to connect with Mysql slave servers via Load Balancers.
-All connections will be disconnected every time at the end of the action.
+All connections will be disconnected every time at the end of the Rails controller's action.
+FreshConnection does not support Rails 2.x.
 
 ## Installation
 
-### For Rails3 and 4
 Add this line to your application's Gemfile:
 
     gem "fresh_connection"
@@ -38,11 +38,11 @@ Or install it yourself as:
         password: slave
         host: slave
 
-```slave``` is config to connect to slave servers.
-Others will use the master setting. If you want to change, write in the slave.
+```slave``` is a config to connect to slave servers.
+Others will use the master server setting.
 
 ### use multiple slave servers group
-If you may want to user multiple slave group, write multiple slave group to config/database.yml. 
+If you may want to use multiple slave groups, write the config to ```config/database.yml```.
 
     production:
       adapter: mysql2
@@ -65,13 +65,13 @@ If you may want to user multiple slave group, write multiple slave group to conf
         password: slave
         host: admin_slaves
 
-And call establish_fresh_connection method in model that access to ```admin_slave``` slave group.
+And call the establish_fresh_connection method in a model that access to ```admin_slave``` slave group.
 
     class AdminUser < ActiveRecord::Base
       establish_fresh_connection :admin_slave
     end
 
-The children is access to same slave group of parent.
+The model of children class will access to same slave group as the parent.
 
     class Parent < ActiveRecord::Base
       establish_fresh_connection :admin_slave
@@ -92,12 +92,18 @@ AdminUser and Benefit access to ```admin_slave``` slave group.
       master_db_only!
     end
 
-If model that always access to master servers is exist, You may want to write ```master_db_only!```  in model.
+If a model that always access to the master server is exist, You write ```master_db_only!```  in the model.
 The model that master_db_only model's child is always access to master db.
 
 ### Slave Connection Manager
 Default slave connection manager is FreshConnection::ConnectionManager.
 If you would like to change slave connection manager, assign yourself slave connection manager.
+
+#### config/application.rb
+
+    config.fresh_connection.connection_manager = MySlaveConnection
+
+or
 
 #### config/initializers/fresh_connection.rb
 
@@ -150,6 +156,8 @@ In transaction, Always will be access to master server.
 I'm glad that you would do test!
 To run the test suite, you need mysql installed.
 How to setup your test environment.
+
+First of all, you setting the config of the test mysql server in ```spec/database.yml```
 
 ```bash
 bundle install --path bundle
