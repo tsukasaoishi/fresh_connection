@@ -44,7 +44,7 @@ module FreshConnection
     end
 
     def get_spec
-      ret = ActiveRecord::Base.configurations[Rails.env]
+      ret = ActiveRecord::Base.configurations[FreshConnection.env]
       ret.merge(ret[@slave_group] || {})
     end
   end

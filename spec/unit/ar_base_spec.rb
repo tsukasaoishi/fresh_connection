@@ -29,14 +29,14 @@ describe ActiveRecord::Base do
     end
 
     it "childrend of master_db_only class is master_db_only" do
-      expect(User2.master_db_only?).to be_false
+      expect(User2.master_db_only?).to be_falsey
       Parent.master_db_only!
-      expect(User2.master_db_only?).to be_true
+      expect(User2.master_db_only?).to be_truthy
     end
 
     it "not effect other class" do
       Parent.master_db_only!
-      expect(Address.master_db_only?).to be_false
+      expect(Address.master_db_only?).to be_falsey
     end
   end
 end

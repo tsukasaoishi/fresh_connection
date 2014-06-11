@@ -48,7 +48,7 @@ describe FreshConnection::AccessControl do
     it "forced master state" do
       @ac.access(true) do
         @ac.force_master_access do
-          expect(@ac.slave_access?).to be_false
+          expect(@ac.slave_access?).to be_falsey
         end
       end
     end
@@ -56,7 +56,7 @@ describe FreshConnection::AccessControl do
     it "not effect outside" do
       @ac.access(true) do
         @ac.force_master_access {}
-        expect(@ac.slave_access?).to be_true
+        expect(@ac.slave_access?).to be_truthy
       end
     end
   end

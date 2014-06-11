@@ -12,7 +12,7 @@ module FreshConnection
   autoload :SlaveConnection
 
   class << self
-    attr_writer :connection_manager, :ignore_configure_connection, :retry_limit
+    attr_writer :connection_manager, :ignore_configure_connection, :retry_limit, :env
 
     def connection_manager
       @connection_manager || ConnectionManager
@@ -26,6 +26,10 @@ module FreshConnection
       @retry_limit || 3
     end
 
+    def env
+      @env ||= defined?(Rails) && Rails.env
+    end
+
     def rails_3?
       ActiveRecord::VERSION::MAJOR == 3
     end
@@ -36,4 +40,4 @@ module FreshConnection
   end
 end
 
-require "fresh_connection/railtie.rb"
+require "fresh_connection/railtie.rb" if defined?(Rails)

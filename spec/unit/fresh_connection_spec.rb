@@ -12,7 +12,7 @@ describe FreshConnection do
         Address.first.user.name,
         Tel.first.user.name,
       ]
-      
+
       expect(data).to be_all{|n| n.include?("slave1")}
     end
 
@@ -21,7 +21,7 @@ describe FreshConnection do
         Address.first.prefecture,
         @user.address.prefecture
       ]
-      
+
       expect(data).to be_all{|n| n.include?("slave1")}
     end
 
@@ -30,7 +30,7 @@ describe FreshConnection do
         Tel.first.number,
         @user.tels.first.number
       ]
-      
+
       expect(data).to be_all{|n| n.include?("slave2")}
     end
 
