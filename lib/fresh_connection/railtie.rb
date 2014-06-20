@@ -4,7 +4,6 @@ require 'rails'
 module FreshConnection
   class Railtie < Rails::Railtie
     config.fresh_connection = ActiveSupport::OrderedOptions.new
-    config.eager_load_namespaces << FreshConnection
 
     initializer "fresh_connection.configure_rails_initialization" do |app|
       ActiveSupport.on_load(:active_record) do
