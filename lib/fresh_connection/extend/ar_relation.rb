@@ -16,6 +16,18 @@ module FreshConnection
         @klass.manage_access(slave_access) { super }
       end
 
+      def pluck(*args)
+        return super unless enable_slave_access
+
+        begin
+          origin_c = klass.connection.raw_connection
+          klass.connection.instance_variable_set("@connection", klass.slave_connection.raw_connection)
+          super
+        ensure
+          klass.connection.instance_variable_set("@connection", origin_c)
+        end
+      end
+
       private
 
       def exec_queries_with_fresh_connection

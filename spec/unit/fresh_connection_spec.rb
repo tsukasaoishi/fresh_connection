@@ -38,6 +38,10 @@ describe FreshConnection do
       name = User.joins(:address).where("addresses.user_id = 1").first.name
       expect(name).to be_include("slave1")
     end
+
+    it "pluck is access to slave1" do
+      expect(User.pluck(:name).first).to be_include("slave")
+    end
   end
 
   context "access to master" do
@@ -68,7 +72,8 @@ describe FreshConnection do
         @user.tels.readonly(false).first.number,
         User.includes(:tels).readonly(false).first.tels.first.number,
         User.includes(:address).readonly(false).first.address.prefecture,
-        User.joins(:address).where("addresses.user_id = 1").readonly(false).first.name
+        User.joins(:address).where("addresses.user_id = 1").readonly(false).first.name,
+        User.readonly(false).pluck(:name).first
       ]
       
       expect(data).to be_all{|n| n.include?("master")}
