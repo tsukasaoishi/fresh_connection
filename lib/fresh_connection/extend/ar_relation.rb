@@ -16,6 +16,10 @@ module FreshConnection
         @klass.manage_access(slave_access) { super }
       end
 
+      def pluck(*args)
+        @klass.manage_access(enable_slave_access) { super }
+      end
+
       private
 
       def exec_queries_with_fresh_connection
