@@ -55,9 +55,9 @@ describe FreshConnection do
           Tel.first.user.name,
           @user.address.prefecture,
           @user.tels.first.number,
-          User.joins(:address).where("addresses.user_id = 1").first.name
+          User.joins(:address).where("addresses.user_id = 1").first.name,
+          User.pluck(:name).first
         ]
-        
         expect(data).to be_all{|n| n.include?("master")}
 
       end
@@ -75,7 +75,7 @@ describe FreshConnection do
         User.joins(:address).where("addresses.user_id = 1").readonly(false).first.name,
         User.readonly(false).pluck(:name).first
       ]
-      
+
       expect(data).to be_all{|n| n.include?("master")}
     end
   end
