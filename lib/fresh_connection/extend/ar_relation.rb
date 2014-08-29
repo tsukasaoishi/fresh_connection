@@ -16,10 +16,6 @@ module FreshConnection
         @klass.manage_access(slave_access) { super }
       end
 
-      def pluck(*args)
-        @klass.manage_access(enable_slave_access) { super }
-      end
-
       private
 
       def exec_queries_with_fresh_connection
@@ -31,14 +27,36 @@ module FreshConnection
       end
 
       module ForRails4
+        def pluck(*args)
+          @klass.manage_access(enable_slave_access) { super }
+        end
+
         private
+
         def enable_slave_access
           connection.open_transactions == 0 && (readonly_value.nil? || readonly_value)
         end
       end
 
       module ForRails3
+        def pluck(column_name)
+          if column_name.is_a?(Symbol) && column_names.include?(column_name.to_s)
+            column_name = "#{connection.quote_table_name(table_name)}.#{connection.quote_column_name(column_name)}"
+          end
+
+          result = @klass.manage_access(enable_slave_access) do
+            klass.connection.select_all(select(column_name).arel, nil)
+          end
+
+          last_columns = result.last.keys.last
+
+          result.map do |attributes|
+            klass.type_cast_attribute(last_columns, klass.initialize_attributes(attributes))
+          end
+        end
+
         private
+
         def enable_slave_access
           connection.open_transactions == 0 && (@readonly_value.nil? || @readonly_value)
         end

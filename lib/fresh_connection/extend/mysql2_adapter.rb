@@ -4,16 +4,15 @@ module FreshConnection
       def self.included(base)
         base.__send__(:attr_writer, :model_class)
         base.alias_method_chain :configure_connection, :fresh_connection
-        base.alias_method_chain :execute, :fresh_connection
       end
 
-      def execute_with_fresh_connection(sql, name = nil)
-        if @model_class && FreshConnection::AccessControl.slave_access?
+      def select_all(arel, name = nil, binds = [])
+        if FreshConnection::AccessControl.slave_access?
           change_connection do
-            execute_without_fresh_connection(sql, "[#{@model_class.slave_group}] #{name}")
+            super(arel, "[#{@model_class.slave_group}] #{name}", binds)
           end
         else
-          execute_without_fresh_connection(sql, name)
+          super
         end
       end
 
