@@ -1,0 +1,16 @@
+language: ruby
+before_script:
+  - "bundle exec appraisal install"
+rvm:
+  - ree
+  - 1.8.7
+  - 1.9.3
+  - 2.0.0
+  - 2.1.1
+gemfile:
+  - gemfiles/rails3.gemfile
+  - gemfiles/rails40.gemfile
+  - gemfiles/rails41.gemfile
+notifications:
+  emails:
+    - tsukasa.oishi@gmail.com
