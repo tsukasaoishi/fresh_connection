@@ -1,6 +1,7 @@
 require 'yaml'
 require 'active_record'
 require 'fresh_connection'
+FreshConnection::Initializer.extend_active_record
 
 system("mysql -uroot < spec/db_schema.sql")
 
