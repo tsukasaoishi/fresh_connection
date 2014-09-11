@@ -6,11 +6,32 @@ rvm:
   - 1.8.7
   - 1.9.3
   - 2.0.0
-  - 2.1.1
+  - 2.1.2
 gemfile:
   - gemfiles/rails3.gemfile
   - gemfiles/rails40.gemfile
   - gemfiles/rails41.gemfile
+matrix:
+  exclude:
+    - rvm: ree
+      gemfile: gemfiles/rails3.gemfile
+    - rvm: 1.8.7
+      gemfile: gemfiles/rails3.gemfile
+    - rvm: 1.9.3
+      gemfile:
+        - gemfiles/rails3.gemfile
+        - gemfiles/rails40.gemfile
+        - gemfiles/rails41.gemfile
+    - rvm: 2.0.0
+      gemfile:
+        - gemfiles/rails3.gemfile
+        - gemfiles/rails40.gemfile
+        - gemfiles/rails41.gemfile
+    - rvm: 2.1.2
+      gemfile:
+        - gemfiles/rails3.gemfile
+        - gemfiles/rails40.gemfile
+        - gemfiles/rails41.gemfile
 notifications:
   emails:
     - tsukasa.oishi@gmail.com
