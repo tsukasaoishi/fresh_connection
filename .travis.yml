@@ -14,9 +14,11 @@ gemfile:
 matrix:
   exclude:
     - rvm: ree
-      gemfile: gemfiles/rails3.gemfile
+      gemfile:
+        - gemfiles/rails3.gemfile
     - rvm: 1.8.7
-      gemfile: gemfiles/rails3.gemfile
+      gemfile:
+        - gemfiles/rails3.gemfile
     - rvm: 1.9.3
       gemfile:
         - gemfiles/rails3.gemfile
