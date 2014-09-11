@@ -1,5 +1,6 @@
 require 'yaml'
 require 'active_record'
+require 'fresh_connection'
 
 system("mysql -uroot < spec/db_schema.sql")
 
