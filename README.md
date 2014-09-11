@@ -1,5 +1,7 @@
 # FreshConnection
 
+[![Build Status](https://travis-ci.org/tsukasaoishi/fresh_connection.svg?branch=master)](https://travis-ci.org/tsukasaoishi/fresh_connection)
+
 FreshConnection supports to connect with Mysql slave servers via Load Balancers.
 All connections will be disconnected every time at the end of the Rails controller's action.
 FreshConnection does not support Rails 2.x.
