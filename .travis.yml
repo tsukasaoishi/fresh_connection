@@ -1,6 +1,4 @@
 language: ruby
-before_script:
-  - "bundle exec appraisal install"
 rvm:
   - ree
   - 1.8.7
