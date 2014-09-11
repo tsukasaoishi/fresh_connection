@@ -1,7 +1,10 @@
 require 'yaml'
 require 'active_record'
 require 'fresh_connection'
-FreshConnection::Initializer.extend_active_record
+
+unless ActiveRecord::Base.respond_to?('establish_fresh_connection')
+  FreshConnection::Initializer.extend_active_record
+end
 
 system("mysql -uroot < spec/db_schema.sql")
 
