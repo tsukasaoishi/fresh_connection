@@ -1,10 +1,60 @@
 # FreshConnection
 
+FreshConnection allows access to Mysql slave servers in Rails.
+
 [![Gem Version](https://badge.fury.io/rb/fresh_connection.svg)](http://badge.fury.io/rb/fresh_connection) [![Build Status](https://travis-ci.org/tsukasaoishi/fresh_connection.svg?branch=master)](https://travis-ci.org/tsukasaoishi/fresh_connection) [![Code Climate](https://codeclimate.com/github/tsukasaoishi/fresh_connection/badges/gpa.svg)](https://codeclimate.com/github/tsukasaoishi/fresh_connection)
 
-FreshConnection supports to connect with Mysql slave servers via Load Balancers.
-All connections will be disconnected every time at the end of the Rails controller's action.
-FreshConnection does not support Rails 2.x.
+ActiveRecord can only access a single server by default.
+FreshConnection can acccess to replicated Mysql slave servers via a loadbalancer,
+
+For example.
+```
+Rails ------------ Mysql(Master)
+             |
+             |                     +------ Mysql(Slave1)
+             |                     |
+             +---- Loadbalancer ---+
+                                   |
+                                   +------ Mysql(Slave2)
+```
+
+When Rails controller's action begins, FreshConnction connects with one of slave servers behind the loadbalacer.
+Read query goes to the slave server via the loadbalancer.
+Write query goes to the master server. Inside transaction, all queries go to the master server.
+All Mysql connections is disconnected at the end of the Rails controller's action.
+
+
+## Usage
+
+Read query goes to the slave server.
+
+```ruby
+Article.where(:id => 1)
+```
+
+If you want to access to the master saver, use readonly(false).
+
+```ruby
+Article.where(:id => 1).readonly(false)
+```
+
+In transaction, All queries go to the master server.
+
+```ruby
+Article.transaction do
+  Article.where(:id => 1)
+end
+```
+
+Create, Update. Delete queries go to the master server.
+
+```ruby
+article = Article.create(...)
+article.title = "FreshConnection"
+article.save
+article.destory
+```
+
 
 ## Installation
 
@@ -127,22 +177,6 @@ Yourself Slave Connection Manager should be inherited FreshConnection::AbstractC
         # called when raise exception to access slave server
       end
     end
-
-## Usage
-Read query will be access to slave server.
-
-    Article.where(:id => 1)
-
-If you want to access to master saver, use readonly(false).
-
-    Article.where(:id => 1).readonly(false)
-
-In transaction, Always will be access to master server.
-
-    Article.transaction do
-      Article.where(:id => 1)
-    end
-
 
 
 ## Contributing
