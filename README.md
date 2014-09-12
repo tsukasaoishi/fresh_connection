@@ -4,7 +4,7 @@ FreshConnection allows access to Mysql slave servers in Rails.
 
 [![Gem Version](https://badge.fury.io/rb/fresh_connection.svg)](http://badge.fury.io/rb/fresh_connection) [![Build Status](https://travis-ci.org/tsukasaoishi/fresh_connection.svg?branch=master)](https://travis-ci.org/tsukasaoishi/fresh_connection) [![Code Climate](https://codeclimate.com/github/tsukasaoishi/fresh_connection/badges/gpa.svg)](https://codeclimate.com/github/tsukasaoishi/fresh_connection)
 
-ActiveRecord can only access a single server by default.
+ActiveRecord can only access a single server by default.  
 FreshConnection can acccess to replicated Mysql slave servers via a loadbalancer,
 
 For example.
@@ -18,9 +18,9 @@ Rails ------------ Mysql(Master)
                                    +------ Mysql(Slave2)
 ```
 
-When Rails controller's action begins, FreshConnction connects with one of slave servers behind the loadbalacer.
-Read query goes to the slave server via the loadbalancer.
-Write query goes to the master server. Inside transaction, all queries go to the master server.
+When Rails controller's action begins, FreshConnction connects with one of slave servers behind the loadbalacer.  
+Read query goes to the slave server via the loadbalancer.  
+Write query goes to the master server. Inside transaction, all queries go to the master server.  
 All Mysql connections is disconnected at the end of the Rails controller's action.
 
 
@@ -144,11 +144,11 @@ AdminUser and Benefit access to ```admin_slave``` slave group.
       master_db_only!
     end
 
-If a model that always access to the master server is exist, You write ```master_db_only!```  in the model.
+If a model that always access to the master server is exist, You write ```master_db_only!```  in the model.  
 The model that master_db_only model's child is always access to master db.
 
 ### Slave Connection Manager
-Default slave connection manager is FreshConnection::ConnectionManager.
+Default slave connection manager is FreshConnection::ConnectionManager.  
 If you would like to change slave connection manager, assign yourself slave connection manager.
 
 #### config/application.rb
@@ -189,8 +189,8 @@ Yourself Slave Connection Manager should be inherited FreshConnection::AbstractC
 
 ## Test
 
-I'm glad that you would do test!
-To run the test suite, you need mysql installed.
+I'm glad that you would do test!  
+To run the test suite, you need mysql installed.  
 How to setup your test environment.
 
 First of all, you setting the config of the test mysql server in ```spec/database.yml```
