@@ -5,7 +5,7 @@ FreshConnection allows access to Mysql slave servers in Rails.
 [![Gem Version](https://badge.fury.io/rb/fresh_connection.svg)](http://badge.fury.io/rb/fresh_connection) [![Build Status](https://travis-ci.org/tsukasaoishi/fresh_connection.svg?branch=master)](https://travis-ci.org/tsukasaoishi/fresh_connection) [![Code Climate](https://codeclimate.com/github/tsukasaoishi/fresh_connection/badges/gpa.svg)](https://codeclimate.com/github/tsukasaoishi/fresh_connection)
 
 ActiveRecord can only access a single server by default.  
-FreshConnection can acccess to replicated Mysql slave servers via a loadbalancer.
+FreshConnection can access to replicated Mysql slave servers via a loadbalancer.
 
 For example.
 ```
