@@ -42,6 +42,10 @@ describe FreshConnection do
     it "pluck is access to slave1" do
       expect(User.pluck(:name).first).to be_include("slave")
     end
+
+    it "pluck returns empty array when result of condition is empty" do
+      expect(User.limit(0).pluck(:name)).to be_empty
+    end
   end
 
   context "access to master" do
