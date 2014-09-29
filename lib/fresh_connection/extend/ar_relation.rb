@@ -48,6 +48,8 @@ module FreshConnection
             klass.connection.select_all(select(column_name).arel, nil)
           end
 
+          return result if result.nil? || result.empty?
+
           last_columns = result.last.keys.last
 
           result.map do |attributes|
