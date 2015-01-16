@@ -151,12 +151,6 @@ The model that master_db_only model's child is always access to master db.
 Default slave connection manager is FreshConnection::ConnectionManager.  
 If you would like to change slave connection manager, assign yourself slave connection manager.
 
-#### config/application.rb
-
-    config.fresh_connection.connection_manager = MySlaveConnection
-
-or
-
 #### config/initializers/fresh_connection.rb
 
     FreshConnection.connection_manager = MySlaveConnection
