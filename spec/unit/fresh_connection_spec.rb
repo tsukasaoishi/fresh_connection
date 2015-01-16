@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe FreshConnection do
   before(:each) do
-    @user = User.first
+    @user = User.where(id: 1).first
   end
 
   context "access to slave" do
@@ -35,16 +35,20 @@ describe FreshConnection do
     end
 
     it "select with join is to access to slave1" do
-      name = User.joins(:address).where("addresses.user_id = 1").first.name
+      name = User.joins(:address).where("addresses.user_id = 1").where(id: 1).first.name
       expect(name).to be_include("slave1")
     end
 
     it "pluck is access to slave1" do
-      expect(User.pluck(:name).first).to be_include("slave")
+      expect(User.where(id: 1).pluck(:name).first).to be_include("slave")
     end
 
     it "pluck returns empty array when result of condition is empty" do
       expect(User.limit(0).pluck(:name)).to be_empty
+    end
+
+    it "count is access to slave" do
+      expect(User.where(name: "Other").count).to eq(2)
     end
   end
 
@@ -59,11 +63,12 @@ describe FreshConnection do
           Tel.first.user.name,
           @user.address.prefecture,
           @user.tels.first.number,
-          User.joins(:address).where("addresses.user_id = 1").first.name,
-          User.pluck(:name).first
+          User.joins(:address).where(id: 1).where("addresses.user_id = 1").first.name,
+          User.where(id: 1).pluck(:name).first
         ]
         expect(data).to be_all{|n| n.include?("master")}
 
+        expect(User.where(name: "Other").count).to eq(1)
       end
     end
 
@@ -74,13 +79,14 @@ describe FreshConnection do
         Tel.read_master.first.number,
         Tel.includes(:user).read_master.first.user.name,
         @user.tels.read_master.first.number,
-        User.includes(:tels).read_master.first.tels.first.number,
-        User.includes(:address).read_master.first.address.prefecture,
-        User.joins(:address).where("addresses.user_id = 1").read_master.first.name,
-        User.read_master.pluck(:name).first
+        User.where(id: 1).includes(:tels).read_master.first.tels.first.number,
+        User.where(id: 1).includes(:address).read_master.first.address.prefecture,
+        User.where(id: 1).joins(:address).where("addresses.user_id = 1").read_master.first.name,
+        User.where(id: 1).read_master.pluck(:name).first
       ]
 
       expect(data).to be_all{|n| n.include?("master")}
+      expect(User.where(name: "Other").read_master.count).to eq(1)
     end
 
     it "specify readonly(false)" do
@@ -90,13 +96,15 @@ describe FreshConnection do
         Tel.readonly(false).first.number,
         Tel.includes(:user).readonly(false).first.user.name,
         @user.tels.readonly(false).first.number,
-        User.includes(:tels).readonly(false).first.tels.first.number,
-        User.includes(:address).readonly(false).first.address.prefecture,
-        User.joins(:address).where("addresses.user_id = 1").readonly(false).first.name,
-        User.readonly(false).pluck(:name).first
+        User.where(id: 1).includes(:tels).readonly(false).first.tels.first.number,
+        User.where(id: 1).includes(:address).readonly(false).first.address.prefecture,
+        User.where(id: 1).joins(:address).where("addresses.user_id = 1").readonly(false).first.name,
+        User.where(id: 1).readonly(false).pluck(:name).first
       ]
 
       expect(data).to be_all{|n| n.include?("master")}
+      expect(User.where(name: "Other").readonly(false).count).to eq(1)
+      expect(User.where(name: "Other").count(:readonly => false)).to eq(1)
     end
   end
 
