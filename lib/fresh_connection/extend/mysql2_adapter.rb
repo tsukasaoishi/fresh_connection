@@ -1,6 +1,9 @@
 module FreshConnection
   module Extend
     module Mysql2Adapter
+      RETRY_LIMIT = 3
+      private_constant :RETRY_LIMIT
+
       def self.included(base)
         base.__send__(:attr_writer, :model_class)
       end
@@ -27,7 +30,7 @@ module FreshConnection
         rescue ActiveRecord::StatementInvalid => exception
           if @model_class.recovery(slave_connection, exception)
             retry_count += 1
-            retry if retry_count < FreshConnection.retry_limit
+            retry if retry_count < RETRY_LIMIT
           end
 
           raise
