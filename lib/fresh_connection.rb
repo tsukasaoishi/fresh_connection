@@ -1,13 +1,13 @@
 require 'active_record'
-require 'active_support/dependencies/autoload'
+require 'fresh_connection/access_control'
+require 'fresh_connection/connection_manager'
+require 'fresh_connection/slave_connection_handler'
 
 module FreshConnection
   extend ActiveSupport::Autoload
 
-  autoload :AccessControl
   autoload :ConnectionManager
   autoload :SlaveConnectionHandler
-  autoload :Initializer
 
   class << self
     attr_writer :connection_manager, :env
@@ -30,4 +30,5 @@ module FreshConnection
   end
 end
 
+require 'fresh_connection/extend'
 require "fresh_connection/railtie.rb" if defined?(Rails)
