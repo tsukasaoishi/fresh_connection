@@ -3,7 +3,6 @@ module FreshConnection
     module Mysql2Adapter
       def self.included(base)
         base.__send__(:attr_writer, :model_class)
-        base.alias_method_chain :configure_connection, :fresh_connection
       end
 
       def select_all(arel, name = nil, binds = [])
@@ -35,11 +34,6 @@ module FreshConnection
         end
       ensure
         @connection = master_connection
-      end
-
-      def configure_connection_with_fresh_connection
-        return if FreshConnection.ignore_configure_connection?
-        configure_connection_without_fresh_connection
       end
     end
   end
