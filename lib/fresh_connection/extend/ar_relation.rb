@@ -11,6 +11,7 @@ module FreshConnection
         end
       end
 
+
       def calculate(operation, column_name, options = {})
         slave_access = enable_slave_access && options[:readonly] != false
         @klass.manage_access(slave_access) { super }
@@ -26,15 +27,26 @@ module FreshConnection
         end
       end
 
+      def enable_slave_access
+        connection.open_transactions == 0 && @read_from_master.nil?
+      end
+
       module ForRails4
         def pluck(*args)
           @klass.manage_access(enable_slave_access) { super }
         end
 
-        private
+        def readonly(value = true)
+          value == false ? read_master : super
+        end
 
-        def enable_slave_access
-          connection.open_transactions == 0 && (readonly_value.nil? || readonly_value)
+        def read_master
+          spawn.read_master!
+        end
+
+        def read_master!
+          @read_from_master = true
+          self
         end
       end
 
@@ -57,10 +69,14 @@ module FreshConnection
           end
         end
 
-        private
+        def readonly(value = true)
+          value == false ? read_master : super
+        end
 
-        def enable_slave_access
-          connection.open_transactions == 0 && (@readonly_value.nil? || @readonly_value)
+        def read_master
+          relation = clone
+          relation.instance_variable_set("@read_from_master", true)
+          relation
         end
       end
     end

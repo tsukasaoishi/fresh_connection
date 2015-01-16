@@ -67,6 +67,22 @@ describe FreshConnection do
       end
     end
 
+    it "specify read_master" do
+      data = [
+        Address.read_master.first.prefecture,
+        Address.includes(:user).read_master.first.user.name,
+        Tel.read_master.first.number,
+        Tel.includes(:user).read_master.first.user.name,
+        @user.tels.read_master.first.number,
+        User.includes(:tels).read_master.first.tels.first.number,
+        User.includes(:address).read_master.first.address.prefecture,
+        User.joins(:address).where("addresses.user_id = 1").read_master.first.name,
+        User.read_master.pluck(:name).first
+      ]
+
+      expect(data).to be_all{|n| n.include?("master")}
+    end
+
     it "specify readonly(false)" do
       data = [
         Address.readonly(false).first.prefecture,
