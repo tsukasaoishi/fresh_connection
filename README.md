@@ -32,7 +32,7 @@ Read query goes to the slave server.
 Article.where(:id => 1)
 ```
 
-If you want to access to the master saver, use read_master.
+If you want to access to the master server, use read_master.
 
 ```ruby
 Article.where(:id => 1).read_master
