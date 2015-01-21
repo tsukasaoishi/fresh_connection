@@ -31,4 +31,4 @@ module FreshConnection
 end
 
 require 'fresh_connection/extend'
-require "fresh_connection/railtie.rb" if defined?(Rails)
+require "fresh_connection/railtie" if defined?(Rails)

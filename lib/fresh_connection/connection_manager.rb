@@ -17,16 +17,9 @@ module FreshConnection
     end
 
     def recovery(failure_connection, exception)
-      if recoverable? && slave_down_message?(exception.message)
-        put_aside!
-        true
-      else
-        false
-      end
-    end
-
-    def recoverable?
-      true
+      do_recovery = slave_down_message?(exception.message)
+      put_aside! if do_recovery
+      do_recovery
     end
 
     private

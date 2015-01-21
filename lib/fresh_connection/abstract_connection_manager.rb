@@ -15,17 +15,15 @@ module FreshConnection
 
     def slave_connection
     end
+    undef_method :slave_connection
 
     def put_aside!
     end
+    undef_method :put_aside!
 
     def recovery(failure_connection, exception)
-      false
     end
-
-    def recoverable?
-      false
-    end
+    undef_method :recovery
 
     private
 
