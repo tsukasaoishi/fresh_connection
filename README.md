@@ -32,11 +32,13 @@ Read query goes to the slave server.
 Article.where(:id => 1)
 ```
 
-If you want to access to the master saver, use readonly(false).
+If you want to access to the master server, use read_master.
 
 ```ruby
-Article.where(:id => 1).readonly(false)
+Article.where(:id => 1).read_master
 ```
+
+It is possible to use readonly(false) instead of read_master, but it will be depricated at future version.
 
 In transaction, All queries go to the master server.
 
@@ -150,12 +152,6 @@ The model that master_db_only model's child is always access to master db.
 ### Slave Connection Manager
 Default slave connection manager is FreshConnection::ConnectionManager.  
 If you would like to change slave connection manager, assign yourself slave connection manager.
-
-#### config/application.rb
-
-    config.fresh_connection.connection_manager = MySlaveConnection
-
-or
 
 #### config/initializers/fresh_connection.rb
 

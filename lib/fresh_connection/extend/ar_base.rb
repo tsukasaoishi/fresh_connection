@@ -6,6 +6,12 @@ module FreshConnection
         base.slave_connection_handler = FreshConnection::SlaveConnectionHandler.new
       end
 
+      if FreshConnection.rails_4?
+        delegate :read_master, to: :all
+      elsif FreshConnection.rails_3?
+        delegate :read_master, to: :scoped
+      end
+
       def manage_access(slave_access, &block)
         if master_db_only?
           FreshConnection::AccessControl.force_master_access(&block)

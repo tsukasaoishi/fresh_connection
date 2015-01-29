@@ -1,9 +1,11 @@
 module FreshConnection
   module Extend
     module Mysql2Adapter
+      RETRY_LIMIT = 3
+      private_constant :RETRY_LIMIT
+
       def self.included(base)
         base.__send__(:attr_writer, :model_class)
-        base.alias_method_chain :configure_connection, :fresh_connection
       end
 
       def select_all(arel, name = nil, binds = [])
@@ -28,18 +30,13 @@ module FreshConnection
         rescue ActiveRecord::StatementInvalid => exception
           if @model_class.recovery(slave_connection, exception)
             retry_count += 1
-            retry if retry_count < FreshConnection.retry_limit
+            retry if retry_count < RETRY_LIMIT
           end
 
           raise
         end
       ensure
         @connection = master_connection
-      end
-
-      def configure_connection_with_fresh_connection
-        return if FreshConnection.ignore_configure_connection?
-        configure_connection_without_fresh_connection
       end
     end
   end
