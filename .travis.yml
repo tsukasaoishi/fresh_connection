@@ -14,6 +14,7 @@ gemfile:
   - gemfiles/rails3.gemfile
   - gemfiles/rails40.gemfile
   - gemfiles/rails41.gemfile
+  - gemfiles/rails42.gemfile
 notifications:
   emails:
     - tsukasa.oishi@gmail.com
