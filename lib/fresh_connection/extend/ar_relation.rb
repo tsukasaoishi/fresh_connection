@@ -17,6 +17,10 @@ module FreshConnection
         @klass.manage_access(slave_access) { super }
       end
 
+      def enable_slave_access
+        connection.open_transactions == 0 && @read_from_master.nil?
+      end
+
       private
 
       def exec_queries_with_fresh_connection
@@ -25,10 +29,6 @@ module FreshConnection
         @klass.manage_access(enable_slave_access) do
           exec_queries_without_fresh_connection
         end
-      end
-
-      def enable_slave_access
-        connection.open_transactions == 0 && @read_from_master.nil?
       end
 
       module ForRails4

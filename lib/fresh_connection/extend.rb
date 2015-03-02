@@ -19,5 +19,10 @@ ActiveSupport.on_load(:active_record) do
     :include, FreshConnection::Extend::Mysql2Adapter
   )
 
+  if defined?(ActiveRecord::StatementCache)
+    require 'fresh_connection/extend/ar_statement_cache'
+    ActiveRecord::StatementCache.__send__(:include, FreshConnection::Extend::ArStatementCache)
+  end
+
   ActiveRecord::Base.establish_fresh_connection
 end
