@@ -1,3 +1,5 @@
+require 'active_support/deprecation'
+
 module FreshConnection
   module Extend
     module ArRelation
@@ -13,6 +15,10 @@ module FreshConnection
 
 
       def calculate(operation, column_name, options = {})
+        if options[:readonly] == false
+          ActiveSupport::Deprecation.warn(":readonly key has been deprecated.", caller)
+        end
+
         slave_access = enable_slave_access && options[:readonly] != false
         @klass.manage_access(slave_access) { super }
       end
@@ -37,7 +43,12 @@ module FreshConnection
         end
 
         def readonly(value = true)
-          value == false ? read_master : super
+          if value == false
+            ActiveSupport::Deprecation.warn("readonly(false) has been deprecated. Use read_master instead", caller)
+            read_master
+          else
+            super
+          end
         end
 
         def read_master
@@ -70,7 +81,12 @@ module FreshConnection
         end
 
         def readonly(value = true)
-          value == false ? read_master : super
+          if value == false
+            ActiveSupport::Deprecation.warn("readonly(false) has been deprecated. Use read_master instead", caller)
+            read_master
+          else
+            super
+          end
         end
 
         def read_master
