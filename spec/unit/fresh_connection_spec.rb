@@ -90,21 +90,23 @@ describe FreshConnection do
     end
 
     it "specify readonly(false)" do
-      data = [
-        Address.readonly(false).first.prefecture,
-        Address.includes(:user).readonly(false).first.user.name,
-        Tel.readonly(false).first.number,
-        Tel.includes(:user).readonly(false).first.user.name,
-        @user.tels.readonly(false).first.number,
-        User.where(id: 1).includes(:tels).readonly(false).first.tels.first.number,
-        User.where(id: 1).includes(:address).readonly(false).first.address.prefecture,
-        User.where(id: 1).joins(:address).where("addresses.user_id = 1").readonly(false).first.name,
-        User.where(id: 1).readonly(false).pluck(:name).first
-      ]
+      ActiveSupport::Deprecation.silence do
+        data = [
+          Address.readonly(false).first.prefecture,
+          Address.includes(:user).readonly(false).first.user.name,
+          Tel.readonly(false).first.number,
+          Tel.includes(:user).readonly(false).first.user.name,
+          @user.tels.readonly(false).first.number,
+          User.where(id: 1).includes(:tels).readonly(false).first.tels.first.number,
+          User.where(id: 1).includes(:address).readonly(false).first.address.prefecture,
+          User.where(id: 1).joins(:address).where("addresses.user_id = 1").readonly(false).first.name,
+          User.where(id: 1).readonly(false).pluck(:name).first
+        ]
 
-      expect(data).to be_all{|n| n.include?("master")}
-      expect(User.where(name: "Other").readonly(false).count).to eq(1)
-      expect(User.where(name: "Other").count(:readonly => false)).to eq(1)
+        expect(data).to be_all{|n| n.include?("master")}
+        expect(User.where(name: "Other").readonly(false).count).to eq(1)
+        expect(User.where(name: "Other").count(:readonly => false)).to eq(1)
+      end
     end
   end
 
