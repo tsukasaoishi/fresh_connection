@@ -38,8 +38,6 @@ If you want to access to the master server, use read_master.
 Article.where(:id => 1).read_master
 ```
 
-It is possible to use readonly(false) instead of read_master, but it will be depricated at future version.
-
 In transaction, All queries go to the master server.
 
 ```ruby
@@ -146,11 +144,11 @@ AdminUser and Benefit access to ```admin_slave``` slave group.
       master_db_only!
     end
 
-If a model that always access to the master server is exist, You write ```master_db_only!```  in the model.  
+If a model that always access to the master server is exist, You write ```master_db_only!```  in the model.
 The model that master_db_only model's child is always access to master db.
 
 ### Slave Connection Manager
-Default slave connection manager is FreshConnection::ConnectionManager.  
+Default slave connection manager is FreshConnection::ConnectionManager.
 If you would like to change slave connection manager, assign yourself slave connection manager.
 
 #### config/initializers/fresh_connection.rb
@@ -185,15 +183,15 @@ Yourself Slave Connection Manager should be inherited FreshConnection::AbstractC
 
 ## Test
 
-I'm glad that you would do test!  
-To run the test suite, you need mysql installed.  
+I'm glad that you would do test!
+To run the test suite, you need mysql installed.
 How to setup your test environment.
 
 First of all, you setting the config of the test mysql server in ```spec/database.yml```
 
 ```bash
-bundle install --path bundle
-GEM_HOME=bundle/ruby/(your ruby version) gem install bundler --pre
+bundle install --path .bundle
+GEM_HOME=.bundle/ruby/(your ruby version) gem install bundler --pre
 bundle exec appraisal install
 ```
 

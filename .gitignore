@@ -3,6 +3,5 @@
 .ruby-version
 Gemfile.lock
 gemfiles/*.lock
-bundle
 log/*
 .*.sw[a-z]
