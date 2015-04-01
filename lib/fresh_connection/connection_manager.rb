@@ -29,7 +29,11 @@ module FreshConnection
     end
 
     def new_connection
-      ActiveRecord::Base.send("mysql2_connection", spec)
+      ActiveRecord::Base.send(adapter_method, spec)
+    end
+
+    def adapter_method
+      @adapter_method ||= ActiveRecord::Base.connection_pool.spec.adapter_method
     end
 
     def spec
@@ -37,8 +41,8 @@ module FreshConnection
     end
 
     def get_spec
-      ret = ActiveRecord::Base.configurations[FreshConnection.env]
-      ret.merge(ret[@slave_group] || {})
+      ret = ActiveRecord::Base.connection_pool.spec.config
+      ret.merge(ret[slave_group.to_sym] || {})
     end
   end
 end

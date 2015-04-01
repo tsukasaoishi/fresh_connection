@@ -1,4 +1,5 @@
 require 'active_record'
+require 'active_support/deprecation'
 require 'fresh_connection/access_control'
 require 'fresh_connection/connection_manager'
 require 'fresh_connection/slave_connection_handler'
@@ -10,13 +11,19 @@ module FreshConnection
   autoload :SlaveConnectionHandler
 
   class << self
-    attr_writer :connection_manager, :env
+    attr_writer :connection_manager
 
     def connection_manager
       @connection_manager || ConnectionManager
     end
 
+    def env=(e)
+      ActiveSupport::Deprecation.warn("FreshConnection.env= has been deprecated.", caller)
+      @env = e
+    end
+
     def env
+      ActiveSupport::Deprecation.warn("FreshConnection.env has been deprecated.", caller)
       @env || defined?(Rails) && Rails.env
     end
 
