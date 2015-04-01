@@ -1,5 +1,5 @@
-require 'active_record'
 require 'active_support/deprecation'
+require 'active_support/dependencies/autoload'
 require 'fresh_connection/access_control'
 require 'fresh_connection/connection_manager'
 require 'fresh_connection/slave_connection_handler'
