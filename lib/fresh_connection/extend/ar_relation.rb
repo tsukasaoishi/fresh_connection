@@ -27,6 +27,15 @@ module FreshConnection
         connection.open_transactions == 0 && @read_from_master.nil?
       end
 
+      def readonly(value = true)
+        if value == false
+          ActiveSupport::Deprecation.warn("readonly(false) has been deprecated. Use read_master instead", caller)
+          read_master
+        else
+          super
+        end
+      end
+
       private
 
       def exec_queries_with_fresh_connection
@@ -40,15 +49,6 @@ module FreshConnection
       module ForRails4
         def pluck(*args)
           @klass.manage_access(enable_slave_access) { super }
-        end
-
-        def readonly(value = true)
-          if value == false
-            ActiveSupport::Deprecation.warn("readonly(false) has been deprecated. Use read_master instead", caller)
-            read_master
-          else
-            super
-          end
         end
 
         def read_master
@@ -77,15 +77,6 @@ module FreshConnection
 
           result.map do |attributes|
             klass.type_cast_attribute(last_columns, klass.initialize_attributes(attributes))
-          end
-        end
-
-        def readonly(value = true)
-          if value == false
-            ActiveSupport::Deprecation.warn("readonly(false) has been deprecated. Use read_master instead", caller)
-            read_master
-          else
-            super
           end
         end
 
