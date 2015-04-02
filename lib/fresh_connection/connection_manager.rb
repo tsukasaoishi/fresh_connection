@@ -1,10 +1,11 @@
 require 'fresh_connection/abstract_connection_manager'
+require 'fresh_connection/connection_factory'
 
 module FreshConnection
   class ConnectionManager < AbstractConnectionManager
     def slave_connection
       synchronize do
-        slave_connections[current_thread_id] ||= new_connection
+        slave_connections[current_thread_id] ||= connection_factory.new_connection
       end
     end
 
@@ -28,21 +29,8 @@ module FreshConnection
       @slave_connections ||= {}
     end
 
-    def new_connection
-      ActiveRecord::Base.send(adapter_method, spec)
-    end
-
-    def adapter_method
-      @adapter_method ||= ActiveRecord::Base.connection_pool.spec.adapter_method
-    end
-
-    def spec
-      @spec ||= get_spec
-    end
-
-    def get_spec
-      ret = ActiveRecord::Base.connection_pool.spec.config
-      ret.merge(ret[slave_group.to_sym] || {})
+    def connection_factory
+      @connection_factory ||= ConnectionFactory.new(@slave_group)
     end
   end
 end
