@@ -1,7 +1,8 @@
 module FreshConnection
   class ConnectionFactory
-    def initialize(group)
+    def initialize(group, modify_spec = {})
       @group = group.to_sym
+      @modify_spec = modify_spec
     end
 
     def new_connection
@@ -20,7 +21,7 @@ module FreshConnection
 
     def build_spec
       config = ar_spec.config
-      config.merge(config[@group] || {})
+      config.merge(config[@group] || {}).merge(@modify_spec)
     end
 
     def ar_spec
