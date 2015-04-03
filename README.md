@@ -37,6 +37,7 @@ If you want to access to the master server, use read_master.
 ```ruby
 Article.where(:id => 1).read_master
 ```
+It is possible to use readonly(false) instead of read_master, but it will be depricated at future version.
 
 In transaction, All queries go to the master server.
 
