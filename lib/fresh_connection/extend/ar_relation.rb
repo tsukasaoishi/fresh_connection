@@ -5,9 +5,9 @@ module FreshConnection
     module ArRelation
       def self.prepended(base)
         if FreshConnection.rails_4?
-          base.prepend ForRails4
+          base.__send__(:prepend, ForRails4)
         elsif FreshConnection.rails_3?
-          base.prepend ForRails3
+          base.__send__(:prepend, ForRails3)
         end
       end
 
