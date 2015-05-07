@@ -1,5 +1,3 @@
-require 'active_support/core_ext/object/blank'
-
 module FreshConnection
   class AbstractConnectionManager
     EXCEPTION_MESSAGE_WHEN_SLAVE_SERVER_DOWN = [

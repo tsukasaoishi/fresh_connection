@@ -1,13 +1,9 @@
 module FreshConnection
   module Extend
     module ArStatementCache
-      def self.included(base)
-        base.alias_method_chain :execute, :fresh_connection
-      end
-
-      def execute_with_fresh_connection(params, klass, connection)
+      def execute(params, klass, connection)
         klass.manage_access(klass.all.enable_slave_access) do
-          execute_without_fresh_connection(params, klass, connection)
+          super
         end
       end
     end

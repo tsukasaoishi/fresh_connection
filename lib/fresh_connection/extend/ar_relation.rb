@@ -3,13 +3,11 @@ require 'active_support/deprecation'
 module FreshConnection
   module Extend
     module ArRelation
-      def self.included(base)
-        base.alias_method_chain :exec_queries, :fresh_connection
-
+      def self.prepended(base)
         if FreshConnection.rails_4?
-          base.__send__(:include, ForRails4)
+          base.prepend ForRails4
         elsif FreshConnection.rails_3?
-          base.__send__(:include, ForRails3)
+          base.prepend ForRails3
         end
       end
 
@@ -38,11 +36,11 @@ module FreshConnection
 
       private
 
-      def exec_queries_with_fresh_connection
+      def exec_queries
         return @records if loaded?
 
         @klass.manage_access(enable_slave_access) do
-          exec_queries_without_fresh_connection
+          super
         end
       end
 

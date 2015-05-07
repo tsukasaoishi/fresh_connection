@@ -6,7 +6,7 @@ module FreshConnection
       RETRY_LIMIT = 3
       private_constant :RETRY_LIMIT
 
-      def self.included(base)
+      def self.prepended(base)
         base.__send__(:attr_writer, :model_class)
       end
 

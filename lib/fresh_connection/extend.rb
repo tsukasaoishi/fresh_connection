@@ -8,20 +8,13 @@ ActiveSupport.on_load(:active_record) do
   require 'active_record/connection_adapters/mysql2_adapter'
 
   ActiveRecord::Base.extend FreshConnection::Extend::ArBase
-
-  ActiveRecord::Relation.__send__(:include, FreshConnection::Extend::ArRelation)
-
-  ActiveRecord::ConnectionAdapters::ConnectionHandler.__send__(
-    :include, FreshConnection::Extend::ConnectionHandler
-  )
-
-  ActiveRecord::ConnectionAdapters::Mysql2Adapter.__send__(
-    :include, FreshConnection::Extend::Mysql2Adapter
-  )
+  ActiveRecord::Relation.prepend FreshConnection::Extend::ArRelation
+  ActiveRecord::ConnectionAdapters::ConnectionHandler.prepend FreshConnection::Extend::ConnectionHandler
+  ActiveRecord::ConnectionAdapters::Mysql2Adapter.prepend FreshConnection::Extend::Mysql2Adapter
 
   if defined?(ActiveRecord::StatementCache)
     require 'fresh_connection/extend/ar_statement_cache'
-    ActiveRecord::StatementCache.__send__(:include, FreshConnection::Extend::ArStatementCache)
+    ActiveRecord::StatementCache.prepend FreshConnection::Extend::ArStatementCache
   end
 
   ActiveRecord::Base.establish_fresh_connection
