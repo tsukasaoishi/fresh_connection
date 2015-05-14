@@ -1,15 +1,11 @@
 require 'active_support/deprecation'
+require "fresh_connection/extend/ar_relation/for_rails#{ActiveRecord::VERSION::MAJOR}"
 
 module FreshConnection
   module Extend
     module ArRelation
       def self.prepended(base)
-        case ActiveRecord::VERSION::MAJOR
-        when 4
-          base.__send__(:prepend, ForRails4)
-        when 3
-          base.__send__(:prepend, ForRails3)
-        end
+        base.__send__(:prepend, ForRails)
       end
 
       def calculate(operation, column_name, options = {})
@@ -41,47 +37,6 @@ module FreshConnection
 
         @klass.manage_access(enable_slave_access) do
           super
-        end
-      end
-
-      module ForRails4
-        def pluck(*args)
-          @klass.manage_access(enable_slave_access) { super }
-        end
-
-        def read_master
-          spawn.read_master!
-        end
-
-        def read_master!
-          @read_from_master = true
-          self
-        end
-      end
-
-      module ForRails3
-        def pluck(column_name)
-          if column_name.is_a?(Symbol) && column_names.include?(column_name.to_s)
-            column_name = "#{connection.quote_table_name(table_name)}.#{connection.quote_column_name(column_name)}"
-          end
-
-          result = @klass.manage_access(enable_slave_access) do
-            klass.connection.select_all(select(column_name).arel, nil)
-          end
-
-          return result if result.nil? || result.empty?
-
-          last_columns = result.last.keys.last
-
-          result.map do |attributes|
-            klass.type_cast_attribute(last_columns, klass.initialize_attributes(attributes))
-          end
-        end
-
-        def read_master
-          relation = clone
-          relation.instance_variable_set("@read_from_master", true)
-          relation
         end
       end
     end
