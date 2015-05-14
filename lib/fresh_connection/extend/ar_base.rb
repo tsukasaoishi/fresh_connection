@@ -10,9 +10,10 @@ module FreshConnection
         base.slave_connection_handler = FreshConnection::SlaveConnectionHandler.new
       end
 
-      if FreshConnection.rails_4?
+      case ActiveRecord::VERSION::MAJOR
+      when 4
         delegate :read_master, to: :all
-      elsif FreshConnection.rails_3?
+      when 3
         delegate :read_master, to: :scoped
       end
 

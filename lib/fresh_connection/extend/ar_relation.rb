@@ -4,13 +4,13 @@ module FreshConnection
   module Extend
     module ArRelation
       def self.prepended(base)
-        if FreshConnection.rails_4?
+        case ActiveRecord::VERSION::MAJOR
+        when 4
           base.__send__(:prepend, ForRails4)
-        elsif FreshConnection.rails_3?
+        when 3
           base.__send__(:prepend, ForRails3)
         end
       end
-
 
       def calculate(operation, column_name, options = {})
         if options[:readonly] == false
