@@ -37,7 +37,7 @@ If you want to access to the master server, use read_master.
 ```ruby
 Article.where(:id => 1).read_master
 ```
-It is possible to use readonly(false) instead of read_master, but it will be depricated at future version.
+It is possible to use readonly(false) instead of read_master, but it is depricated.
 
 In transaction, All queries go to the master server.
 
@@ -192,7 +192,6 @@ First of all, you setting the config of the test mysql server in ```spec/databas
 
 ```bash
 bundle install --path .bundle
-GEM_HOME=.bundle/ruby/(your ruby version) gem install bundler --pre
 bundle exec appraisal install
 ```
 
