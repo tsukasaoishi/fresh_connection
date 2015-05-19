@@ -148,6 +148,22 @@ AdminUser and Benefit access to ```admin_slave``` slave group.
 If a model that always access to the master server is exist, You write ```master_db_only!```  in the model.
 The model that master_db_only model's child is always access to master db.
 
+### for Unicorn
+
+```ruby
+before_fork do |server, worker|
+  ...
+  ActiveRecord::Base.clear_all_slave_connections!
+  ...
+end
+
+after_fork do |server, worker|
+  ...
+  ActiveRecord::Base.establish_fresh_connection
+  ...
+end
+```
+
 ### Slave Connection Manager
 Default slave connection manager is FreshConnection::ConnectionManager.
 If you would like to change slave connection manager, assign yourself slave connection manager.
