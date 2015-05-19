@@ -33,6 +33,10 @@ module FreshConnection
         slave_connection_handler.connection(self)
       end
 
+      def clear_all_slave_connections!
+        slave_connection_handler.clear_all_connections!
+      end
+
       def master_db_only!
         @_fresh_connection_master_only = true
       end

@@ -20,6 +20,10 @@ module FreshConnection
     end
     undef_method :slave_connection
 
+    def clear_all_connections!
+    end
+    undef_method :clear_all_connections!
+
     def put_aside!
     end
     undef_method :put_aside!

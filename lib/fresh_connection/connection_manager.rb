@@ -11,11 +11,11 @@ module FreshConnection
 
     def put_aside!
       synchronize do
-        if c = slave_connections.delete(current_thread_id)
-          c.disconnect! rescue nil
-        end
+        slave_connections.values.each {|c| c.disconnect! rescue nil }
+        @slave_connections.clear
       end
     end
+    alias_method :clear_all_connections!, :put_aside!
 
     def recovery(failure_connection, exception)
       do_recovery = slave_down_message?(exception.message)
