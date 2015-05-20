@@ -46,7 +46,7 @@ module FreshConnection
           (self != ActiveRecord::Base && superclass.master_db_only?)
       end
 
-      def put_aside!
+      def slave_connection_put_aside!
         slave_connection_handler.put_aside!
       end
 
