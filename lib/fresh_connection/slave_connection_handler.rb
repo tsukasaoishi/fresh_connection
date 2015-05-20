@@ -17,13 +17,13 @@ module FreshConnection
     end
 
     def clear_all_connections!
-      all_connection_managers.each do |connection_manager|
+      all_connection_managers do |connection_manager|
         connection_manager.clear_all_connections!
       end
     end
 
     def put_aside!
-      all_connection_managers.each do |connection_manager|
+      all_connection_managers do |connection_manager|
         connection_manager.put_aside!
       end
     end
