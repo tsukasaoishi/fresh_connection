@@ -25,6 +25,10 @@ module FreshConnection
         end
       end
 
+      def with_master(&block)
+        manage_access(false, &block)
+      end
+
       def establish_fresh_connection(slave_group = nil)
         slave_connection_handler.establish_connection(name, slave_group)
       end

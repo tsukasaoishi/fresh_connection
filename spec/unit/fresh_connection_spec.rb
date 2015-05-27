@@ -50,6 +50,10 @@ describe FreshConnection do
     it "count is access to slave" do
       expect(User.where(name: "Other").count).to eq(2)
     end
+
+    it "reload is to access to slave1" do
+      expect(@user.reload.name).to be_include("slave1")
+    end
   end
 
   context "access to master" do
@@ -64,7 +68,28 @@ describe FreshConnection do
           @user.address.prefecture,
           @user.tels.first.number,
           User.joins(:address).where(id: 1).where("addresses.user_id = 1").first.name,
-          User.where(id: 1).pluck(:name).first
+          User.where(id: 1).pluck(:name).first,
+          @user.reload.name
+        ]
+        expect(data).to be_all{|n| n.include?("master")}
+
+        expect(User.where(name: "Other").count).to eq(1)
+      end
+    end
+
+    it "in with_master" do
+      User.with_master do
+        expect(@user.name).to be_include("slave1")
+        data = [
+          Address.first.user.name,
+          Address.first.prefecture,
+          Tel.first.number,
+          Tel.first.user.name,
+          @user.address.prefecture,
+          @user.tels.first.number,
+          User.joins(:address).where(id: 1).where("addresses.user_id = 1").first.name,
+          User.where(id: 1).pluck(:name).first,
+          @user.reload.name
         ]
         expect(data).to be_all{|n| n.include?("master")}
 
