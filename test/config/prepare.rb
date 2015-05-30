@@ -2,7 +2,7 @@ require 'yaml'
 require 'active_record'
 require 'fresh_connection'
 
-system("mysql -uroot < spec/db_schema.sql")
+system("mysql -uroot < test/config/db_schema.sql")
 
 module ActiveRecord
   class Base
@@ -33,3 +33,5 @@ end
 class Tel < Slave2
   belongs_to :user
 end
+
+require "support/active_record_logger"
