@@ -30,7 +30,7 @@ class AccessTest < Minitest::Test
       end
     end
 
-    assert !(ret.all?{|item| item})
+    refute ret.all?{|item| item}
   end
 
   test "outside is always master" do
@@ -39,6 +39,6 @@ class AccessTest < Minitest::Test
     @ac.access(true){}
     ret << @ac.slave_access?
 
-    assert !(ret.all?{|item| item})
+    refute ret.all?{|item| item}
   end
 end
