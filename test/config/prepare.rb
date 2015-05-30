@@ -6,7 +6,7 @@ system("mysql -uroot < test/config/db_schema.sql")
 
 module ActiveRecord
   class Base
-    self.configurations = YAML.load_file(File.join(File.dirname(__FILE__), "database.yml"))
+    self.configurations = YAML.load_file(File.join(__dir__, "database.yml"))
     establish_connection(configurations["test"])
     establish_fresh_connection :slave1
   end
@@ -34,5 +34,5 @@ class Tel < Slave2
   belongs_to :user
 end
 
-require "support/extend_minitest"
-require "support/active_record_logger"
+require "test/support/extend_minitest"
+require "test/support/active_record_logger"
