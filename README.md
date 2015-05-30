@@ -214,6 +214,6 @@ bundle exec appraisal install
 This command run the spec suite for all rails versions supported.
 
 ```base
-bundle exec appraisal rake spec
+bundle exec appraisal rake test
 ```
 

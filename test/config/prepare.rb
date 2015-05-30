@@ -34,5 +34,5 @@ class Tel < Slave2
   belongs_to :user
 end
 
-require "test/support/extend_minitest"
-require "test/support/active_record_logger"
+require "support/extend_minitest"
+require "support/active_record_logger"
