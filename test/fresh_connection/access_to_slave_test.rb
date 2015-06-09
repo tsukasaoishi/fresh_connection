@@ -53,4 +53,8 @@ class AccessToSlaveTest < Minitest::Test
   test "reload is to access to slave1" do
     assert_includes @user.reload.name, "slave1"
   end
+
+  test "exists? is to access to slave" do
+    assert User.where(id: 3).exists?
+  end
 end

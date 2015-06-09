@@ -21,6 +21,7 @@ class AccessToSlaveTest < Minitest::Test
       ]
       assert data.all?{|n| n.include?("master")}
       assert_equal 1, User.where(name: "Other").count
+      refute User.where(id: 3).exists?
     end
   end
 
@@ -40,6 +41,7 @@ class AccessToSlaveTest < Minitest::Test
       ]
       assert data.all?{|n| n.include?("master")}
       assert_equal 1, User.where(name: "Other").count
+      refute User.where(id: 3).exists?
     end
   end
 
@@ -57,6 +59,7 @@ class AccessToSlaveTest < Minitest::Test
     ]
     assert data.all?{|n| n.include?("master")}
     assert_equal 1, User.where(name: "Other").read_master.count
+    refute User.read_master.where(id: 3).exists?
   end
 
   test "specify readonly(false)" do
@@ -75,6 +78,7 @@ class AccessToSlaveTest < Minitest::Test
       assert data.all?{|n| n.include?("master")}
       assert_equal 1, User.where(name: "Other").readonly(false).count
       assert_equal 1, User.where(name: "Other").count(:readonly => false)
+      refute User.readonly(false).where(id: 3).exists?
     end
   end
 end
