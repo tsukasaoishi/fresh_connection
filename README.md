@@ -61,35 +61,43 @@ article.destory
 
 Add this line to your application's Gemfile:
 
-    gem "fresh_connection"
+```ruby
+gem "fresh_connection"
+```
 
 And then execute:
 
-    $ bundle
+```
+$ bundle
+```
 
 Or install it yourself as:
 
-    $ gem install fresh_connection
+```
+$ gem install fresh_connection
+```
 
 
 ## Config
 ### config/database.yml
 
-    production:
-      adapter: mysql2
-      encoding: utf8
-      reconnect: true
-      database: kaeru
-      pool: 5
-      username: master
-      password: master
-      host: localhost
-      socket: /var/run/mysqld/mysqld.sock
+```yaml
+production:
+  adapter: mysql2
+  encoding: utf8
+  reconnect: true
+  database: kaeru
+  pool: 5
+  username: master
+  password: master
+  host: localhost
+  socket: /var/run/mysqld/mysqld.sock
 
-      slave:
-        username: slave
-        password: slave
-        host: slave
+  slave:
+    username: slave
+    password: slave
+    host: slave
+```
 
 ```slave``` is a config to connect to slave servers.
 Others will use the master server setting.
@@ -97,53 +105,61 @@ Others will use the master server setting.
 ### use multiple slave servers group
 If you may want to use multiple slave groups, write the config to ```config/database.yml```.
 
-    production:
-      adapter: mysql2
-      encoding: utf8
-      reconnect: true
-      database: kaeru
-      pool: 5
-      username: master
-      password: master
-      host: localhost
-      socket: /var/run/mysqld/mysqld.sock
+```yaml
+production:
+  adapter: mysql2
+  encoding: utf8
+  reconnect: true
+  database: kaeru
+  pool: 5
+  username: master
+  password: master
+  host: localhost
+  socket: /var/run/mysqld/mysqld.sock
 
-      slave:
-        username: slave
-        password: slave
-        host: slave
+  slave:
+    username: slave
+    password: slave
+    host: slave
 
-      admin_slave:
-        username: slave
-        password: slave
-        host: admin_slaves
+  admin_slave:
+    username: slave
+    password: slave
+    host: admin_slaves
+```
 
 And call the establish_fresh_connection method in a model that access to ```admin_slave``` slave group.
 
-    class AdminUser < ActiveRecord::Base
-      establish_fresh_connection :admin_slave
-    end
+```ruby
+class AdminUser < ActiveRecord::Base
+  establish_fresh_connection :admin_slave
+end
+```
 
 The model of children class will access to same slave group as the parent.
 
-    class Parent < ActiveRecord::Base
-      establish_fresh_connection :admin_slave
-    end
+```ruby
+class Parent < ActiveRecord::Base
+  establish_fresh_connection :admin_slave
+end
 
-    class AdminUser < Parent
-    end
+class AdminUser < Parent
+end
 
-    class Benefit < Parent
-    end
+class Benefit < Parent
+end
+```
 
 AdminUser and Benefit access to ```admin_slave``` slave group.
 
 
 ### Declare model that doesn't use slave db
 
-    class SomethingModel < ActiveRecord::Base
-      master_db_only!
-    end
+```ruby
+class SomethingModel < ActiveRecord::Base
+  master_db_only!
+end
+```
 
 If a model that always access to the master server is exist, You write ```master_db_only!```  in the model.
 The model that master_db_only model's child is always access to master db.
@@ -170,24 +186,28 @@ If you would like to change slave connection manager, assign yourself slave conn
 
 #### config/initializers/fresh_connection.rb
 
-    FreshConnection.connection_manager = MySlaveConnection
+```ruby
+FreshConnection.connection_manager = MySlaveConnection
+```
 
 
 Yourself Slave Connection Manager should be inherited FreshConnection::AbstractConnectionManager
 
-    class MySlaveConnection < FreshConnection::AbstractConnectionManager
-      def slave_connection
-        # must return object of ActiveRecord::ConnectionAdapters::Mysql2Adapter
-      end
+```ruby
+class MySlaveConnection < FreshConnection::AbstractConnectionManager
+  def slave_connection
+    # must return object of ActiveRecord::ConnectionAdapters::Mysql2Adapter
+  end
 
-      def put_aside!
-        # called when end of Rails controller action
-      end
+  def put_aside!
+    # called when end of Rails controller action
+  end
 
-      def recovery(failure_connection, exception)
-        # called when raise exception to access slave server
-      end
-    end
+  def recovery(failure_connection, exception)
+    # called when raise exception to access slave server
+  end
+end
+```
 
 
 ## Contributing
@@ -213,7 +233,7 @@ bundle exec appraisal install
 
 This command run the spec suite for all rails versions supported.
 
-```base
+```bash
 bundle exec appraisal rake test
 ```
 
