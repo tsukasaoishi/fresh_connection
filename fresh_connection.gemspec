@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = '>= 2.0'
   spec.add_dependency 'activerecord', '>= 3.2.0', '< 4.3'
   spec.add_dependency 'activesupport', '>= 3.2.0', '< 4.3'
-  spec.add_dependency 'mysql2', '~> 0.3'
+  spec.add_dependency 'mysql2', '~> 0.3.18'
 
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", '~> 10.0'
