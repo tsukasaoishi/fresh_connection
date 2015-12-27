@@ -3,6 +3,7 @@ before_script:
   - mysql -e 'create database fresh_connection_test;'
   - mysql -e 'create database fresh_connection_test_master;'
   - mysql -e 'create database fresh_connection_test_slave;'
+  - gem update bundler
 rvm:
   - 2.0.0
   - 2.1
