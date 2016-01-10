@@ -61,24 +61,4 @@ class AccessToSlaveTest < Minitest::Test
     assert_equal 1, User.where(name: "Other").read_master.count
     refute User.read_master.where(id: 3).exists?
   end
-
-  test "specify readonly(false)" do
-    ActiveSupport::Deprecation.silence do
-      data = [
-        Address.readonly(false).first.prefecture,
-        Address.includes(:user).readonly(false).first.user.name,
-        Tel.readonly(false).first.number,
-        Tel.includes(:user).readonly(false).first.user.name,
-        @user.tels.readonly(false).first.number,
-        User.where(id: 1).includes(:tels).readonly(false).first.tels.first.number,
-        User.where(id: 1).includes(:address).readonly(false).first.address.prefecture,
-        User.where(id: 1).joins(:address).where("addresses.user_id = 1").readonly(false).first.name,
-        User.where(id: 1).readonly(false).pluck(:name).first
-      ]
-      assert data.all?{|n| n.include?("master")}
-      assert_equal 1, User.where(name: "Other").readonly(false).count
-      assert_equal 1, User.where(name: "Other").count(:readonly => false)
-      refute User.readonly(false).where(id: 3).exists?
-    end
-  end
 end
