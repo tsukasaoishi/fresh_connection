@@ -1,5 +1,3 @@
-require 'fresh_connection/access_control'
-
 module FreshConnection
   module Extend
     module Mysql2Adapter

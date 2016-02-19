@@ -1,6 +1,4 @@
 require 'active_support/core_ext/class/attribute'
-require 'fresh_connection/slave_connection_handler'
-require 'fresh_connection/access_control'
 
 module FreshConnection
   module Extend

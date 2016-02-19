@@ -1,4 +1,8 @@
-require "fresh_connection/extend/ar_relation/for_rails#{ActiveRecord::VERSION::MAJOR}"
+if ActiveRecord::VERSION::MAJOR == 3
+  require "fresh_connection/extend/ar_relation/for_rails3"
+else
+  require "fresh_connection/extend/ar_relation/for_rails4"
+end
 
 module FreshConnection
   module Extend

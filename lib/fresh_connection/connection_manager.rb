@@ -1,6 +1,3 @@
-require 'fresh_connection/abstract_connection_manager'
-require 'fresh_connection/connection_factory'
-
 module FreshConnection
   class ConnectionManager < AbstractConnectionManager
     def slave_connection
