@@ -2,6 +2,10 @@ module FreshConnection
   module Extend
     module ArRelation
       module ForRails
+        def calculate(operation, column_name, options = {})
+          @klass.manage_access(enable_slave_access) { super }
+        end
+
         def pluck(column_name)
           if column_name.is_a?(Symbol) && column_names.include?(column_name.to_s)
             column_name = "#{connection.quote_table_name(table_name)}.#{connection.quote_column_name(column_name)}"

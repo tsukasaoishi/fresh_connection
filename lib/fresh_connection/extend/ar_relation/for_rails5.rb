@@ -2,7 +2,7 @@ module FreshConnection
   module Extend
     module ArRelation
       module ForRails
-        def calculate(operation, column_name, options = {})
+        def calculate(operation, column_name)
           @klass.manage_access(enable_slave_access) { super }
         end
 

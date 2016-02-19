@@ -1,18 +1,10 @@
-if ActiveRecord::VERSION::MAJOR == 3
-  require "fresh_connection/extend/ar_relation/for_rails3"
-else
-  require "fresh_connection/extend/ar_relation/for_rails4"
-end
+require "fresh_connection/extend/ar_relation/for_rails#{ActiveRecord::VERSION::MAJOR}"
 
 module FreshConnection
   module Extend
     module ArRelation
       def self.prepended(base)
         base.__send__(:prepend, ForRails)
-      end
-
-      def calculate(operation, column_name, options = {})
-        @klass.manage_access(enable_slave_access) { super }
       end
 
       def exists?(*args)
