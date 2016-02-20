@@ -9,7 +9,7 @@ module FreshConnection
       end
 
       case ActiveRecord::VERSION::MAJOR
-      when 4
+      when 4, 5
         delegate :read_master, to: :all
       when 3
         delegate :read_master, to: :scoped

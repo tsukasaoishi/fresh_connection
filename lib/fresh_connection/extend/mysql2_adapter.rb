@@ -9,16 +9,30 @@ module FreshConnection
       end
 
       def select_all(arel, name = nil, binds = [])
-        if FreshConnection::AccessControl.slave_access?
-          change_connection do
-            super(arel, "[#{@model_class.slave_group}] #{name}", binds)
+        check_and_change_connection(name) do |tagged_name|
+          super(arel, tagged_name, binds)
+        end
+      end
+
+      if ActiveRecord::VERSION::MAJOR == 5
+        def select_rows(sql, name = nil, binds = [])
+          check_and_change_connection(name) do |tagged_name|
+            super(sql, tagged_name, binds)
           end
-        else
-          super
         end
       end
 
       private
+
+      def check_and_change_connection(name, &block)
+        if FreshConnection::AccessControl.slave_access?
+          change_connection do
+            block.call("[#{@model_class.slave_group}] #{name}")
+          end
+        else
+          block.call(name)
+        end
+      end
 
       def change_connection
         retry_count = 0
