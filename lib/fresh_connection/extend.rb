@@ -2,6 +2,10 @@ require 'active_support/lazy_load_hooks'
 
 ActiveSupport.on_load(:active_record) do
   require 'active_record/connection_adapters/mysql2_adapter'
+  require 'fresh_connection/extend/ar_base'
+  require 'fresh_connection/extend/ar_relation'
+  require 'fresh_connection/extend/connection_handler'
+  require 'fresh_connection/extend/mysql2_adapter'
 
   ActiveRecord::Base.extend FreshConnection::Extend::ArBase
   ActiveRecord::Relation.__send__(:prepend, FreshConnection::Extend::ArRelation)
@@ -15,6 +19,7 @@ ActiveSupport.on_load(:active_record) do
   )
 
   if defined?(ActiveRecord::StatementCache)
+    require 'fresh_connection/extend/ar_statement_cache'
     ActiveRecord::StatementCache.__send__(:prepend, FreshConnection::Extend::ArStatementCache)
   end
 
