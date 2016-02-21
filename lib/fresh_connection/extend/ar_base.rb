@@ -1,18 +1,15 @@
-require 'active_support/core_ext/class/attribute'
-
 module FreshConnection
   module Extend
     module ArBase
-      def self.extended(base)
-        base.class_attribute :slave_connection_handler, :instance_writer => false
-        base.slave_connection_handler = FreshConnection::SlaveConnectionHandler.new
-      end
-
       case ActiveRecord::VERSION::MAJOR
       when 4, 5
-        delegate :read_master, to: :all
+        def read_master
+          all.read_master
+        end
       when 3
-        delegate :read_master, to: :scoped
+        def read_master
+          scoped.read_master
+        end
       end
 
       def manage_access(slave_access, &block)
@@ -58,6 +55,12 @@ module FreshConnection
 
       def slave_group
         slave_connection_handler.slave_group(self)
+      end
+
+      private
+
+      def slave_connection_handler
+        @@slave_connection_handler ||= FreshConnection::SlaveConnectionHandler.new
       end
     end
   end

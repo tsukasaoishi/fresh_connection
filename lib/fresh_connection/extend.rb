@@ -1,27 +1,19 @@
-require 'active_support/lazy_load_hooks'
+require 'fresh_connection/extend/ar_base'
+require 'fresh_connection/extend/ar_relation'
+require 'fresh_connection/extend/connection_handler'
+require 'active_record/connection_adapters/mysql2_adapter'
+require 'fresh_connection/extend/mysql2_adapter'
 
-ActiveSupport.on_load(:active_record) do
-  require 'active_record/connection_adapters/mysql2_adapter'
-  require 'fresh_connection/extend/ar_base'
-  require 'fresh_connection/extend/ar_relation'
-  require 'fresh_connection/extend/connection_handler'
-  require 'fresh_connection/extend/mysql2_adapter'
+module ActiveRecord
+  Base.extend FreshConnection::Extend::ArBase
+  Relation.send :prepend, FreshConnection::Extend::ArRelation
+  ConnectionAdapters::ConnectionHandler.send :prepend, FreshConnection::Extend::ConnectionHandler
+  ConnectionAdapters::Mysql2Adapter.send :prepend, FreshConnection::Extend::Mysql2Adapter
 
-  ActiveRecord::Base.extend FreshConnection::Extend::ArBase
-  ActiveRecord::Relation.__send__(:prepend, FreshConnection::Extend::ArRelation)
-
-  ActiveRecord::ConnectionAdapters::ConnectionHandler.__send__(
-    :prepend, FreshConnection::Extend::ConnectionHandler
-  )
-
-  ActiveRecord::ConnectionAdapters::Mysql2Adapter.__send__(
-    :prepend, FreshConnection::Extend::Mysql2Adapter
-  )
-
-  if defined?(ActiveRecord::StatementCache)
+  if defined?(StatementCache)
     require 'fresh_connection/extend/ar_statement_cache'
-    ActiveRecord::StatementCache.__send__(:prepend, FreshConnection::Extend::ArStatementCache)
+    StatementCache.send :prepend, FreshConnection::Extend::ArStatementCache
   end
 
-  ActiveRecord::Base.establish_fresh_connection
+  Base.establish_fresh_connection
 end

@@ -1,14 +1,12 @@
-require 'active_support/dependencies/autoload'
+require 'active_record'
 
 module FreshConnection
-  extend ActiveSupport::Autoload
-
-  autoload :ConnectionManager
-  autoload :AbstractConnectionManager
-  autoload :ConnectionManager
-  autoload :ConnectionFactory
-  autoload :SlaveConnectionHandler
-  autoload :AccessControl
+  autoload :ConnectionManager, 'fresh_connection/connection_manager'
+  autoload :AbstractConnectionManager, 'fresh_connection/abstract_connection_manager'
+  autoload :ConnectionManager, 'fresh_connection/connection_manager'
+  autoload :ConnectionFactory, 'fresh_connection/connection_factory'
+  autoload :SlaveConnectionHandler, 'fresh_connection/slave_connection_handler'
+  autoload :AccessControl, 'fresh_connection/access_control'
 
   class << self
     attr_writer :connection_manager
