@@ -24,7 +24,7 @@ class SlaveConnectionTest < Minitest::Test
     end
     threads.each(&:join)
 
-    connections = @cm.instance_variable_get("@slave_connections").values
+    connections = @cm.instance_variable_get("@connections").all
     assert_equal threads_num, connections.size
     before_connection = nil
     connections.each do |c|

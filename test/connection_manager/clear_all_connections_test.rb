@@ -19,10 +19,10 @@ class SlaveConnectionTest < Minitest::Test
     end
     threads.each(&:join)
 
-    connections = @cm.instance_variable_get("@slave_connections").values
+    connections = @cm.instance_variable_get("@connections").all
 
     @cm.clear_all_connections!
-    assert_empty @cm.instance_variable_get("@slave_connections")
+    assert_empty @cm.instance_variable_get("@connections").all
     connections.each do |c|
       refute c.active?
     end

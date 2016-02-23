@@ -11,7 +11,6 @@ module FreshConnection
     attr_reader :slave_group
 
     def initialize(slave_group = "slave")
-      @mutex = Mutex.new
       @slave_group = slave_group.to_s
       @slave_group = "slave" if @slave_group.empty?
     end
@@ -33,14 +32,6 @@ module FreshConnection
     undef_method :recovery
 
     private
-
-    def synchronize
-      @mutex.synchronize{ yield }
-    end
-
-    def current_thread_id
-      Thread.current.object_id
-    end
 
     def slave_down_message?(message)
       /#{EXCEPTION_MESSAGE_WHEN_SLAVE_SERVER_DOWN}/o === message

@@ -23,7 +23,7 @@ class PutAsideTest < Minitest::Test
     @cm.put_aside!
     refute current_connection.active?
 
-    connections = @cm.instance_variable_get("@slave_connections").values
+    connections = @cm.instance_variable_get("@connections").all
     assert_equal threads_num, connections.size
     connections.each do |c|
       assert c.active?

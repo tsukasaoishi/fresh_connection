@@ -1,23 +1,26 @@
 module FreshConnection
   class ConnectionManager < AbstractConnectionManager
+    def initialize(*args)
+      super
+      @connections = ThreadSafeValue.new
+    end
+
     def slave_connection
-      synchronize do
-        slave_connections[current_thread_id] ||= connection_factory.new_connection
+      connections.fetch do |conn|
+        conn || connections.store(connection_factory.new_connection)
       end
     end
 
     def put_aside!
-      synchronize do
-        if c = slave_connections.delete(current_thread_id)
-          c.disconnect! rescue nil
-        end
+      connections.delete do |conn|
+        conn && conn.disconnect! rescue nil
       end
     end
 
     def clear_all_connections!
-      synchronize do
-        slave_connections.values.each {|c| c.disconnect! rescue nil }
-        @slave_connections.clear
+      connections.all do |conns|
+        conns.each {|c| c.disconnect! rescue nil }
+        connections.clear
       end
     end
 
@@ -29,8 +32,8 @@ module FreshConnection
 
     private
 
-    def slave_connections
-      @slave_connections ||= {}
+    def connections
+      @connections
     end
 
     def connection_factory
