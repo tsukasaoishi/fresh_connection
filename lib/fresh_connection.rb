@@ -1,5 +1,3 @@
-require 'active_record'
-
 module FreshConnection
   autoload :ConnectionManager, 'fresh_connection/connection_manager'
   autoload :AbstractConnectionManager, 'fresh_connection/abstract_connection_manager'

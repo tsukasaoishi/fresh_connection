@@ -1,3 +1,4 @@
+require 'active_record'
 require 'fresh_connection/extend/ar_base'
 require 'fresh_connection/extend/ar_relation'
 require 'fresh_connection/extend/connection_handler'
