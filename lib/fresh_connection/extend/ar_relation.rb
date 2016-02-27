@@ -18,11 +18,7 @@ module FreshConnection
       private
 
       def exec_queries
-        return @records if loaded?
-
-        @klass.manage_access(enable_slave_access) do
-          super
-        end
+        @klass.manage_access(enable_slave_access) { super }
       end
     end
   end
