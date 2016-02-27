@@ -1,15 +1,19 @@
+require 'concurrent'
+
 module FreshConnection
   class SlaveConnectionHandler
     def initialize
-      @class_to_pool = {}
+      @class_to_pool = Concurrent::Map.new(initial_capacity: 2) do |h,k|
+        h[k] = Concurrent::Map.new
+      end
     end
 
     def establish_connection(name, slave_group)
-      if cm = @class_to_pool[name]
+      if cm = class_to_pool[name]
         cm.put_aside!
       end
 
-      @class_to_pool[name] = FreshConnection.connection_manager.new(slave_group)
+      class_to_pool[name] = FreshConnection.connection_manager.new(slave_group)
     end
 
     def connection(klass)
@@ -39,16 +43,20 @@ module FreshConnection
     private
 
     def all_connection_managers
-      @class_to_pool.values.each do |connection_manager|
+      class_to_pool.values.each do |connection_manager|
         yield(connection_manager)
       end
     end
 
     def detect_connection_manager(klass)
-      c = @class_to_pool[klass.name]
+      c = class_to_pool[klass.name]
       return c if c
       return nil if ActiveRecord::Base == klass
       detect_connection_manager(klass.superclass)
+    end
+
+    def class_to_pool
+      @class_to_pool[Process.pid]
     end
   end
 end
