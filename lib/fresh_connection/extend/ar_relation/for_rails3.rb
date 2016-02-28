@@ -1,7 +1,13 @@
 module FreshConnection
   module Extend
     module ArRelation
-      module ForRails
+      module ForRails3
+        def self.prepended(base)
+          base.class_eval do
+            undef :read_master!
+          end
+        end
+
         def pluck(column_name)
           if column_name.is_a?(Symbol) && column_names.include?(column_name.to_s)
             column_name = "#{connection.quote_table_name(table_name)}.#{connection.quote_column_name(column_name)}"
