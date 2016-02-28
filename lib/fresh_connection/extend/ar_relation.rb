@@ -7,6 +7,10 @@ module FreshConnection
         base.__send__(:prepend, ForRails)
       end
 
+      def calculate(*args)
+        @klass.manage_access(enable_slave_access) { super }
+      end
+
       def exists?(*args)
         @klass.manage_access(enable_slave_access) { super }
       end
