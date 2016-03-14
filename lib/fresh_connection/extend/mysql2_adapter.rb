@@ -8,16 +8,22 @@ module FreshConnection
         base.__send__(:attr_writer, :model_class)
       end
 
-      def select_all(arel, name = nil, binds = [])
-        check_and_change_connection(name) do |tagged_name|
-          super(arel, tagged_name, binds)
-        end
-      end
-
       if ActiveRecord::VERSION::MAJOR == 5
+        def select_all(arel, name = nil, binds = [], preparable: nil)
+          check_and_change_connection(name) do |tagged_name|
+            super(arel, tagged_name, binds, preparable: preparable)
+          end
+        end
+
         def select_rows(sql, name = nil, binds = [])
           check_and_change_connection(name) do |tagged_name|
             super(sql, tagged_name, binds)
+          end
+        end
+      else
+        def select_all(arel, name = nil, binds = [])
+          check_and_change_connection(name) do |tagged_name|
+            super(arel, tagged_name, binds)
           end
         end
       end
