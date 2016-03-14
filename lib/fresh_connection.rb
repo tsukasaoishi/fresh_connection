@@ -5,7 +5,6 @@ module FreshConnection
   autoload :ConnectionFactory, 'fresh_connection/connection_factory'
   autoload :SlaveConnectionHandler, 'fresh_connection/slave_connection_handler'
   autoload :AccessControl, 'fresh_connection/access_control'
-  autoload :ThreadSafeValue, 'fresh_connection/thread_safe_value'
 
   class << self
     attr_writer :connection_manager

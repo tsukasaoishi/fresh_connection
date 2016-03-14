@@ -23,9 +23,9 @@ class PutAsideTest < Minitest::Test
     @cm.put_aside!
     refute current_connection.active?
 
-    connections = @cm.instance_variable_get("@connections").all
+    connections = @cm.instance_variable_get("@connections")
     assert_equal threads_num, connections.size
-    connections.each do |c|
+    connections.each_value do |c|
       assert c.active?
       refute_equal current_connection, c
     end

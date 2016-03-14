@@ -1,27 +1,29 @@
+require 'concurrent'
+
 module FreshConnection
   class ConnectionManager < AbstractConnectionManager
     def initialize(*args)
       super
-      @connections = ThreadSafeValue.new
+      @connections = Concurrent::Map.new
     end
 
     def slave_connection
-      connections.fetch do |conn|
-        conn || connections.store(connection_factory.new_connection)
+      @connections.fetch_or_store(current_thread_id) do |_|
+        connection_factory.new_connection
       end
     end
 
     def put_aside!
-      connections.delete do |conn|
-        conn && conn.disconnect! rescue nil
-      end
+      conn = @connections.delete(current_thread_id)
+      return unless conn
+      conn && conn.disconnect! rescue nil
     end
 
     def clear_all_connections!
-      connections.all do |conns|
-        conns.each {|c| c.disconnect! rescue nil }
-        connections.clear
+      @connections.each_value do |conn|
+        conn.disconnect! rescue nil
       end
+      @connections.clear
     end
 
     def recovery(failure_connection, exception)
@@ -32,12 +34,12 @@ module FreshConnection
 
     private
 
-    def connections
-      @connections
-    end
-
     def connection_factory
       @connection_factory ||= ConnectionFactory.new(@slave_group)
+    end
+
+    def current_thread_id
+      Thread.current.object_id
     end
   end
 end
