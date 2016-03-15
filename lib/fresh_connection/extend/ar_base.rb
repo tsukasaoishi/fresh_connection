@@ -45,7 +45,7 @@ module FreshConnection
         slave_connection_handler.put_aside!
       end
 
-      def recovery(failure_connection, exception)
+      def slave_connection_recovery(failure_connection, exception)
         slave_connection_handler.recovery(self, failure_connection, exception)
       end
 
