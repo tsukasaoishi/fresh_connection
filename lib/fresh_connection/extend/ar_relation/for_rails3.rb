@@ -13,7 +13,7 @@ module FreshConnection
             column_name = "#{connection.quote_table_name(table_name)}.#{connection.quote_column_name(column_name)}"
           end
 
-          result = @klass.manage_access(enable_slave_access) do
+          result = manage_access do
             klass.connection.select_all(select(column_name).arel, nil)
           end
 

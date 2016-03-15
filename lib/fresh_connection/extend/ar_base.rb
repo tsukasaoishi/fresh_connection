@@ -6,22 +6,18 @@ module FreshConnection
         def read_master
           all.read_master
         end
+
+        def with_master(&block)
+          all.manage_access(false, &block)
+        end
       when 3
         def read_master
           scoped.read_master
         end
-      end
 
-      def manage_access(slave_access, &block)
-        if master_db_only?
-          FreshConnection::AccessControl.force_master_access(&block)
-        else
-          FreshConnection::AccessControl.access(slave_access, &block)
+        def with_master(&block)
+          scoped.manage_access(false, &block)
         end
-      end
-
-      def with_master(&block)
-        manage_access(false, &block)
       end
 
       def establish_fresh_connection(slave_group = nil)

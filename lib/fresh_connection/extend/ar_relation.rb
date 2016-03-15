@@ -1,16 +1,24 @@
 module FreshConnection
   module Extend
     module ArRelation
+      def manage_access(slave_access = enable_slave_access, &block)
+        if @klass.master_db_only?
+          FreshConnection::AccessControl.force_master_access(&block)
+        else
+          FreshConnection::AccessControl.access(slave_access, &block)
+        end
+      end
+
       def calculate(*args)
-        @klass.manage_access(enable_slave_access) { super }
+        manage_access { super }
       end
 
       def exists?(*args)
-        @klass.manage_access(enable_slave_access) { super }
+        manage_access { super }
       end
 
       def pluck(*args)
-        @klass.manage_access(enable_slave_access) { super }
+        manage_access { super }
       end
 
       def read_master
@@ -29,7 +37,7 @@ module FreshConnection
       private
 
       def exec_queries
-        @klass.manage_access(enable_slave_access) { super }
+        manage_access { super }
       end
     end
   end
