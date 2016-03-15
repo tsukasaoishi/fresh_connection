@@ -1,6 +1,6 @@
 require "test_helper"
 
-class AccessToSlaveTest < Minitest::Test
+class AccessToMasterTest < Minitest::Test
   def setup
     @user = User.where(id: 1).first
   end

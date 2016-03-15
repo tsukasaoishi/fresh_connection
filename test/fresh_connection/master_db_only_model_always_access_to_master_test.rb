@@ -1,6 +1,6 @@
 require "test_helper"
 
-class AccessToSlaveTest < Minitest::Test
+class MasterDbOnlyModelAlwaysAccessToMasterTest < Minitest::Test
   class Address3 < ActiveRecord::Base
     self.table_name = "addresses"
     master_db_only!

@@ -1,6 +1,6 @@
 require "test_helper"
 
-class SlaveConnectionTest < Minitest::Test
+class ClearAllConnectionTest < Minitest::Test
   def setup
     @cm = FreshConnection::ConnectionManager.new
   end
