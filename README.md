@@ -203,7 +203,7 @@ class MySlaveConnection < FreshConnection::AbstractConnectionManager
     # called when end of Rails controller action
   end
 
-  def recovery(failure_connection, exception)
+  def recovery(exception)
     # called when raise exception to access slave server
   end
 end
