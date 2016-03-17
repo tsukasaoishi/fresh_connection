@@ -1,11 +1,24 @@
 module FreshConnection
   module Extend
     module ArRelation
+      RETRY_LIMIT = 3
+      private_constant :RETRY_LIMIT
+
       def manage_access(slave_access = enable_slave_access, &block)
         if @klass.master_db_only?
           FreshConnection::AccessControl.force_master_access(&block)
         else
-          FreshConnection::AccessControl.access(slave_access, &block)
+          retry_count = 0
+          begin
+            FreshConnection::AccessControl.access(slave_access, &block)
+          rescue ActiveRecord::StatementInvalid => exception
+            if @klass.slave_connection_recovery(@klass.connection, exception)
+              retry_count += 1
+              retry if retry_count < RETRY_LIMIT
+            end
+
+            raise
+          end
         end
       end
 
@@ -41,9 +54,4 @@ module FreshConnection
       end
     end
   end
-end
-
-if ActiveRecord::VERSION::MAJOR == 3
-  require "fresh_connection/extend/ar_relation/for_rails3"
-  FreshConnection::Extend::ArRelation.send :prepend, FreshConnection::Extend::ArRelation::ForRails3
 end

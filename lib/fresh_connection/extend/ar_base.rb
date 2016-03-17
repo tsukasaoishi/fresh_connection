@@ -1,27 +1,24 @@
 module FreshConnection
   module Extend
     module ArBase
-      case ActiveRecord::VERSION::MAJOR
-      when 4, 5
-        def read_master
-          all.read_master
-        end
+      def read_master
+        all.read_master
+      end
 
-        def with_master(&block)
-          all.manage_access(false, &block)
-        end
-      when 3
-        def read_master
-          scoped.read_master
-        end
-
-        def with_master(&block)
-          scoped.manage_access(false, &block)
-        end
+      def with_master(&block)
+        all.manage_access(false, &block)
       end
 
       def establish_fresh_connection(slave_group = nil)
         slave_connection_handler.establish_connection(name, slave_group)
+      end
+
+      def connection
+        if FreshConnection::AccessControl.slave_access?
+          slave_connection
+        else
+          super
+        end
       end
 
       def slave_connection
