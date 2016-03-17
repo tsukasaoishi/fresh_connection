@@ -26,7 +26,7 @@ module FreshConnection
       @connections.clear
     end
 
-    def recovery(failure_connection, exception)
+    def recovery(exception)
       do_recovery = slave_down_message?(exception.message)
       put_aside! if do_recovery
       do_recovery

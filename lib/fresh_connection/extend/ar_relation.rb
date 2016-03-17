@@ -12,7 +12,7 @@ module FreshConnection
           begin
             FreshConnection::AccessControl.access(slave_access, &block)
           rescue ActiveRecord::StatementInvalid => exception
-            if @klass.slave_connection_recovery(@klass.connection, exception)
+            if @klass.slave_connection_recovery(exception)
               retry_count += 1
               retry if retry_count < RETRY_LIMIT
             end

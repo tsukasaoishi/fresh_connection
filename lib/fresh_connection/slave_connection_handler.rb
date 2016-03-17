@@ -32,8 +32,8 @@ module FreshConnection
       end
     end
 
-    def recovery(klass, failure_connection, exception)
-      detect_connection_manager(klass).recovery(failure_connection, exception)
+    def recovery(klass, exception)
+      detect_connection_manager(klass).recovery(exception)
     end
 
     def slave_group(klass)

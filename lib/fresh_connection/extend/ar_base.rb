@@ -1,6 +1,14 @@
 module FreshConnection
   module Extend
     module ArBase
+      def connection
+        if FreshConnection::AccessControl.slave_access?
+          slave_connection
+        else
+          super
+        end
+      end
+
       def read_master
         all.read_master
       end
@@ -11,14 +19,6 @@ module FreshConnection
 
       def establish_fresh_connection(slave_group = nil)
         slave_connection_handler.establish_connection(name, slave_group)
-      end
-
-      def connection
-        if FreshConnection::AccessControl.slave_access?
-          slave_connection
-        else
-          super
-        end
       end
 
       def slave_connection
@@ -42,8 +42,8 @@ module FreshConnection
         slave_connection_handler.put_aside!
       end
 
-      def slave_connection_recovery(failure_connection, exception)
-        slave_connection_handler.recovery(self, failure_connection, exception)
+      def slave_connection_recovery(exception)
+        slave_connection_handler.recovery(self, exception)
       end
 
       def slave_group

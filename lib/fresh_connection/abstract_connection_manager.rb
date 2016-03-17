@@ -27,7 +27,7 @@ module FreshConnection
     end
     undef_method :put_aside!
 
-    def recovery(failure_connection, exception)
+    def recovery(exception)
     end
     undef_method :recovery
 
