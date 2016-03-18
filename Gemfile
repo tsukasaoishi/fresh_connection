@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in n_adic_number.gemspec
+# Specify your gem's dependencies in fresh_connection.gemspec
 gemspec

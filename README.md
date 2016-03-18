@@ -227,13 +227,12 @@ How to setup your test environment.
 First of all, you setting the config of the test mysql server in ```spec/database.yml```
 
 ```bash
-bundle install --path .bundle
-bundle exec appraisal install
+./bin/setup
 ```
 
 This command run the spec suite for all rails versions supported.
 
 ```bash
-bundle exec appraisal rake test
+./bin/test
 ```
 
