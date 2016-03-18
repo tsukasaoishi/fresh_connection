@@ -1,13 +1,5 @@
 module FreshConnection
   class AbstractConnectionManager
-    EXCEPTION_MESSAGE_WHEN_SLAVE_SERVER_DOWN = [
-      "MySQL server has gone away",
-      "closed MySQL connection",
-      "Can't connect to local MySQL server"
-    ].map{|msg| Regexp.escape(msg)}.join("|")
-
-    private_constant :EXCEPTION_MESSAGE_WHEN_SLAVE_SERVER_DOWN
-
     attr_reader :slave_group
 
     def initialize(slave_group = "slave")
@@ -34,7 +26,7 @@ module FreshConnection
     private
 
     def slave_down_message?(message)
-      /#{EXCEPTION_MESSAGE_WHEN_SLAVE_SERVER_DOWN}/o === message
+      false
     end
   end
 end

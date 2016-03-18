@@ -9,11 +9,11 @@ module FreshConnection
       ActiveRecord::Base.__send__(adapter_method, spec)
     end
 
-    private
-
     def adapter_method
       @adapter_method ||= ar_spec.adapter_method
     end
+
+    private
 
     def spec
       @spec ||= build_spec
