@@ -2,8 +2,6 @@ require 'concurrent'
 
 module FreshConnection
   class ConnectionManager < AbstractConnectionManager
-    include SlaveDownChecker
-
     def initialize(*args)
       super
       @connections = Concurrent::Map.new
@@ -40,8 +38,8 @@ module FreshConnection
       @connection_factory ||= ConnectionFactory.new(@slave_group)
     end
 
-    def slave_down_message?(message)
-      slave_server_down?(connection_factory.adapter_method, message)
+    def adapter_method
+      connection_factory.adapter_method
     end
 
     def current_thread_id

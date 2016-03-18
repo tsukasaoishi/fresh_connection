@@ -1,5 +1,5 @@
 module FreshConnection
-  module SlaveDownChecker
+  class MysqlSlaveChecker
     MYSQL_DOWN_MESSAGE = [
       "MySQL server has gone away",
       "closed MySQL connection",
@@ -7,18 +7,13 @@ module FreshConnection
     ]
     private_constant :MYSQL_DOWN_MESSAGE
 
-    private
-
-    def slave_server_down?(adapter_method, message)
-      case adapter_method
-      when /^mysql/
-        mysql_down_message === message
-      else
-        false
-      end
+    def down?(message)
+      down_message_regexp === message
     end
 
-    def mysql_down_message
+    private
+
+    def down_message_regexp
       @mysql_down_message ||= Regexp.new(build_mysql_down_message, Regexp::IGNORECASE)
     end
 

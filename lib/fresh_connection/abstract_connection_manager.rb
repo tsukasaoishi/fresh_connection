@@ -25,8 +25,27 @@ module FreshConnection
 
     private
 
+    def adapter_method
+    end
+    undef_method :adapter_method
+
     def slave_down_message?(message)
-      false
+      slave_down_checker.down?(message)
+    end
+
+    def slave_down_checker
+      @slave_down_checker ||= build_slave_down_checker
+    end
+
+    def build_slave_down_checker
+      case adapter_method
+      when /^mysql/
+        require 'fresh_connection/mysql_slave_checker'
+        MysqlSlaveChecker.new
+      else
+        require 'fresh_connection/nobody_slave_checker'
+        NobodySlaveChecker.new
+      end
     end
   end
 end
