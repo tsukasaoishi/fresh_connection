@@ -40,10 +40,13 @@ module FreshConnection
     def build_slave_down_checker
       case adapter_method
       when /^mysql/
-        require 'fresh_connection/mysql_slave_checker'
+        require 'fresh_connection/slave_checker/mysql_slave_checker'
         MysqlSlaveChecker.new
+      when /^postgresql/
+        require 'fresh_connection/slave_checker/postgresql_slave_checker'
+        PostgresqlSlaveChecker.new
       else
-        require 'fresh_connection/nobody_slave_checker'
+        require 'fresh_connection/slave_checker/nobody_slave_checker'
         NobodySlaveChecker.new
       end
     end

@@ -1,11 +1,7 @@
 module FreshConnection
-  class MysqlSlaveChecker
-    MYSQL_DOWN_MESSAGE = [
-      "MySQL server has gone away",
-      "closed MySQL connection",
-      "Can't connect to local MySQL server"
-    ]
-    private_constant :MYSQL_DOWN_MESSAGE
+  class PostgresqlSlaveChecker
+    DOWN_MESSAGE = []
+    private_constant :DOWN_MESSAGE
 
     def down?(message)
       down_message_regexp === message
@@ -18,7 +14,7 @@ module FreshConnection
     end
 
     def build_mysql_down_message
-      MYSQL_DOWN_MESSAGE.map{|msg| Regexp.escape(msg)}.join("|")
+      DOWN_MESSAGE.map{|msg| Regexp.escape(msg)}.join("|")
     end
   end
 end

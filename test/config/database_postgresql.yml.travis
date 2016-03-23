@@ -1,0 +1,13 @@
+test:
+  adapter: postgresql
+  encoding: unicode
+  database: fresh_connection_test_master
+  pool: 5
+  username: postgres
+
+  slave1:
+    database: fresh_connection_test_slave1
+
+  slave2:
+    database: fresh_connection_test_slave2
+

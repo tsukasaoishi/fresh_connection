@@ -13,7 +13,12 @@ class RecoveryTest < Minitest::Test
         if @access_time > limit_time
           super
         else
-          raise ActiveRecord::StatementInvalid, "MySQL server has gone away"
+          case ENV['DB_ADAPTER']
+          when 'mysql2'
+            raise ActiveRecord::StatementInvalid, "MySQL server has gone away"
+          when 'postgresql'
+            raise ActiveRecord::StatementInvalid, ""
+          end
         end
       end
 
