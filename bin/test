@@ -3,5 +3,4 @@ set -euo pipefail
 IFS=$'\n\t'
 set -vx
 
-bundle exec appraisal install
 bundle exec appraisal rake test

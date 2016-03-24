@@ -19,37 +19,9 @@ module FreshConnection
     end
     undef_method :put_aside!
 
-    def recovery(exception)
+    def recovery?
     end
-    undef_method :recovery
-
-    private
-
-    def adapter_method
-    end
-    undef_method :adapter_method
-
-    def slave_down_message?(message)
-      slave_down_checker.down?(message)
-    end
-
-    def slave_down_checker
-      @slave_down_checker ||= build_slave_down_checker
-    end
-
-    def build_slave_down_checker
-      case adapter_method
-      when /^mysql/
-        require 'fresh_connection/slave_checker/mysql_slave_checker'
-        MysqlSlaveChecker.new
-      when /^postgresql/
-        require 'fresh_connection/slave_checker/postgresql_slave_checker'
-        PostgresqlSlaveChecker.new
-      else
-        require 'fresh_connection/slave_checker/nobody_slave_checker'
-        NobodySlaveChecker.new
-      end
-    end
+    undef_method :recovery?
   end
 end
 

@@ -26,14 +26,14 @@ module FreshConnection
       end
     end
 
+    def recovery?(klass)
+      detect_connection_manager(klass).recovery?
+    end
+
     def put_aside!
       all_connection_managers do |connection_manager|
         connection_manager.put_aside!
       end
-    end
-
-    def recovery(klass, exception)
-      detect_connection_manager(klass).recovery(exception)
     end
 
     def slave_group(klass)
