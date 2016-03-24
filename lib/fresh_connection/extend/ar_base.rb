@@ -3,7 +3,11 @@ module FreshConnection
     module ArBase
       def connection
         if FreshConnection::AccessControl.slave_access?
-          slave_connection
+          if logger && logger.debug?
+            slave_connection.tap{|c| c.slave_group = slave_group }
+          else
+            slave_connection
+          end
         else
           super
         end

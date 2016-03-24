@@ -13,12 +13,6 @@ module FreshConnection
       end
     end
 
-    def recovery?
-      return false if slave_connection.active?
-      put_aside!
-      true
-    end
-
     def put_aside!
       conn = @connections.delete(current_thread_id)
       return unless conn
@@ -30,6 +24,12 @@ module FreshConnection
         conn.disconnect! rescue nil
       end
       @connections.clear
+    end
+
+    def recovery?
+      return false if slave_connection.active?
+      put_aside!
+      true
     end
 
     private
