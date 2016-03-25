@@ -1,43 +1,42 @@
 # FreshConnection
-
-FreshConnection allows access to Mysql slave servers in Rails.
-
 [![Gem Version](https://badge.fury.io/rb/fresh_connection.svg)](http://badge.fury.io/rb/fresh_connection) [![Build Status](https://travis-ci.org/tsukasaoishi/fresh_connection.svg?branch=master)](https://travis-ci.org/tsukasaoishi/fresh_connection) [![Code Climate](https://codeclimate.com/github/tsukasaoishi/fresh_connection/badges/gpa.svg)](https://codeclimate.com/github/tsukasaoishi/fresh_connection)
 
-ActiveRecord can only access a single server by default.  
-FreshConnection can access to replicated Mysql slave servers via a loadbalancer.
+ActiveRecord accesses a single server by default.  
+FreshConnection can access to slave servers via a load balancer.
 
 For example.
 ```
-Rails ------------ Mysql(Master)
+Rails ------------ Master DB
              |
-             |                     +------ Mysql(Slave1)
+             |                     +------ Slave1 DB
              |                     |
              +---- Loadbalancer ---+
                                    |
-                                   +------ Mysql(Slave2)
+                                   +------ Slave2 DB
 ```
 
-When Rails controller's action begins, FreshConnction connects with one of slave servers behind the loadbalacer.  
-Read query goes to the slave server via the loadbalancer.  
-Write query goes to the master server. Inside transaction, all queries go to the master server.  
-All Mysql connections is disconnected at the end of the Rails controller's action.
+FreshConnction connects with one of slave servers behind the load balancer.  
+Read query goes to the slave server.  
+Write query goes to the master server.  
+Inside transaction, all queries go to the master server.  
 
+If you can't use a load balancer, could use [EbisuConnection](https://github.com/tsukasaoishi/ebisu_connection).
 
 ## Usage
-
+### Access to Slave
 Read query goes to the slave server.
 
 ```ruby
 Article.where(:id => 1)
 ```
 
-If you want to access to the master server, use read_master.
+### Access to Master
+If read query want to access to the master server, use `read_master`.  
+In before version 0.4.3, can use `readonly(false)`.
 
 ```ruby
 Article.where(:id => 1).read_master
 ```
-If you would like to use readonly(false), use version before 1.0.0.
 
 In transaction, All queries go to the master server.
 
@@ -47,7 +46,7 @@ Article.transaction do
 end
 ```
 
-Create, Update. Delete queries go to the master server.
+Create, Update and Delete queries go to the master server.
 
 ```ruby
 article = Article.create(...)
@@ -56,9 +55,14 @@ article.save
 article.destory
 ```
 
+## Support Rails version
+FreshConnection supports Rails version 4.0 or later.  
+If you are using Rails 3.2, could use FreshConnection version 1.0.0 or before.
+
+## Support DB
+FreshConnection supports MySQL and PostgreSQL.
 
 ## Installation
-
 Add this line to your application's Gemfile:
 
 ```ruby
@@ -100,7 +104,7 @@ production:
 ```
 
 ```slave``` is a config to connect to slave servers.
-Others will use the master server setting.
+Others will use the master server settings.
 
 ### use multiple slave servers group
 If you may want to use multiple slave groups, write the config to ```config/database.yml```.
@@ -136,7 +140,7 @@ class AdminUser < ActiveRecord::Base
 end
 ```
 
-The model of children class will access to same slave group as the parent.
+The children class will access to same slave group as the parent.
 
 ```ruby
 class Parent < ActiveRecord::Base
@@ -199,12 +203,17 @@ class MySlaveConnection < FreshConnection::AbstractConnectionManager
     # must return object of ActiveRecord::ConnectionAdapters::Mysql2Adapter
   end
 
+  def clear_all_connections!
+    # called when all connections disconnect
+  end
+  
   def put_aside!
     # called when end of Rails controller action
   end
 
-  def recovery(exception)
+  def recovery?
     # called when raise exception to access slave server
+    # retry to access when this method return true
   end
 end
 ```
@@ -235,4 +244,3 @@ This command run the spec suite for all rails versions supported.
 ```bash
 ./bin/test
 ```
-
