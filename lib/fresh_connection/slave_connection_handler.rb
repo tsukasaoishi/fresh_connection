@@ -3,9 +3,7 @@ require 'concurrent'
 module FreshConnection
   class SlaveConnectionHandler
     def initialize
-      @class_to_pool = Concurrent::Map.new(initial_capacity: 2) do |h,k|
-        h[k] = Concurrent::Map.new
-      end
+      @class_to_pool = Concurrent::Map.new
     end
 
     def establish_connection(name, slave_group)
@@ -56,7 +54,7 @@ module FreshConnection
     end
 
     def class_to_pool
-      @class_to_pool[Process.pid]
+      @class_to_pool
     end
   end
 end
