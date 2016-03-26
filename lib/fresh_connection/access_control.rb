@@ -18,6 +18,14 @@ module FreshConnection
         access_db == :slave
       end
 
+      def catch_exceptions
+        return @catch_exceptions if defined?(@catch_exceptions)
+        @catch_exceptions = [ActiveRecord::StatementInvalid]
+        @catch_exceptions << ::Mysql2::Error if defined?(::Mysql2)
+        @catch_exceptions += [::PG::Error, ::PGError] if defined?(::PG)
+        @catch_exceptions
+      end
+
       private
 
       def switch_to(new_db)
