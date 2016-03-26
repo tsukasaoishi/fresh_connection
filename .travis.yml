@@ -18,17 +18,12 @@ rvm:
   - 2.3.0
   - ruby-head
 gemfile:
-  - gemfiles/rails3.gemfile
   - gemfiles/rails40.gemfile
   - gemfiles/rails41.gemfile
   - gemfiles/rails42.gemfile
   - gemfiles/rails50.gemfile
 matrix:
   exclude:
-    - rvm: 2.3.0
-      gemfile: gemfiles/rails3.gemfile
-    - rvm: ruby-head
-      gemfile: gemfiles/rails3.gemfile
     - rvm: 2.3.0
       gemfile: gemfiles/rails40.gemfile
     - rvm: ruby-head
