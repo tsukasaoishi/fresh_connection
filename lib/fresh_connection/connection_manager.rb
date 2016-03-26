@@ -27,7 +27,6 @@ module FreshConnection
     end
 
     def recovery?
-      return false if slave_connection.active?
       put_aside!
       true
     end
