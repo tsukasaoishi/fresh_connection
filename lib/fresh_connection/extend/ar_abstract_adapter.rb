@@ -6,7 +6,7 @@ module FreshConnection
       end
 
       def log(*args)
-        args[1] = "[#{@slave_group}] #{args[1]}" if @slave_group
+        args[1] = "[#{@slave_group}] #{args[1]}" if defined?(@slave_group)
         super
       end
     end

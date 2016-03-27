@@ -10,7 +10,11 @@ module FreshConnection
     attr_writer :connection_manager
 
     def connection_manager
-      @connection_manager || ConnectionManager
+      if defined?(@connection_manager)
+        @connection_manager
+      else
+        ConnectionManager
+      end
     end
   end
 end

@@ -44,7 +44,7 @@ module FreshConnection
       end
 
       def enable_slave_access
-        connection.open_transactions == 0 && @read_from_master.nil?
+        connection.open_transactions == 0 && !defined?(@read_from_master)
       end
 
       private

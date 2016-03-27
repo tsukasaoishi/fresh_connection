@@ -13,8 +13,7 @@ namespace :test do
       t.libs << "test"
       t.libs << "lib"
       t.test_files = FileList["test/config/prepare_#{db}", 'test/**/*_test.rb']
-      t.verbose = false
-      t.warning = false
+      t.verbose = true
     end
   end
 end
