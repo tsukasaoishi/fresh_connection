@@ -1,7 +1,6 @@
 # FreshConnection
 [![Gem Version](https://badge.fury.io/rb/fresh_connection.svg)](http://badge.fury.io/rb/fresh_connection) [![Build Status](https://travis-ci.org/tsukasaoishi/fresh_connection.svg?branch=master)](https://travis-ci.org/tsukasaoishi/fresh_connection) [![Code Climate](https://codeclimate.com/github/tsukasaoishi/fresh_connection/badges/gpa.svg)](https://codeclimate.com/github/tsukasaoishi/fresh_connection)
 
-ActiveRecord accesses a single server by default.  
 FreshConnection can access to slave servers via a load balancer.
 
 For example.
@@ -55,8 +54,8 @@ article.save
 article.destory
 ```
 
-## Support Rails version
-FreshConnection supports Rails version 4.0 or later.  
+## Support ActiveRecord version
+FreshConnection supports ActiveRecord version 4.0 or later.  
 If you are using Rails 3.2, could use FreshConnection version 1.0.0 or before.
 
 ## Support DB
