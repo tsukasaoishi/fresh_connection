@@ -1,10 +1,9 @@
 language: ruby
 before_install:
   - gem install bundler
+services:
+  - mysql
 before_script:
-  - mysql -e 'create database fresh_connection_test;'
-  - mysql -e 'create database fresh_connection_test_master;'
-  - mysql -e 'create database fresh_connection_test_slave;'
   - bundle update
 cache: bundler
 rvm:
@@ -18,6 +17,6 @@ gemfile:
   - gemfiles/rails40.gemfile
   - gemfiles/rails41.gemfile
   - gemfiles/rails42.gemfile
-notifications:
-  emails:
-    - tsukasa.oishi@gmail.com
+matrix:
+  fast_finish: true
+bundler_args: --jobs 3 --retry 3
