@@ -1,8 +1,10 @@
+require 'active_support/core_ext/hash/keys'
+
 module FreshConnection
   class ConnectionFactory
     def initialize(group, modify_spec = {})
       @group = group.to_sym
-      @modify_spec = modify_spec
+      @modify_spec = modify_spec.symbolize_keys
     end
 
     def new_connection
@@ -20,8 +22,9 @@ module FreshConnection
     end
 
     def build_spec
-      config = ar_spec.config
-      config.merge(config[@group] || {}).merge(@modify_spec)
+      config = ar_spec.config.symbolize_keys
+      group_config = (config[@group] || {}).symbolize_keys
+      config.merge(group_config).merge(@modify_spec)
     end
 
     def ar_spec
