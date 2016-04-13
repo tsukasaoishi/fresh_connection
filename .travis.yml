@@ -10,11 +10,22 @@ rvm:
   - 2.0.0
   - 2.1.8
   - 2.2.4
+  - 2.3.0
+  - ruby-head
 gemfile:
   - gemfiles/rails3.gemfile
   - gemfiles/rails40.gemfile
   - gemfiles/rails41.gemfile
   - gemfiles/rails42.gemfile
 matrix:
+  exclude:
+    - rvm: 2.3.0
+      gemfile: gemfiles/rails3.gemfile
+      gemfile: gemfiles/rails40.gemfile
+    - rvm: ruby-head
+      gemfile: gemfiles/rails3.gemfile
+      gemfile: gemfiles/rails40.gemfile
+  allow_failures:
+    - rvm: ruby-head
   fast_finish: true
 bundler_args: --jobs 3 --retry 3
