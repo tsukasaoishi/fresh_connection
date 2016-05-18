@@ -39,12 +39,21 @@ module FreshConnection
       end
 
       def read_master!
-        @read_from_master = true
+        self.read_master_value = true
         self
       end
 
+      def read_master_value
+        @values[:read_master]
+      end
+
+      def read_master_value=(value)
+        raise ImmutableRelation if @loaded
+        @values[:read_master] = value
+      end
+
       def enable_slave_access
-        connection.open_transactions == 0 && !defined?(@read_from_master)
+        connection.open_transactions == 0 && !read_master_value
       end
 
       private
