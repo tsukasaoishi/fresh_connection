@@ -17,7 +17,7 @@ appraise "rails42" do
 end
 
 appraise "rails50" do
-  gem 'activerecord', '5.0.0.rc1'
-  gem 'activesupport', '5.0.0.rc1'
+  gem 'activerecord', '5.0.0'
+  gem 'activesupport', '5.0.0'
   gem 'mysql2', '>= 0.3.18', '< 0.5'
 end
