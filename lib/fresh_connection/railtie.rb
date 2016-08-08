@@ -10,7 +10,7 @@ module FreshConnection
         )
       else
         app.config.app_middleware.insert_before(
-          ActionDispatch::Reloader,
+          ActionDispatch::Executor,
           FreshConnection::Rack::ConnectionManagement
         )
       end
