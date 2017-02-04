@@ -1,3 +1,6 @@
+require 'fresh_connection/access_control'
+require 'fresh_connection/slave_connection_handler'
+
 module FreshConnection
   module Extend
     module ArBase
