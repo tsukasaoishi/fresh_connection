@@ -7,7 +7,7 @@ class RecoveryTest < Minitest::Test
     class << self
       attr_writer :limit_time, :access_time, :disconnect
 
-      def slave_connection
+      def replica_connection
         return super unless defined?(@access_time)
 
         @access_time += 1

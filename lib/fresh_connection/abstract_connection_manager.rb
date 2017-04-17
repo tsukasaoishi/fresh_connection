@@ -1,15 +1,18 @@
 module FreshConnection
   class AbstractConnectionManager
-    attr_reader :slave_group
+    attr_reader :replica_group
 
-    def initialize(slave_group = "slave")
-      @slave_group = slave_group.to_s
-      @slave_group = "slave" if @slave_group.empty?
+    def initialize(replica_group = "replica")
+      replica_group = "replica" if replica_group.to_s == "slave"
+      @replica_group = replica_group.to_s
+      @replica_group = "replica" if @replica_group.empty?
     end
 
-    def slave_connection
+    alias_method :slave_group, :replica_group
+
+    def replica_connection
     end
-    undef_method :slave_connection
+    undef_method :replica_connection
 
     def clear_all_connections!
     end

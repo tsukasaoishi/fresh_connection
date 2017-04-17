@@ -4,9 +4,9 @@ test:
   database: fresh_connection_test_master
   pool: 5
 
-  slave1:
-    database: fresh_connection_test_slave1
+  replica1:
+    database: fresh_connection_test_replica1
 
-  slave2:
-    database: fresh_connection_test_slave2
+  replica2:
+    database: fresh_connection_test_replica2
 

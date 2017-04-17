@@ -10,12 +10,12 @@ module FreshConnection
 
         response = @app.call(env)
         response[2] = ::Rack::BodyProxy.new(response[2]) do
-          ActiveRecord::Base.slave_connection_put_aside! unless testing
+          ActiveRecord::Base.replica_connection_put_aside! unless testing
         end
 
         response
       rescue Exception
-        ActiveRecord::Base.slave_connection_put_aside! unless testing
+        ActiveRecord::Base.replica_connection_put_aside! unless testing
         raise
       end
     end

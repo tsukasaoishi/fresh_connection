@@ -1,6 +1,6 @@
 require "test_helper"
 
-class SlaveConnectionTest < Minitest::Test
+class ReplicaConnectionTest < Minitest::Test
   def setup
     @cm = FreshConnection::ConnectionManager.new
   end
@@ -10,8 +10,8 @@ class SlaveConnectionTest < Minitest::Test
   end
 
   test "same connection in one thread" do
-    c = @cm.slave_connection
-    assert_equal @cm.slave_connection, c
+    c = @cm.replica_connection
+    assert_equal @cm.replica_connection, c
   end
 
   test "multi connections in several thread" do
@@ -19,7 +19,7 @@ class SlaveConnectionTest < Minitest::Test
     threads = []
     threads_num.times do |i|
       threads << Thread.new do
-        @cm.slave_connection
+        @cm.replica_connection
       end
     end
     threads.each(&:join)

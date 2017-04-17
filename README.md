@@ -1,68 +1,86 @@
 # FreshConnection
 [![Gem Version](https://badge.fury.io/rb/fresh_connection.svg)](http://badge.fury.io/rb/fresh_connection) [![Build Status](https://travis-ci.org/tsukasaoishi/fresh_connection.svg?branch=master)](https://travis-ci.org/tsukasaoishi/fresh_connection) [![Code Climate](https://codeclimate.com/github/tsukasaoishi/fresh_connection/badges/gpa.svg)](https://codeclimate.com/github/tsukasaoishi/fresh_connection)
 
-FreshConnection can access to slave servers via a load balancer.
+**FreshConnection** provides access to one or more configured database replicas.
 
-For example.
+For example:
 ```
-Rails ------------ Master DB
+Rails ------------ DB Master
              |
-             |                     +------ Slave1 DB
+             +---- DB Replica
+
+```
+
+or:
+
+```
+Rails -------+---- DB Master
+             |
+             |                     +------ DB Replica1
              |                     |
              +---- Loadbalancer ---+
                                    |
-                                   +------ Slave2 DB
+                                   +------ DB Replica2
 ```
 
-FreshConnction connects with one of slave servers behind the load balancer.  
-Read query goes to the slave server.  
-Write query goes to the master server.  
-Inside transaction, all queries go to the master server.  
+FreshConnction connects one or more configured DB replicas, or with multiple
+replicas behind a DB query load balancer.
 
-If you can't use a load balancer, could use [EbisuConnection](https://github.com/tsukasaoishi/ebisu_connection).
+- Read queries go to the DB replica.
+- Write queries go to the DB master.
+- Within a transaction, all queries go to the DB master.
+
+If you wish to use multiple DB replicas on any given connection but not have
+a load balancer (such as [`pgbouncer`](https://pgbouncer.github.io) for Posgres
+databases), you can use [EbisuConnection](https://github.com/tsukasaoishi/ebisu_connection).
 
 ## Usage
-### Access to Slave
-Read query goes to the slave server.
+### Access to the DB Replica
+Read queries are automatically connected to the DB replica.
 
 ```ruby
-Article.where(:id => 1)
+Article.where(id: 1)
+
+Account.count
 ```
 
-### Access to Master
-If read query want to access to the master server, use `read_master`.  
-In before version 0.4.3, can use `readonly(false)`.
+### Access to the DB Master
+If you wish to ensure that queries are directed to the DB master, call `read_master`.
+Before version 0.4.3, `readonly(false)` must be used.
 
 ```ruby
-Article.where(:id => 1).read_master
+Article.where(id: 1).read_master
+
+Account.count.read_master
 ```
 
-In transaction, All queries go to the master server.
+Within transactions, all queries are connected to the DB master.
 
 ```ruby
 Article.transaction do
-  Article.where(:id => 1)
+  Article.where(id: 1)
 end
 ```
 
-Create, Update and Delete queries go to the master server.
+Create, update and delete queries are connected to the DB master.
 
 ```ruby
-article = Article.create(...)
-article.title = "FreshConnection"
-article.save
-article.destory
+new_article = Article.create(...)
+new_article.title = "FreshConnection"
+new_article.save
+...
+old_article.destroy
 ```
 
-## Support ActiveRecord version
-FreshConnection supports ActiveRecord version 4.0 or later.  
-If you are using Rails 3.2, could use FreshConnection version 1.0.0 or before.
+## ActiveRecord Versions Supported
+FreshConnection supports ActiveRecord version 4.0 or later.
+If you are using Rails 3.2, you can use FreshConnection version 1.0.0 or before.
 
-## Support DB
-FreshConnection supports MySQL and PostgreSQL.
+## Databases Supported
+FreshConnection currently supports MySQL and PostgreSQL.
 
 ## Installation
-Add this line to your application's Gemfile:
+Add this line to your application's `Gemfile`:
 
 ```ruby
 gem "fresh_connection"
@@ -74,105 +92,158 @@ And then execute:
 $ bundle
 ```
 
-Or install it yourself as:
+Or install it manually with:
 
 ```
 $ gem install fresh_connection
 ```
 
+### Variant Installation For Use With Some Other ActiveRecord Gems
+If you are using NewRelic or other gems that insert themselves into the
+ActiveRecord call-chain using `method_alias`, then a slight variation on the
+installation and configuration is required.
 
-## Config
-### config/database.yml
+In the `Gemfile`, use:
+
+```ruby
+gem "fresh_connection", require: false
+```
+
+Then, in `config/application.rb`, add the following:
+
+```ruby
+config.after_initialize do
+  require 'fresh_connection'
+end
+```
+
+## Configuration
+
+The FreshConnection database replica is configured within the standard Rails
+database configuration file, `config/database.yml`, using a `replica:` stanza.
+
+*Security Note*:
+
+> We strongly recommend against using secrets within the `config/database.yml`
+> file.  Instead, it is both convenient and advisable to use ERB substitutions with 
+> environment variables within the file.
+
+> Using the [`dotenv`](https://github.com/bkeepers/dotenv) gem to keep secrets in a `.env` file that is never committed 
+> to the source management repository will help make secrets manageable.
+
+Below is a sample such configuration file.
+
+### `config/database.yml`
 
 ```yaml
 production:
-  adapter: mysql2
-  encoding: utf8
+  adapter:   mysql2
+  encoding:  utf8
   reconnect: true
-  database: kaeru
-  pool: 5
-  username: master
-  password: master
-  host: localhost
-  socket: /var/run/mysqld/mysqld.sock
+  database:  <%= DB_MASTER_NAME %>
+  pool:      5
+  username:  <%= DB_MASTER_USER %>
+  password:  <%= DB_MASTER_PASS %>
+  host:      <%= DB_MASTER_HOST %>
+  socket:    /var/run/mysqld/mysqld.sock
 
-  slave:
-    username: slave
-    password: slave
-    host: slave
+  replica:
+    username: <%= DB_REPLICA_USER %>
+    password: <%= DB_REPLICA_PASS %>
+    host:     <%= DB_REPLICA_HOST %>
 ```
 
-```slave``` is a config to connect to slave servers.
-Others will use the master server settings.
+`replica` is the configuration used for connecting read-only queries to the
+database replica.  All other connections will use the database master settings.
 
-### use multiple slave servers group
-If you may want to use multiple slave groups, write the config to ```config/database.yml```.
+### Multiple DB Replicas
+If you want to use multiple configured DB replicas, the configuration can
+contain multiple `replica` stanzas in the configuration file `config/database.yml`.
+
+For example:
 
 ```yaml
 production:
-  adapter: mysql2
-  encoding: utf8
+  adapter:   mysql2
+  encoding:  utf8
   reconnect: true
-  database: kaeru
-  pool: 5
-  username: master
-  password: master
-  host: localhost
-  socket: /var/run/mysqld/mysqld.sock
+  database:  <%= DB_MASTER_NAME %>
+  pool:      5
+  username:  <%= DB_MASTER_USER %>
+  password:  <%= DB_MASTER_PASS %>
+  host:      <%= DB_MASTER_HOST %>
+  socket:    /var/run/mysqld/mysqld.sock
 
-  slave:
-    username: slave
-    password: slave
-    host: slave
+  replica:
+    username: <%= DB_REPLICA_USER %>
+    password: <%= DB_REPLICA_PASS %>
+    host:     <%= DB_REPLICA_HOST %>
 
-  admin_slave:
-    username: slave
-    password: slave
-    host: admin_slaves
+  admin_replica:
+    username: <%= DB_ADMIN_REPLICA_USER %>
+    password: <%= DB_ADMIN_REPLICA_PASS %>
+    host:     <%= DB_ADMIN_REPLICA_HOST %>
 ```
 
-And call the establish_fresh_connection method in a model that access to ```admin_slave``` slave group.
+The custom replica stanza can then be applied as an argument to the
+`establish_fresh_connection` method in the models that should use it.  For
+example:
 
 ```ruby
 class AdminUser < ActiveRecord::Base
-  establish_fresh_connection :admin_slave
+  establish_fresh_connection :admin_replica
 end
 ```
 
-The children class will access to same slave group as the parent.
+The child (sub) classes of the configured model will inherit the same access
+as the parent class.  Example:
 
 ```ruby
-class Parent < ActiveRecord::Base
-  establish_fresh_connection :admin_slave
+class AdminBase < ActiveRecord::Base
+  establish_fresh_connection :admin_replica
 end
 
-class AdminUser < Parent
+class AdminUser < AdminBase
 end
 
-class Benefit < Parent
+class Benefit < AdminBase
+end
+
+class Customer < ActiveRecord::Base>
 end
 ```
 
-AdminUser and Benefit access to ```admin_slave``` slave group.
+The `AdminUser` and `Benefit` models will access the database configured for
+the `admin_replica` group.
+
+The `Customer` model will use the default connections: read-only queries will
+connect to the standard DB replica, and state-changing queries will connect to
+the DB master.
 
 
-### Declare model that doesn't use slave db
+### Master-only Models
+
+It is possible to declare that specific models always use the DB master for all connections, using
+the `master_db_only!` method:
 
 ```ruby
-class SomethingModel < ActiveRecord::Base
+class CustomerState < ActiveRecord::Base
   master_db_only!
 end
 ```
 
-If a model that always access to the master server is exist, You write ```master_db_only!```  in the model.
-The model that master_db_only model's child is always access to master db.
+All queries generated by methods on the `CustomerState` model will be directed to the DB master.
 
-### for Unicorn
+### Using FreshConnection With Unicorn
+
+When using FreshConnection with Unicorn (or any other multi-processing web
+server which restarts processes on the fly), connection management needs
+special attention during startup:
 
 ```ruby
 before_fork do |server, worker|
   ...
-  ActiveRecord::Base.clear_all_slave_connections!
+  ActiveRecord::Base.clear_all_replica_connections!
   ...
 end
 
@@ -183,37 +254,42 @@ after_fork do |server, worker|
 end
 ```
 
-### Slave Connection Manager
-Default slave connection manager is FreshConnection::ConnectionManager.
-If you would like to change slave connection manager, assign yourself slave connection manager.
+### Replica Connection Manager
+The default replica connection manager is `FreshConnection::ConnectionManager`.
+If an alternative (custom) replica connection manager is desired, this can be done
+with a simple assignment within a Rails initializer:
 
-#### config/initializers/fresh_connection.rb
+`config/initializers/fresh_connection.rb`:
 
 ```ruby
-FreshConnection.connection_manager = MySlaveConnection
+FreshConnection.connection_manager = MyOwnReplicaConnection
 ```
 
-
-Yourself Slave Connection Manager should be inherited FreshConnection::AbstractConnectionManager
+The `MyOwnReplicaConnection` class should inherit from
+`FreshConnection::AbstractConnectionManager`, which has this interface:
 
 ```ruby
-class MySlaveConnection < FreshConnection::AbstractConnectionManager
-  def slave_connection
-    # must return object of ActiveRecord::ConnectionAdapters::Mysql2Adapter
+class MyOwnReplicaConnection < FreshConnection::AbstractConnectionManager
+
+  def replica_connection
+    # must return an instance of a subclass of ActiveRecord::ConnectionAdapters
+    # eg: ActiveRecord::ConnectionAdapter::Mysql2Adapter
+    # or: ActiveRecord::ConnectionAdapter::PostgresqlAdapter
   end
 
   def clear_all_connections!
-    # called when all connections disconnect
+    # called to disconnect all connections
   end
-  
+
   def put_aside!
     # called when end of Rails controller action
   end
 
   def recovery?
-    # called when raise exception to access slave server
-    # retry to access when this method return true
+    # called when raising exceptions on access to the DB replica
+    # access will be retried when this method returns true
   end
+
 end
 ```
 
@@ -228,17 +304,22 @@ end
 
 ## Test
 
-I'm glad that you would do test!
-To run the test suite, you need mysql installed.
-How to setup your test environment.
+I'm glad that you would test!
+To run the test suite, `mysql` must be installed.
 
-First of all, you setting the config of the test mysql server in ```spec/database.yml```
+### Test Configuration
+
+First, configure the test `mysql` server in `spec/database.yml`.
+
+Then, run:
 
 ```bash
 ./bin/setup
 ```
 
-This command run the spec suite for all rails versions supported.
+### Running Tests
+
+To run the spec suite for all supported versions of rails:
 
 ```bash
 ./bin/test

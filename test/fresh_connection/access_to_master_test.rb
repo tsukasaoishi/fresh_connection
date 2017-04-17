@@ -7,7 +7,7 @@ class AccessToMasterTest < Minitest::Test
 
   test "in transaction" do
     User.transaction do
-      assert_includes @user.name, "slave1"
+      assert_includes @user.name, "replica1"
       data = [
         Address.first.user.name,
         Address.first.prefecture,
@@ -27,7 +27,7 @@ class AccessToMasterTest < Minitest::Test
 
   test "in with_master" do
     User.with_master do
-      assert_includes @user.name, "slave1"
+      assert_includes @user.name, "replica1"
       data = [
         Address.first.user.name,
         Address.first.prefecture,

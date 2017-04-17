@@ -28,7 +28,7 @@ class MasterDbOnlyModelAlwaysAccessToMasterTest < Minitest::Test
   end
 
   test "not effect other models" do
-    assert_includes Address.first.prefecture, "slave1"
-    assert_includes Tel.first.number, "slave2"
+    assert_includes Address.first.prefecture, "replica1"
+    assert_includes Tel.first.number, "replica2"
   end
 end

@@ -76,21 +76,21 @@ ALTER TABLE ONLY tels ALTER COLUMN id SET DEFAULT nextval('tels_id_seq'::regclas
 ALTER TABLE ONLY users ALTER COLUMN id SET DEFAULT nextval('users_id_seq'::regclass);
 
 COPY addresses (id, user_id, prefecture, created_at, updated_at) FROM stdin;
-1	1	Tokyo (slave1)	2014-04-10 07:24:16	2014-04-10 07:24:16
+1	1	Tokyo (replica2)	2014-04-10 07:24:16	2014-04-10 07:24:16
 \.
 
 SELECT pg_catalog.setval('addresses_id_seq', 1, false);
 
 COPY tels (id, user_id, number, created_at, updated_at) FROM stdin;
-1	1	03-1111-1111 (slave1)	2014-04-10 07:24:16	2014-04-10 07:24:16
-2	1	03-1111-1112 (slave1)	2014-04-10 07:24:16	2014-04-10 07:24:16
-3	1	03-1111-1113 (slave1)	2014-04-10 07:24:16	2014-04-10 07:24:16
+1	1	03-1111-1111 (replica2)	2014-04-10 07:24:16	2014-04-10 07:24:16
+2	1	03-1111-1112 (replica2)	2014-04-10 07:24:16	2014-04-10 07:24:16
+3	1	03-1111-1113 (replica2)	2014-04-10 07:24:16	2014-04-10 07:24:16
 \.
 
 SELECT pg_catalog.setval('tels_id_seq', 1, false);
 
 COPY users (id, name, created_at, updated_at) FROM stdin;
-1	Tsukasa (slave1)	2014-04-10 07:24:16	2014-04-10 07:24:16
+1	Tsukasa (replica2)	2014-04-10 07:24:16	2014-04-10 07:24:16
 2	Other	2014-04-10 07:24:16	2014-04-10 07:24:16
 3	Other	2014-04-10 07:24:16	2014-04-10 07:24:16
 \.

@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Tsukasa OISHI"]
   spec.email         = ["tsukasa.oishi@gmail.com"]
 
-  spec.summary       = %q{FreshConnection supports to connect with Mysql slave servers via Load Balancers.}
+  spec.summary       = %q{FreshConnection supports connections with configured replica servers.}
   spec.description   = %q{https://github.com/tsukasaoishi/fresh_connection}
   spec.homepage      = "https://github.com/tsukasaoishi/fresh_connection"
   spec.license       = "MIT"

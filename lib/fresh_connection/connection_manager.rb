@@ -9,7 +9,7 @@ module FreshConnection
       @connections = Concurrent::Map.new
     end
 
-    def slave_connection
+    def replica_connection
       @connections.fetch_or_store(current_thread_id) do |_|
         connection_factory.new_connection
       end
@@ -29,7 +29,7 @@ module FreshConnection
     end
 
     def recovery?
-      return false if slave_connection.active?
+      return false if replica_connection.active?
       put_aside!
       true
     end
@@ -37,7 +37,7 @@ module FreshConnection
     private
 
     def connection_factory
-      @connection_factory ||= ConnectionFactory.new(@slave_group)
+      @connection_factory ||= ConnectionFactory.new(@replica_group)
     end
 
     def current_thread_id

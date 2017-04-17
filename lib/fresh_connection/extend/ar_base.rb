@@ -1,15 +1,15 @@
 require 'fresh_connection/access_control'
-require 'fresh_connection/slave_connection_handler'
+require 'fresh_connection/replica_connection_handler'
 
 module FreshConnection
   module Extend
     module ArBase
       def connection
-        if FreshConnection::AccessControl.slave_access?
+        if FreshConnection::AccessControl.replica_access?
           if logger && logger.debug?
-            slave_connection.tap{|c| c.slave_group = slave_group }
+            replica_connection.tap{|c| c.replica_group = replica_group }
           else
-            slave_connection
+            replica_connection
           end
         else
           super
@@ -24,16 +24,16 @@ module FreshConnection
         all.manage_access(false, &block)
       end
 
-      def establish_fresh_connection(slave_group = nil)
-        slave_connection_handler.establish_connection(name, slave_group)
+      def establish_fresh_connection(replica_group = nil)
+        replica_connection_handler.establish_connection(name, replica_group)
       end
 
-      def slave_connection
-        slave_connection_handler.connection(self)
+      def replica_connection
+        replica_connection_handler.connection(self)
       end
 
-      def clear_all_slave_connections!
-        slave_connection_handler.clear_all_connections!
+      def clear_all_replica_connections!
+        replica_connection_handler.clear_all_connections!
       end
 
       def master_db_only!
@@ -45,22 +45,22 @@ module FreshConnection
           (self != ActiveRecord::Base && superclass.master_db_only?)
       end
 
-      def slave_connection_put_aside!
-        slave_connection_handler.put_aside!
+      def replica_connection_put_aside!
+        replica_connection_handler.put_aside!
       end
 
-      def slave_connection_recovery?
-        slave_connection_handler.recovery?(self)
+      def replica_connection_recovery?
+        replica_connection_handler.recovery?(self)
       end
 
-      def slave_group
-        slave_connection_handler.slave_group(self)
+      def replica_group
+        replica_connection_handler.replica_group(self)
       end
 
       private
 
-      def slave_connection_handler
-        @@slave_connection_handler ||= FreshConnection::SlaveConnectionHandler.new
+      def replica_connection_handler
+        @@replica_connection_handler ||= FreshConnection::ReplicaConnectionHandler.new
       end
     end
   end

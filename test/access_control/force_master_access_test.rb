@@ -8,7 +8,7 @@ class ForceMasterAccessTest < Minitest::Test
   test "forced master state" do
     @ac.access(true) do
       @ac.force_master_access do
-        refute @ac.slave_access?
+        refute @ac.replica_access?
       end
     end
   end
@@ -16,7 +16,7 @@ class ForceMasterAccessTest < Minitest::Test
   test "not effect outside" do
     @ac.access(true) do
       @ac.force_master_access {}
-      assert @ac.slave_access?
+      assert @ac.replica_access?
     end
   end
 end
