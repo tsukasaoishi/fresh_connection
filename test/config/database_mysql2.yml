@@ -3,8 +3,8 @@ test:
   encoding: utf8
   database: fresh_connection_test_master
   pool: 5
-  username: root
-  password: local-db
+  username: <%= ENV['MYSQL_USER'] || 'root' %>
+  password: <%= ENV['MYSQL_PASS'] %>
 
   replica1:
     database: fresh_connection_test_replica1
