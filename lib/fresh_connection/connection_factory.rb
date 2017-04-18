@@ -1,3 +1,4 @@
+require 'active_support/deprecation'
 require 'active_support/core_ext/hash/keys'
 
 module FreshConnection
@@ -23,8 +24,18 @@ module FreshConnection
 
     def build_spec
       config = ar_spec.config.symbolize_keys
+      group_config = config[@group]
+
       # provide backward compatibility for older :slave usage
-      group_config = (config[@group] || (@group == :replica && config[:slave]) || {}).symbolize_keys
+      if !group_config && @group == :replica && config.key?(:slave)
+        ActiveSupport::Deprecation.warn(
+          "'slave' in database.yml is deprecated and will ignored from version 2.4.0. use 'replica' insted."
+        )
+        group_config = config[:slave]
+      end
+
+      group_config = (group_config || {}).symbolize_keys
+
       config.merge(group_config).merge(@modify_spec)
     end
 

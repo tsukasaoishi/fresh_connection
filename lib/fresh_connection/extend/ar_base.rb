@@ -1,3 +1,4 @@
+require 'active_support/deprecation'
 require 'fresh_connection/access_control'
 require 'fresh_connection/replica_connection_handler'
 
@@ -32,8 +33,24 @@ module FreshConnection
         replica_connection_handler.connection(self)
       end
 
+      def slave_connection
+        ActiveSupport::Deprecation.warn(
+          "'slave_connection' is deprecated and will removed from version 2.4.0. use 'replica_connection' insted."
+        )
+
+        replica_connection
+      end
+
       def clear_all_replica_connections!
         replica_connection_handler.clear_all_connections!
+      end
+
+      def clear_all_slave_connections!
+        ActiveSupport::Deprecation.warn(
+          "'clear_all_slave_connections!' is deprecated and will removed from version 2.4.0. use 'clear_all_replica_connections!' insted."
+        )
+
+        clear_all_replica_connections!
       end
 
       def master_db_only!
@@ -49,12 +66,36 @@ module FreshConnection
         replica_connection_handler.put_aside!
       end
 
+      def slave_connection_put_aside!
+        ActiveSupport::Deprecation.warn(
+          "'slave_connection_put_aside!' is deprecated and will removed from version 2.4.0. use 'replica_connection_put_aside!' insted."
+        )
+
+        replica_connection_put_aside!
+      end
+
       def replica_connection_recovery?
         replica_connection_handler.recovery?(self)
       end
 
+      def slave_connection_recovery?
+        ActiveSupport::Deprecation.warn(
+          "'slave_connection_recovery?' is deprecated and will removed from version 2.4.0. use 'replica_connection_recovery?' insted."
+        )
+
+        replica_connection_recovery?
+      end
+
       def replica_group
         replica_connection_handler.replica_group(self)
+      end
+
+      def slave_group
+        ActiveSupport::Deprecation.warn(
+          "'slave_connection_recovery?' is deprecated and will removed from version 2.4.0. use 'replica_connection_recovery?' insted."
+        )
+
+        replica_group
       end
 
       private

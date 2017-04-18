@@ -1,5 +1,17 @@
+require 'active_support/deprecation'
+
 module FreshConnection
   class AbstractConnectionManager
+    class << self
+      def method_added(name)
+        return unless name == :slave_connection
+
+        ActiveSupport::Deprecation.warn(
+          "'slave_connection' has been deprecated. use 'replica_connection' insted."
+        )
+      end
+    end
+
     attr_reader :replica_group
 
     def initialize(replica_group = "replica")
@@ -8,7 +20,13 @@ module FreshConnection
       @replica_group = "replica" if @replica_group.empty?
     end
 
-    alias_method :slave_group, :replica_group
+    def slave_group
+      ActiveSupport::Deprecation.warn(
+        "'slave_group' is deprecated and will removed from version 2.4.0. use 'replica_group' insted."
+      )
+
+      replica_group
+    end
 
     def replica_connection
     end
