@@ -24,7 +24,7 @@ module FreshConnection
     def build_spec
       config = ar_spec.config.symbolize_keys
       # provide backward compatibility for older :slave usage
-      group_config = (config[@group] || (@group == "replica" && config[:slave]) || {}).symbolize_keys
+      group_config = (config[@group] || (@group == :replica && config[:slave]) || {}).symbolize_keys
       config.merge(group_config).merge(@modify_spec)
     end
 
