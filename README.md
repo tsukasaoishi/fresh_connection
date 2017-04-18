@@ -140,17 +140,17 @@ production:
   adapter:   mysql2
   encoding:  utf8
   reconnect: true
-  database:  <%= DB_MASTER_NAME %>
+  database:  <%= ENV['DB_MASTER_NAME'] %>
   pool:      5
-  username:  <%= DB_MASTER_USER %>
-  password:  <%= DB_MASTER_PASS %>
-  host:      <%= DB_MASTER_HOST %>
+  username:  <%= ENV['DB_MASTER_USER'] %>
+  password:  <%= ENV['DB_MASTER_PASS'] %>
+  host:      <%= ENV['DB_MASTER_HOST'] %>
   socket:    /var/run/mysqld/mysqld.sock
 
   replica:
-    username: <%= DB_REPLICA_USER %>
-    password: <%= DB_REPLICA_PASS %>
-    host:     <%= DB_REPLICA_HOST %>
+    username: <%= ENV['DB_REPLICA_USER'] %>
+    password: <%= ENV['DB_REPLICA_PASS'] %>
+    host:     <%= ENV['DB_REPLICA_HOST'] %>
 ```
 
 `replica` is the configuration used for connecting read-only queries to the
@@ -167,22 +167,22 @@ production:
   adapter:   mysql2
   encoding:  utf8
   reconnect: true
-  database:  <%= DB_MASTER_NAME %>
+  database:  <%= ENV['DB_MASTER_NAME'] %>
   pool:      5
-  username:  <%= DB_MASTER_USER %>
-  password:  <%= DB_MASTER_PASS %>
-  host:      <%= DB_MASTER_HOST %>
+  username:  <%= ENV['DB_MASTER_USER'] %>
+  password:  <%= ENV['DB_MASTER_PASS'] %>
+  host:      <%= ENV['DB_MASTER_HOST'] %>
   socket:    /var/run/mysqld/mysqld.sock
 
   replica:
-    username: <%= DB_REPLICA_USER %>
-    password: <%= DB_REPLICA_PASS %>
-    host:     <%= DB_REPLICA_HOST %>
+    username: <%= ENV['DB_REPLICA_USER'] %>
+    password: <%= ENV['DB_REPLICA_PASS'] %>
+    host:     <%= ENV['DB_REPLICA_HOST'] %>
 
   admin_replica:
-    username: <%= DB_ADMIN_REPLICA_USER %>
-    password: <%= DB_ADMIN_REPLICA_PASS %>
-    host:     <%= DB_ADMIN_REPLICA_HOST %>
+    username: <%= ENV['DB_ADMIN_REPLICA_USER'] %>
+    password: <%= ENV['DB_ADMIN_REPLICA_PASS'] %>
+    host:     <%= ENV['DB_ADMIN_REPLICA_HOST'] %>
 ```
 
 The custom replica stanza can then be applied as an argument to the
