@@ -73,7 +73,8 @@ old_article.destroy
 ```
 
 ## ActiveRecord Versions Supported
-FreshConnection supports ActiveRecord version 4.0 or later.
+FreshConnection supports ActiveRecord version 4.2 or later.
+If you are using Rails 4.1 or 4.0, you can use FreshConnection version 2.1.2 or before.
 If you are using Rails 3.2, you can use FreshConnection version 1.0.0 or before.
 
 ## Databases Supported
@@ -209,7 +210,7 @@ end
 class Benefit < AdminBase
 end
 
-class Customer < ActiveRecord::Base>
+class Customer < ActiveRecord::Base
 end
 ```
 
