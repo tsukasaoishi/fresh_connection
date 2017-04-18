@@ -13,7 +13,7 @@ class ActiveRecord::Base
     username: 'root',
     password: '',
     socket: '/tmp/mysql.sock',
-    slave: { encoding: 'utf8' }
+    replica: { encoding: 'utf8' }
   )
 end
 

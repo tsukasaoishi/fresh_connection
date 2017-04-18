@@ -14,7 +14,7 @@ class ClearAllConnectionTest < Minitest::Test
     threads = []
     threads_num.times do |i|
       threads << Thread.new do
-        @cm.slave_connection
+        @cm.replica_connection
       end
     end
     threads.each(&:join)

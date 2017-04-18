@@ -1,21 +1,21 @@
 require 'concurrent'
 
 module FreshConnection
-  class SlaveConnectionHandler
+  class ReplicaConnectionHandler
     def initialize
       @class_to_pool = Concurrent::Map.new
     end
 
-    def establish_connection(name, slave_group)
+    def establish_connection(name, replica_group)
       if cm = class_to_pool[name]
         cm.put_aside!
       end
 
-      class_to_pool[name] = FreshConnection.connection_manager.new(slave_group)
+      class_to_pool[name] = FreshConnection.connection_manager.new(replica_group)
     end
 
     def connection(klass)
-      detect_connection_manager(klass).slave_connection
+      detect_connection_manager(klass).replica_connection
     end
 
     def clear_all_connections!
@@ -34,8 +34,8 @@ module FreshConnection
       end
     end
 
-    def slave_group(klass)
-      detect_connection_manager(klass).slave_group
+    def replica_group(klass)
+      detect_connection_manager(klass).replica_group
     end
 
     private

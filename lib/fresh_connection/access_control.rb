@@ -5,17 +5,17 @@ module FreshConnection
         switch_to(:master, &block)
       end
 
-      def access(enable_slave_access, &block)
+      def access(enable_replica_access, &block)
         if access_db
           block.call
         else
-          db = enable_slave_access ? :slave : :master
+          db = enable_replica_access ? :replica : :master
           switch_to(db, &block)
         end
       end
 
-      def slave_access?
-        access_db == :slave
+      def replica_access?
+        access_db == :replica
       end
 
       def catch_exceptions

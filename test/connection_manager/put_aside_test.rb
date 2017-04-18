@@ -14,12 +14,12 @@ class PutAsideTest < Minitest::Test
     threads = []
     threads_num.times do |i|
       threads << Thread.new do
-        @cm.slave_connection
+        @cm.replica_connection
       end
     end
     threads.each(&:join)
 
-    current_connection = @cm.slave_connection
+    current_connection = @cm.replica_connection
     @cm.put_aside!
     refute current_connection.active?
 

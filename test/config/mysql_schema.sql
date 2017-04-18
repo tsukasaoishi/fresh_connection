@@ -105,12 +105,12 @@ INSERT INTO `users` VALUES (2,'Other','2015-01-16 07:24:16','2014-04-10 07:24:16
 UNLOCK TABLES;
 
 --
--- Current Database: `fresh_connection_test_slave1`
+-- Current Database: `fresh_connection_test_replica1`
 --
 
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `fresh_connection_test_slave1` /*!40100 DEFAULT CHARACTER SET utf8 */;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `fresh_connection_test_replica1` /*!40100 DEFAULT CHARACTER SET utf8 */;
 
-USE `fresh_connection_test_slave1`;
+USE `fresh_connection_test_replica1`;
 
 --
 -- Table structure for table `addresses`
@@ -135,7 +135,7 @@ CREATE TABLE `addresses` (
 
 LOCK TABLES `addresses` WRITE;
 /*!40000 ALTER TABLE `addresses` DISABLE KEYS */;
-INSERT INTO `addresses` VALUES (1,1,'Tokyo (slave1)','2014-04-10 07:24:16','2014-04-10 07:24:16');
+INSERT INTO `addresses` VALUES (1,1,'Tokyo (replica1)','2014-04-10 07:24:16','2014-04-10 07:24:16');
 /*!40000 ALTER TABLE `addresses` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -162,7 +162,7 @@ CREATE TABLE `tels` (
 
 LOCK TABLES `tels` WRITE;
 /*!40000 ALTER TABLE `tels` DISABLE KEYS */;
-INSERT INTO `tels` VALUES (1,1,'03-1111-1111 (slave1)','2014-04-10 07:24:16','2014-04-10 07:24:16'),(2,1,'03-1111-1112 (slave1)','2014-04-10 07:24:16','2014-04-10 07:24:16'),(3,1,'03-1111-1113 (slave1)','2014-04-10 07:24:16','2014-04-10 07:24:16');
+INSERT INTO `tels` VALUES (1,1,'03-1111-1111 (replica1)','2014-04-10 07:24:16','2014-04-10 07:24:16'),(2,1,'03-1111-1112 (replica1)','2014-04-10 07:24:16','2014-04-10 07:24:16'),(3,1,'03-1111-1113 (replica1)','2014-04-10 07:24:16','2014-04-10 07:24:16');
 /*!40000 ALTER TABLE `tels` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -188,19 +188,19 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Tsukasa (slave1)','2014-04-10 07:24:16','2014-04-10 07:24:16');
+INSERT INTO `users` VALUES (1,'Tsukasa (replica1)','2014-04-10 07:24:16','2014-04-10 07:24:16');
 INSERT INTO `users` VALUES (2,'Other','2015-01-16 07:24:16','2014-04-10 07:24:16');
 INSERT INTO `users` VALUES (3,'Other','2015-01-16 07:24:16','2014-04-10 07:24:16');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Current Database: `fresh_connection_test_slave2`
+-- Current Database: `fresh_connection_test_replica2`
 --
 
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `fresh_connection_test_slave2` /*!40100 DEFAULT CHARACTER SET utf8 */;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `fresh_connection_test_replica2` /*!40100 DEFAULT CHARACTER SET utf8 */;
 
-USE `fresh_connection_test_slave2`;
+USE `fresh_connection_test_replica2`;
 
 --
 -- Table structure for table `addresses`
@@ -225,7 +225,7 @@ CREATE TABLE `addresses` (
 
 LOCK TABLES `addresses` WRITE;
 /*!40000 ALTER TABLE `addresses` DISABLE KEYS */;
-INSERT INTO `addresses` VALUES (1,1,'Tokyo (slave2)','2014-04-10 07:24:16','2014-04-10 07:24:16');
+INSERT INTO `addresses` VALUES (1,1,'Tokyo (replica2)','2014-04-10 07:24:16','2014-04-10 07:24:16');
 /*!40000 ALTER TABLE `addresses` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -252,7 +252,7 @@ CREATE TABLE `tels` (
 
 LOCK TABLES `tels` WRITE;
 /*!40000 ALTER TABLE `tels` DISABLE KEYS */;
-INSERT INTO `tels` VALUES (1,1,'03-1111-1111 (slave2)','2014-04-10 07:24:16','2014-04-10 07:24:16'),(2,1,'03-1111-1112 (slave2)','2014-04-10 07:24:16','2014-04-10 07:24:16'),(3,1,'03-1111-1113 (slave2)','2014-04-10 07:24:16','2014-04-10 07:24:16');
+INSERT INTO `tels` VALUES (1,1,'03-1111-1111 (replica2)','2014-04-10 07:24:16','2014-04-10 07:24:16'),(2,1,'03-1111-1112 (replica2)','2014-04-10 07:24:16','2014-04-10 07:24:16'),(3,1,'03-1111-1113 (replica2)','2014-04-10 07:24:16','2014-04-10 07:24:16');
 /*!40000 ALTER TABLE `tels` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -278,7 +278,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Tsukasa (slave2)','2014-04-10 07:24:16','2014-04-10 07:24:16');
+INSERT INTO `users` VALUES (1,'Tsukasa (replica2)','2014-04-10 07:24:16','2014-04-10 07:24:16');
 INSERT INTO `users` VALUES (2,'Other','2015-01-16 07:24:16','2014-04-10 07:24:16');
 INSERT INTO `users` VALUES (3,'Other','2015-01-16 07:24:16','2014-04-10 07:24:16');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
