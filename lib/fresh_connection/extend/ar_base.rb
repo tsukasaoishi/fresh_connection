@@ -25,7 +25,7 @@ module FreshConnection
         all.manage_access(false, &block)
       end
 
-      def establish_fresh_connection(replica_group = nil)
+      def establish_fresh_connection(replica_group = "replica")
         replica_connection_handler.establish_connection(name, replica_group)
       end
 

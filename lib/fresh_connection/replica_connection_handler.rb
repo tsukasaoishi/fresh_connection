@@ -8,8 +8,9 @@ module FreshConnection
     end
 
     def establish_connection(name, replica_group)
-      if cm = class_to_pool(name)
+      if cm = @class_to_pool[name]
         cm.put_aside!
+        @class_to_pool.delete(name)
       end
 
       @replica_group_to_pool[name] = replica_group
