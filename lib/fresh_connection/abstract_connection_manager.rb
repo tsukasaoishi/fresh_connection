@@ -7,7 +7,7 @@ module FreshConnection
         return unless name == :slave_connection
 
         ActiveSupport::Deprecation.warn(
-          "'slave_connection' has been deprecated. use 'replica_connection' insted."
+          "'slave_connection' has been deprecated. use 'replica_connection' instead."
         )
       end
     end
@@ -22,7 +22,7 @@ module FreshConnection
 
     def slave_group
       ActiveSupport::Deprecation.warn(
-        "'slave_group' is deprecated and will removed from version 2.4.0. use 'replica_group' insted."
+        "'slave_group' is deprecated and will removed from version 2.4.0. use 'replica_group' instead."
       )
 
       replica_group

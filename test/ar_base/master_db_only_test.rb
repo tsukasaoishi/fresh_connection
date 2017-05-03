@@ -1,6 +1,7 @@
 require "test_helper"
 
 class MasterDbOnlyTest < Minitest::Test
+
   class User2 < Parent
     self.table_name = :users
   end

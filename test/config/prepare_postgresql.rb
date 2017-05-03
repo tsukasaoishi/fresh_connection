@@ -1,1 +1,6 @@
 ENV['DB_ADAPTER'] = 'postgresql'
+
+ENV.delete('DATABASE_URL')
+ENV.delete('DATABASE_REPLICA_URL')
+ENV.delete('DATABASE_REPLICA1_URL')
+ENV.delete('DATABASE_REPLICA2_URL')

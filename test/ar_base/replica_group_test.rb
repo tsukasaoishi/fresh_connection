@@ -1,6 +1,7 @@
 require "test_helper"
 
 class ReplicaGroupTest < Minitest::Test
+
   class Tel2 < Replica2
     self.table_name = :tel
   end

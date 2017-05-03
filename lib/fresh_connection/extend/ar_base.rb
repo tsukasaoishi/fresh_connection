@@ -35,7 +35,7 @@ module FreshConnection
 
       def slave_connection
         ActiveSupport::Deprecation.warn(
-          "'slave_connection' is deprecated and will removed from version 2.4.0. use 'replica_connection' insted."
+          "'slave_connection' is deprecated and will removed from version 2.4.0. use 'replica_connection' instead."
         )
 
         replica_connection
@@ -47,7 +47,7 @@ module FreshConnection
 
       def clear_all_slave_connections!
         ActiveSupport::Deprecation.warn(
-          "'clear_all_slave_connections!' is deprecated and will removed from version 2.4.0. use 'clear_all_replica_connections!' insted."
+          "'clear_all_slave_connections!' is deprecated and will removed from version 2.4.0. use 'clear_all_replica_connections!' instead."
         )
 
         clear_all_replica_connections!
@@ -68,7 +68,7 @@ module FreshConnection
 
       def slave_connection_put_aside!
         ActiveSupport::Deprecation.warn(
-          "'slave_connection_put_aside!' is deprecated and will removed from version 2.4.0. use 'replica_connection_put_aside!' insted."
+          "'slave_connection_put_aside!' is deprecated and will removed from version 2.4.0. use 'replica_connection_put_aside!' instead."
         )
 
         replica_connection_put_aside!
@@ -80,7 +80,7 @@ module FreshConnection
 
       def slave_connection_recovery?
         ActiveSupport::Deprecation.warn(
-          "'slave_connection_recovery?' is deprecated and will removed from version 2.4.0. use 'replica_connection_recovery?' insted."
+          "'slave_connection_recovery?' is deprecated and will removed from version 2.4.0. use 'replica_connection_recovery?' instead."
         )
 
         replica_connection_recovery?
@@ -92,7 +92,7 @@ module FreshConnection
 
       def slave_group
         ActiveSupport::Deprecation.warn(
-          "'slave_connection_recovery?' is deprecated and will removed from version 2.4.0. use 'replica_connection_recovery?' insted."
+          "'slave_connection_recovery?' is deprecated and will removed from version 2.4.0. use 'replica_connection_recovery?' instead."
         )
 
         replica_group

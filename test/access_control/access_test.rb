@@ -2,6 +2,7 @@ require "test_helper"
 
 class AccessTest < Minitest::Test
   def setup
+    super
     @ac = FreshConnection::AccessControl
   end
 

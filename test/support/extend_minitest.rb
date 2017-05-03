@@ -4,6 +4,10 @@ module ExtendMinitest
     raise "test '#{name}' is already defined" if method_defined?(test_name)
     define_method(test_name, &block)
   end
+
+  def setup
+    ActiveRecord::Base.configurations.clear     # reset all configurations before each test
+  end
 end
 
 unless defined?(Minitest::Test)

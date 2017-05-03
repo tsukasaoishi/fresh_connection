@@ -16,6 +16,7 @@ class MasterDbOnlyModelAlwaysAccessToMasterTest < Minitest::Test
   end
 
   def setup
+    super
     @user = User.where(id: 1).first
   end
 
