@@ -1,7 +1,9 @@
 require "test_helper"
 
 class ForceMasterAccessTest < Minitest::Test
+
   def setup
+    super
     @ac = FreshConnection::AccessControl
   end
 

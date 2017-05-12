@@ -2,6 +2,7 @@ require "test_helper"
 
 class AccessToMasterTest < Minitest::Test
   def setup
+    super
     @user = User.where(id: 1).first
   end
 

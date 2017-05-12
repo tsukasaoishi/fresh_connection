@@ -1,6 +1,7 @@
 require "test_helper"
 
 class RecoveryTest < Minitest::Test
+
   class User3 < ActiveRecord::Base
     self.table_name = "users"
 

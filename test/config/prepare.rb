@@ -8,7 +8,7 @@ when 'mysql2'
   puts "[mysql2]"
   system("mysql -uroot < test/config/mysql_schema.sql")
 when 'postgresql'
-  puts "postgresql"
+  puts "[postgresql]"
   system("psql fresh_connection_test_master < test/config/psql_test_master.sql > /dev/null 2>&1")
   system("psql fresh_connection_test_replica1 < test/config/psql_test_replica1.sql > /dev/null 2>&1")
   system("psql fresh_connection_test_replica2 < test/config/psql_test_replica2.sql > /dev/null 2>&1")
@@ -16,7 +16,22 @@ end
 
 module ActiveRecord
   class Base
-    self.configurations = YAML.load(ERB.new(File.read(File.join(__dir__, "database_#{ENV['DB_ADAPTER']}.yml"))).result)
+    # don't read the database config file if database envars are defined
+    unless ENV['DATABASE_URL'].present? && (ENV['DATABASE_REPLICA_URL'].present? || ENV['DATABASE_REPLICA1_URL'])
+      configs = YAML.load(ERB.new(File.read(File.join(__dir__, "database_#{ENV['DB_ADAPTER']}.yml"))).result)
+    else
+      db_adapter = ENV['DB_ADAPTER']
+      db_user    = ENV['DB_USER']
+      configs = { "test" => { "adapter" => db_adapter, "username" => db_user, "url" => ENV['DATABASE_URL'] } }
+      %w( replica replica1 replica2 ).each do |name|
+        envar = "DATABASE_#{name.upcase}_URL"
+        if (url = ENV[envar])
+          configs.merge!( name => { "adapter" => db_adapter, "username" => db_user, "url" => url})
+        end
+      end
+    end
+    self.configurations = configs
+    ENV['RAILS_ENV'] = 'test'     # set the default connection name
     establish_connection(configurations["test"])
     establish_fresh_connection :replica1
   end

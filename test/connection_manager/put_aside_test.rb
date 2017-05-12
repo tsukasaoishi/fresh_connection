@@ -2,6 +2,7 @@ require "test_helper"
 
 class PutAsideTest < Minitest::Test
   def setup
+    super
     @cm = FreshConnection::ConnectionManager.new
   end
 

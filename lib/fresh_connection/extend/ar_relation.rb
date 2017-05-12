@@ -60,7 +60,7 @@ module FreshConnection
 
       def enable_slave_access
         ActiveSupport::Deprecation.warn(
-          "'enable_slave_access' is deprecated and will removed from version 2.4.0. use 'enable_replica_access' insted."
+          "'enable_slave_access' is deprecated and will removed from version 2.4.0. use 'enable_replica_access' instead."
         )
 
         enable_replica_access
