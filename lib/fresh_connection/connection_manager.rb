@@ -7,7 +7,7 @@ module FreshConnection
   class ConnectionManager < AbstractConnectionManager
 
     if ActiveRecord::VERSION::MAJOR == 5
-      include ::ActiveRecord::ConnectionAdapters::QueryCache::ConnectionPoolConfiguration
+      eval "include ::ActiveRecord::ConnectionAdapters::QueryCache::ConnectionPoolConfiguration"
     end
 
     def initialize(*args)
