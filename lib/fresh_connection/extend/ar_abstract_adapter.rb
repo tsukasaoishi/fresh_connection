@@ -1,5 +1,3 @@
-require 'pry-byebug'
-
 module FreshConnection
   module Extend
     module ArAbstractAdapter
