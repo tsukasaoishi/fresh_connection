@@ -3,15 +3,17 @@ require 'erb'
 require 'active_record'
 require 'fresh_connection'
 
+REPLICA_NAMES = %w( replica1 replica2 fake_replica )
+
 case ENV['DB_ADAPTER']
 when 'mysql2'
   puts "[mysql2]"
   system("mysql -uroot < test/config/mysql_schema.sql")
 when 'postgresql'
   puts "[postgresql]"
-  system("psql fresh_connection_test_master < test/config/psql_test_master.sql > /dev/null 2>&1")
-  system("psql fresh_connection_test_replica1 < test/config/psql_test_replica1.sql > /dev/null 2>&1")
-  system("psql fresh_connection_test_replica2 < test/config/psql_test_replica2.sql > /dev/null 2>&1")
+  system("psql -q -f test/config/psql_test_master.sql   fresh_connection_test_master  ")
+  system("psql -q -f test/config/psql_test_replica1.sql fresh_connection_test_replica1")
+  system("psql -q -f test/config/psql_test_replica2.sql fresh_connection_test_replica2")
 end
 
 module ActiveRecord
@@ -23,7 +25,7 @@ module ActiveRecord
       db_adapter = ENV['DB_ADAPTER']
       db_user    = ENV['DB_USER']
       configs = { "test" => { "adapter" => db_adapter, "username" => db_user, "url" => ENV['DATABASE_URL'] } }
-      %w( replica replica1 replica2 ).each do |name|
+      REPLICA_NAMES.each do |name|
         envar = "DATABASE_#{name.upcase}_URL"
         if (url = ENV[envar])
           configs.merge!( name => { "adapter" => db_adapter, "username" => db_user, "url" => url})
