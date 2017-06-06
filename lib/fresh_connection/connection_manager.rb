@@ -32,26 +32,26 @@ module FreshConnection
     end
 
     def clear_all_connections!
-      for_all_connections do |conn|
+      for_all_replica_connections do |conn|
         conn.disconnect! rescue nil
       end
       @connections.clear
     end
 
     def clear_replica_query_caches!
-      for_all_connections do |conn|
+      for_all_replica_connections do |conn|
         conn.clear_query_cache
       end
     end
 
     def enable_query_cache!
-      for_all_connections do |conn|
+      for_all_replica_connections do |conn|
         conn.enable_query_cache!
       end
     end
 
     def disable_query_cache!
-      for_all_connections do |conn|
+      for_all_replica_connections do |conn|
         conn.disable_query_cache!
       end
     end
@@ -64,7 +64,7 @@ module FreshConnection
 
     private
 
-    def for_all_connections
+    def for_all_replica_connections
       @connections.each_value do |connection|
         yield(connection)
       end

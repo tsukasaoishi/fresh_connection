@@ -57,8 +57,8 @@ module FreshConnection
         clear_all_replica_connections!
       end
 
-      def clear_all_query_caches!
-        replica_connection_handler.clear_all_query_caches!
+      def clear_replica_query_caches!
+        replica_connection_handler.clear_replica_query_caches!
       end
 
       def enable_replica_query_cache_sync!

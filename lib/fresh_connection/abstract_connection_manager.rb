@@ -36,6 +36,10 @@ module FreshConnection
     end
     undef_method :clear_all_connections!
 
+    def clear_replica_query_caches!
+    end
+    undef_method :clear_replica_query_caches!
+
     def put_aside!
     end
     undef_method :put_aside!
