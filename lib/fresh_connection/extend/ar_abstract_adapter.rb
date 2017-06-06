@@ -22,7 +22,21 @@ module FreshConnection
       # to clear the replica connection caches, too.  But, don't recurse.
       def clear_query_cache
         if FreshConnection::ReplicaConnectionHandler.replica_query_cache_sync
-          ActiveRecord::Base.clear_all_query_caches! unless replica_group
+
+          # This call is interesting.  Here, in the FreshConnection
+          # extension to the AR AbstractAdapter, we are either on a :master
+          # connection or a :replica connection.  Unfortunately, there is no direct
+          # linkage between them.  So, from a :master connection, we don't know
+          # which :replica connection pool to use, or even which :replica connection
+          # manager to use, because those are associated with AR objects, not
+          # AR adapters.
+
+          # So, we need to "cross over" from the master connection side to the
+          # replica connection side, via a top-level AR::Base call, but we need
+          # to avoid accidental recursions, too.  The "replica_group" test
+          # should be non-nil for replica connections.
+
+          ActiveRecord::Base.clear_replica_query_caches! unless replica_group
         end
         super
       end

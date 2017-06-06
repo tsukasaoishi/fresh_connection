@@ -38,7 +38,7 @@ module FreshConnection
       end
     end
 
-    def clear_all_query_caches!
+    def clear_replica_query_caches!
       all_connection_managers do |connection_manager|
         connection_manager.clear_replica_query_caches!
       end
