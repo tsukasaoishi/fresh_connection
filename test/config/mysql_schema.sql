@@ -21,6 +21,8 @@
 
 CREATE DATABASE /*!32312 IF NOT EXISTS*/ `fresh_connection_test_master` /*!40100 DEFAULT CHARACTER SET utf8 */;
 
+SYSTEM echo "Loading master data set"
+
 USE `fresh_connection_test_master`;
 
 --
@@ -109,6 +111,8 @@ UNLOCK TABLES;
 --
 
 CREATE DATABASE /*!32312 IF NOT EXISTS*/ `fresh_connection_test_replica1` /*!40100 DEFAULT CHARACTER SET utf8 */;
+
+SYSTEM echo "Loading replica1 data set"
 
 USE `fresh_connection_test_replica1`;
 
@@ -200,6 +204,7 @@ UNLOCK TABLES;
 
 CREATE DATABASE /*!32312 IF NOT EXISTS*/ `fresh_connection_test_replica2` /*!40100 DEFAULT CHARACTER SET utf8 */;
 
+SYSTEM echo "Loading replica2 data set"
 USE `fresh_connection_test_replica2`;
 
 --
