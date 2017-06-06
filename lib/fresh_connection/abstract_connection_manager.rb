@@ -12,7 +12,7 @@ module FreshConnection
       end
     end
 
-    attr_reader :replica_group
+    attr_reader   :replica_group
 
     def initialize(replica_group = "replica")
       replica_group = "replica" if replica_group.to_s == "slave"

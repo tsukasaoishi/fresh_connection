@@ -1,7 +1,19 @@
 require 'concurrent'
 
 module FreshConnection
+
   class ReplicaConnectionHandler
+
+    cattr_accessor :replica_query_cache_sync
+
+    def self.enable_query_cache_sync!
+      @@replica_query_cache_sync = true
+    end
+
+    def self.disable_query_cache_sync!
+      @@replica_query_cache_sync = false
+    end
+
     def initialize
       @replica_group_to_pool = Concurrent::Map.new
       @class_to_pool = Concurrent::Map.new
@@ -23,6 +35,12 @@ module FreshConnection
     def clear_all_connections!
       all_connection_managers do |connection_manager|
         connection_manager.clear_all_connections!
+      end
+    end
+
+    def clear_all_query_caches!
+      all_connection_managers do |connection_manager|
+        connection_manager.clear_replica_query_caches!
       end
     end
 
