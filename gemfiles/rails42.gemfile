@@ -6,4 +6,4 @@ gem "activerecord", "~> 4.2.0"
 gem "activesupport", "~> 4.2.0"
 gem "mysql2", "~> 0.3.13"
 
-gemspec :path => "../"
+gemspec path: "../"
