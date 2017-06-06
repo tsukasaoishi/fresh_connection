@@ -6,12 +6,18 @@ require 'fresh_connection/connection_factory'
 module FreshConnection
   class ConnectionManager < AbstractConnectionManager
 
-    include ::ActiveRecord::ConnectionAdapters::QueryCache::ConnectionPoolConfiguration
+    if ActiveRecord::VERSION::MAJOR == 5
+      include ::ActiveRecord::ConnectionAdapters::QueryCache::ConnectionPoolConfiguration
+    end
 
     def initialize(*args)
       super
       @connections = Concurrent::Map.new
+      if ActiveRecord::VERSION::MAJOR == 4
+        @query_cache_enabled = Concurrent::Map.new { false }
+      end
     end
+
 
     def replica_connection
       @connections.fetch_or_store(current_thread_id) do |_|
