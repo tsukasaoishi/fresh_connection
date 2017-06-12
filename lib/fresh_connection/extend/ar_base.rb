@@ -29,6 +29,10 @@ module FreshConnection
         replica_connection_handler.establish_connection(name, replica_group)
       end
 
+      def master_connection
+        superclass.connection
+      end
+
       def replica_connection
         replica_connection_handler.connection(self)
       end
@@ -51,6 +55,22 @@ module FreshConnection
         )
 
         clear_all_replica_connections!
+      end
+
+      def clear_replica_query_caches!
+        replica_connection_handler.clear_replica_query_caches!
+      end
+
+      def enable_replica_query_cache_sync!
+        FreshConnection::ReplicaConnectionHandler.enable_query_cache_sync!
+      end
+
+      def disable_replica_query_cache_sync!
+        FreshConnection::ReplicaConnectionHandler.disable_query_cache_sync!
+      end
+
+      def replica_query_cache_sync
+        FreshConnection::ReplicaConnectionHandler.replica_query_cache_sync
       end
 
       def master_db_only!

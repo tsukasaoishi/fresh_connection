@@ -11,8 +11,10 @@ module FreshConnection
       @spec = nil
     end
 
-    def new_connection
-      ActiveRecord::Base.__send__(adapter_method, spec)
+    def new_connection(pool = nil)
+      ActiveRecord::Base.__send__(adapter_method, spec).tap do |conn|
+        conn.connection_pool = pool
+      end
     end
 
     private

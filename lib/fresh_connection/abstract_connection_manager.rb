@@ -12,7 +12,7 @@ module FreshConnection
       end
     end
 
-    attr_reader :replica_group
+    attr_reader   :replica_group
 
     def initialize(replica_group = "replica")
       replica_group = "replica" if replica_group.to_s == "slave"
@@ -35,6 +35,10 @@ module FreshConnection
     def clear_all_connections!
     end
     undef_method :clear_all_connections!
+
+    def clear_replica_query_caches!
+    end
+    undef_method :clear_replica_query_caches!
 
     def put_aside!
     end
