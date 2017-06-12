@@ -1,4 +1,4 @@
 module FreshConnection
-  VERSION = "2.3.1.rc5"
+  VERSION = "2.3.1.rc6"
 end
 

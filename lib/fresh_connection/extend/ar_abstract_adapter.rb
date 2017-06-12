@@ -34,7 +34,9 @@ module FreshConnection
           # to avoid accidental recursions, too.  The "replica_group" test
           # should be non-nil for replica connections.
 
-          ActiveRecord::Base.clear_replica_query_caches! unless replica_group
+          if replica_group.nil? || replica_group == :master
+            ActiveRecord::Base.clear_replica_query_caches!
+          end
         end
         super
       end
