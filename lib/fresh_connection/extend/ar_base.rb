@@ -6,15 +6,13 @@ module FreshConnection
   module Extend
     module ArBase
       def connection
-        if FreshConnection::AccessControl.replica_access?
-          if logger && logger.debug?
-            replica_connection.tap{|c| c.replica_group = replica_group }
-          else
-            replica_connection
-          end
-        else
-          super
-        end
+        master_c = super
+        return master_c unless FreshConnection::AccessControl.replica_access?
+
+        replica_c = replica_connection
+        replica_c.master_connection = master_c
+        replica_c.replica_group = replica_group if logger && logger.debug?
+        replica_c
       end
 
       def read_master

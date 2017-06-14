@@ -61,5 +61,9 @@ class Tel < Replica2
   belongs_to :user
 end
 
+if ENV['DB_ADAPTER'] == "postgresql"
+  ActiveRecord::Base.connection.execute("select setval('addresses_id_seq',(select max(id) from addresses))")
+end
+
 require "support/extend_minitest"
 require "support/active_record_logger"

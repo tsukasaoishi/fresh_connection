@@ -12,3 +12,6 @@ test:
   replica2:
     database: fresh_connection_test_replica2
 
+  fake_replica:
+    database: fresh_connection_test_master
+
