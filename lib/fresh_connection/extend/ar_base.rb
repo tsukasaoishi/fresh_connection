@@ -99,7 +99,7 @@ module FreshConnection
       private
 
       def replica_connection_handler
-        @@replica_connection_handler ||= FreshConnection::ReplicaConnectionHandler.new
+        FreshConnection::ReplicaConnectionHandler.instance
       end
     end
   end

@@ -18,7 +18,8 @@ module FreshConnection
     def put_aside!
       conn = @connections.delete(current_thread_id)
       return unless conn
-      conn && conn.disconnect! rescue nil
+      return if conn.transaction_open?
+      conn.disconnect! rescue nil
     end
 
     def clear_all_connections!

@@ -1,7 +1,10 @@
 require 'concurrent'
+require 'singleton'
 
 module FreshConnection
   class ReplicaConnectionHandler
+    include Singleton
+
     def initialize
       @replica_group_to_pool = Concurrent::Map.new
       @class_to_pool = Concurrent::Map.new
