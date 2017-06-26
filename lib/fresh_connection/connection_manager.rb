@@ -38,7 +38,7 @@ module FreshConnection
     private
 
     def connection_factory
-      @connection_factory ||= ConnectionFactory.new(@replica_group)
+      @connection_factory ||= ConnectionFactory.new(@spec_name)
     end
 
     def current_thread_id

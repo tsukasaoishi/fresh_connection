@@ -6,21 +6,28 @@ module FreshConnection
     include Singleton
 
     def initialize
-      @replica_group_to_pool = Concurrent::Map.new
-      @class_to_pool = Concurrent::Map.new
-    end
-
-    def establish_connection(name, replica_group)
-      if cm = @class_to_pool[name]
-        cm.put_aside!
-        @class_to_pool.delete(name)
+      @owner_to_pool = Concurrent::Map.new(initial_capacity: 2) do |h, k|
+        h[k] = Concurrent::Map.new(initial_capacity: 2)
       end
-
-      @replica_group_to_pool[name] = replica_group
     end
 
-    def connection(klass)
-      detect_connection_manager(klass).replica_connection
+    def establish_connection(spec_name)
+      spec_name = spec_name.to_s
+      remove_connection(spec_name)
+
+      message_bus = ActiveSupport::Notifications.instrumenter
+      payload = {
+        connection_id: object_id,
+        spec_name: spec_name
+      }
+
+      message_bus.instrument("!connection.active_record", payload) do
+        owner_to_pool[spec_name] = FreshConnection.connection_manager.new(spec_name)
+      end
+    end
+
+    def connection(spec_name)
+      detect_connection_manager(spec_name).replica_connection
     end
 
     def clear_all_connections!
@@ -29,8 +36,8 @@ module FreshConnection
       end
     end
 
-    def recovery?(klass)
-      detect_connection_manager(klass).recovery?
+    def recovery?(spec_name)
+      detect_connection_manager(spec_name).recovery?
     end
 
     def put_aside!
@@ -39,11 +46,14 @@ module FreshConnection
       end
     end
 
-    def replica_group(klass)
-      detect_connection_manager(klass).replica_group
-    end
-
     private
+
+    def remove_connection(spec_name)
+      pool = owner_to_pool.delete(spec_name.to_s)
+      return unless pool
+
+      pool.clear_all_connections!
+    end
 
     def all_connection_managers
       @class_to_pool.each_value do |connection_manager|
@@ -51,18 +61,12 @@ module FreshConnection
       end
     end
 
-    def detect_connection_manager(klass)
-      c = class_to_pool(klass.name)
-      return c if c
-      return nil if ActiveRecord::Base == klass
-      detect_connection_manager(klass.superclass)
+    def detect_connection_manager(spec_name)
+      owner_to_pool[spec_name.to_s]
     end
 
-    def class_to_pool(name)
-      return @class_to_pool[name] if @class_to_pool.key?(name)
-      g = @replica_group_to_pool[name]
-      return nil unless g
-      @class_to_pool[name] = FreshConnection.connection_manager.new(g)
+    def owner_to_pool
+      @owner_to_pool[Process.pid]
     end
   end
 end

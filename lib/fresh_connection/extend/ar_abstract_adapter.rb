@@ -2,12 +2,11 @@ module FreshConnection
   module Extend
     module ArAbstractAdapter
       def self.prepended(base)
-        base.send :attr_writer, :replica_group
-        base.send :attr_accessor, :master_connection
+        base.send :attr_accessor, :replica_spec_name, :master_connection
       end
 
       def log(*args)
-        args[1] = "[#{@replica_group}] #{args[1]}" if defined?(@replica_group)
+        args[1] = "[#{@replica_spec_name}] #{args[1]}" if defined?(@replica_spec_name)
         super
       end
 
