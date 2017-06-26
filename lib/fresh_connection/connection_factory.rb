@@ -10,6 +10,10 @@ module FreshConnection
       @spec = nil
     end
 
+    def spec
+      @spec ||= build_spec
+    end
+
     def new_connection
       ActiveRecord::Base.__send__(adapter_method, spec)
     end
@@ -18,10 +22,6 @@ module FreshConnection
 
     def adapter_method
       @adapter_method ||= ar_spec.adapter_method
-    end
-
-    def spec
-      @spec ||= build_spec
     end
 
     # when building a spec from envars, there may be no database.yml file, so

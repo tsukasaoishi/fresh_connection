@@ -12,6 +12,4 @@ ActiveSupport.on_load(:active_record) do
   ActiveRecord::Relation::Merger.send :prepend, FreshConnection::Extend::ArRelationMerger
   ActiveRecord::StatementCache.send :prepend, FreshConnection::Extend::ArStatementCache
   ActiveRecord::ConnectionAdapters::AbstractAdapter.send :prepend, FreshConnection::Extend::ArAbstractAdapter
-
-  ActiveRecord::Base.establish_fresh_connection
 end

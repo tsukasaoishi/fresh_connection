@@ -6,27 +6,24 @@ module FreshConnection
   class ConnectionManager < AbstractConnectionManager
     def initialize(*args)
       super
-      @connections = Concurrent::Map.new
+
+      config = connection_factory.spec
+      resolver = ::ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(spec_name => config)
+      spec = resolver.spec(spec_name.to_sym)
+
+      @pool = ::ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
     end
 
     def replica_connection
-      @connections.fetch_or_store(current_thread_id) do |_|
-        connection_factory.new_connection
-      end
+      @pool.connection
     end
 
     def put_aside!
-      conn = @connections.delete(current_thread_id)
-      return unless conn
-      return if conn.transaction_open?
-      conn.disconnect! rescue nil
+      @pool.release_connection if @pool.active_connection? && !@pool.connection.transaction_open?
     end
 
     def clear_all_connections!
-      @connections.each_value do |conn|
-        conn.disconnect! rescue nil
-      end
-      @connections.clear
+      @pool.disconnect!
     end
 
     def recovery?
@@ -38,11 +35,7 @@ module FreshConnection
     private
 
     def connection_factory
-      @connection_factory ||= ConnectionFactory.new(@spec_name)
-    end
-
-    def current_thread_id
-      Thread.current.object_id
+      @connection_factory ||= ConnectionFactory.new(spec_name)
     end
   end
 end

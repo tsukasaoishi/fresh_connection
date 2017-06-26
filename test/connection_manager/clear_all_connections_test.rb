@@ -21,11 +21,11 @@ class ClearAllConnectionTest < Minitest::Test
     end
     threads.each(&:join)
 
-    connections = @cm.instance_variable_get("@connections")
+    connections = @cm.instance_variable_get("@pool").connections.dup
 
     @cm.clear_all_connections!
-    assert_empty @cm.instance_variable_get("@connections")
-    connections.each_value do |c|
+    assert_empty @cm.instance_variable_get("@pool").connections
+    connections.each do |c|
       refute c.active?
     end
   end

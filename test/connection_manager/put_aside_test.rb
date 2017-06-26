@@ -11,24 +11,9 @@ class PutAsideTest < Minitest::Test
   end
 
   test "current thread connection disconnect" do
-    threads_num = 5
-    threads = []
-    threads_num.times do |i|
-      threads << Thread.new do
-        @cm.replica_connection
-      end
-    end
-    threads.each(&:join)
-
     current_connection = @cm.replica_connection
+    assert current_connection.in_use?
     @cm.put_aside!
-    refute current_connection.active?
-
-    connections = @cm.instance_variable_get("@connections")
-    assert_equal threads_num, connections.size
-    connections.each_value do |c|
-      assert c.active?
-      refute_equal current_connection, c
-    end
+    refute current_connection.in_use?
   end
 end
