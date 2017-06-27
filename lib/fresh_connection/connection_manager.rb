@@ -1,16 +1,13 @@
 require 'concurrent'
 require 'fresh_connection/abstract_connection_manager'
-require 'fresh_connection/connection_factory'
+require 'fresh_connection/connection_specification'
 
 module FreshConnection
   class ConnectionManager < AbstractConnectionManager
     def initialize(*args)
       super
 
-      config = connection_factory.spec
-      resolver = ::ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(spec_name => config)
-      spec = resolver.spec(spec_name.to_sym)
-
+      spec = FreshConnection::ConnectionSpecification.new(spec_name).spec
       @pool = ::ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
     end
 
@@ -30,12 +27,6 @@ module FreshConnection
       return false if replica_connection.active?
       put_aside!
       true
-    end
-
-    private
-
-    def connection_factory
-      @connection_factory ||= ConnectionFactory.new(spec_name)
     end
   end
 end
