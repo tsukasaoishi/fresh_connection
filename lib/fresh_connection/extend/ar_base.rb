@@ -10,7 +10,7 @@ module FreshConnection
           return @replica_connection_specification_name
         end
 
-        if self == ::ActiveRecord::Base
+        if self == ActiveRecord::Base
           "replica"
         else
           superclass.replica_connection_specification_name

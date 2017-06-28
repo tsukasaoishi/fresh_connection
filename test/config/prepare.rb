@@ -18,22 +18,8 @@ end
 
 module ActiveRecord
   class Base
-    # don't read the database config file if database envars are defined
-    unless ENV['DATABASE_URL'].present? && (ENV['DATABASE_REPLICA_URL'].present? || ENV['DATABASE_REPLICA1_URL'])
-      configs = YAML.load(ERB.new(File.read(File.join(__dir__, "database_#{ENV['DB_ADAPTER']}.yml"))).result)
-    else
-      db_adapter = ENV['DB_ADAPTER']
-      db_user    = ENV['DB_USER']
-      configs = { "test" => { "adapter" => db_adapter, "username" => db_user, "url" => ENV['DATABASE_URL'] } }
-      REPLICA_NAMES.each do |name|
-        envar = "DATABASE_#{name.upcase}_URL"
-        if (url = ENV[envar])
-          configs.merge!( name => { "adapter" => db_adapter, "username" => db_user, "url" => url})
-        end
-      end
-    end
+    configs = YAML.load(ERB.new(File.read(File.join(__dir__, "database_#{ENV['DB_ADAPTER']}.yml"))).result)
     self.configurations = configs
-    ENV['RAILS_ENV'] = 'test'     # set the default connection name
     establish_connection(configurations["test"])
     establish_fresh_connection :replica1
   end

@@ -15,7 +15,7 @@ module FreshConnection
     private
 
     def resolver
-      ::ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(@spec_name => build_config)
+      ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(@spec_name => build_config)
     end
 
     # when building a spec from envars, there may be no database.yml file, so

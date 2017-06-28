@@ -7,7 +7,7 @@ module FreshConnection
       super
 
       spec = FreshConnection::ConnectionSpecification.new(spec_name).spec
-      @pool = ::ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
+      @pool = ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
     end
 
     def replica_connection
