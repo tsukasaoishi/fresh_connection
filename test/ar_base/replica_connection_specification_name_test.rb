@@ -15,5 +15,10 @@ class ReplicaConnectionSpecificationNameTest < Minitest::Test
     Tel2.establish_fresh_connection
     assert_equal "replica", Tel2.replica_connection_specification_name
   end
+
+  test "older 'slave' usage becomes 'replica' usage" do
+    Tel2.establish_fresh_connection :slave
+    assert_equal "replica", Tel2.replica_connection_specification_name
+  end
 end
 

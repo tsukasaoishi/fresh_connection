@@ -35,7 +35,17 @@ module FreshConnection
       if database_group_url
         config_from_url
       else
-        config[@spec_name]
+        c = config[@spec_name]
+
+        if !c && @spec_name == "replica" && config.key?("slave")
+          # provide backward-compatibility with :slave profile
+          ActiveSupport::Deprecation.warn(
+            "'slave' in database.yml is deprecated and will ignored from version 2.5.0. use 'replica' instead."
+          )
+          c = config["slave"]
+        end
+
+        c
       end
     end
 
