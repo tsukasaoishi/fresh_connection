@@ -15,5 +15,9 @@ class PutAsideTest < Minitest::Test
     assert current_connection.in_use?
     @cm.put_aside!
     refute current_connection.in_use?
+    refute current_connection.active?
+
+    connections = @cm.instance_variable_get("@pool").connections
+    refute connections.include?(current_connection)
   end
 end

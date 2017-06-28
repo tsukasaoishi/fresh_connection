@@ -1,4 +1,3 @@
-require 'concurrent'
 require 'fresh_connection/abstract_connection_manager'
 require 'fresh_connection/connection_specification'
 
@@ -16,7 +15,14 @@ module FreshConnection
     end
 
     def put_aside!
-      @pool.release_connection if @pool.active_connection? && !@pool.connection.transaction_open?
+      return unless @pool.active_connection?
+
+      conn = replica_connection
+      return if conn.transaction_open?
+
+      @pool.release_connection
+      @pool.remove(conn)
+      conn.disconnect!
     end
 
     def clear_all_connections!

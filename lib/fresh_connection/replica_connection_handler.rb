@@ -56,7 +56,7 @@ module FreshConnection
     end
 
     def all_connection_managers
-      @class_to_pool.each_value do |connection_manager|
+      owner_to_pool.each_value do |connection_manager|
         yield(connection_manager)
       end
     end

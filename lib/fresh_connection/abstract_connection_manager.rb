@@ -8,20 +8,20 @@ module FreshConnection
     end
 
     def replica_connection
+      raise NotImplementedError
     end
-    undef_method :replica_connection
-
-    def clear_all_connections!
-    end
-    undef_method :clear_all_connections!
 
     def put_aside!
+      raise NotImplementedError
     end
-    undef_method :put_aside!
+
+    def clear_all_connections!
+      raise NotImplementedError
+    end
 
     def recovery?
+      raise NotImplementedError
     end
-    undef_method :recovery?
   end
 end
 
