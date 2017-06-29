@@ -1,18 +1,16 @@
-require 'fresh_connection/rack/connection_management'
+require 'fresh_connection/executor_hook'
 
 module FreshConnection
   class Railtie < Rails::Railtie
     initializer "fresh_connection.configure_rails_initialization" do |app|
-      if defined?(ActiveRecord::ConnectionAdapters::ConnectionManagement)
-        app.config.app_middleware.insert_before(
-          ActiveRecord::ConnectionAdapters::ConnectionManagement,
-          FreshConnection::Rack::ConnectionManagement
-        )
-      else
-        app.config.app_middleware.insert_before(
-          ActionDispatch::Executor,
-          FreshConnection::Rack::ConnectionManagement
-        )
+      ActiveSupport.on_load(:active_record) do
+        FreshConnection::ExecutorHook.install_executor_hooks
+      end
+    end
+
+    initializer "fresh_connection.initialize_database", after: "active_record.initialize_database" do
+      ActiveSupport.on_load(:active_record) do
+        ActiveRecord::Base.establish_fresh_connection
       end
     end
   end

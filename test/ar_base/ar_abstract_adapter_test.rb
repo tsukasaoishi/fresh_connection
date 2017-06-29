@@ -17,7 +17,7 @@ class AbstractAdapterTest < Minitest::Test
       Address.find(1)
       Address.find(1)
       last_line = `tail -1 #{filename}`
-      assert_match /CACHE/, last_line
+      assert_match(/CACHE/, last_line)
     end
   end
 

@@ -1,4 +1,5 @@
 require 'active_support/deprecation'
+require 'fresh_connection/deprecation'
 
 module FreshConnection
   class AbstractConnectionManager
@@ -12,37 +13,37 @@ module FreshConnection
       end
     end
 
-    attr_reader :replica_group
+    attr_reader :spec_name
 
-    def initialize(replica_group = "replica")
-      replica_group = "replica" if replica_group.to_s == "slave"
-      @replica_group = replica_group.to_s
-      @replica_group = "replica" if @replica_group.empty?
-    end
-
-    def slave_group
-      ActiveSupport::Deprecation.warn(
-        "'slave_group' is deprecated and will removed from version 2.4.0. use 'replica_group' instead."
-      )
-
-      replica_group
+    def initialize(spec_name = nil)
+      @spec_name = (spec_name || "replica").to_s
     end
 
     def replica_connection
+      raise NotImplementedError
     end
-    undef_method :replica_connection
-
-    def clear_all_connections!
-    end
-    undef_method :clear_all_connections!
 
     def put_aside!
+      raise NotImplementedError
     end
-    undef_method :put_aside!
+
+    def clear_all_connections!
+      raise NotImplementedError
+    end
 
     def recovery?
+      raise NotImplementedError
     end
-    undef_method :recovery?
+
+    def replica_group
+      FreshConnection::Deprecation.warn(replica_group: :spec_name)
+      spec_name
+    end
+
+    def slave_group
+      FreshConnection::Deprecation.warn(slave_group: :spec_name)
+      spec_name
+    end
   end
 end
 

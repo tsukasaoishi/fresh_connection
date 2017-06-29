@@ -22,7 +22,12 @@ module FreshConnection
         return @catch_exceptions if defined?(@catch_exceptions)
         @catch_exceptions = [ActiveRecord::StatementInvalid]
         @catch_exceptions << ::Mysql2::Error if defined?(::Mysql2)
-        @catch_exceptions += [::PG::Error, ::PGError] if defined?(::PG)
+
+        if defined?(::PG)
+          @catch_exceptions << ::PG::Error
+          @catch_exceptions << ::PGError if defined?(::PGError)
+        end
+
         @catch_exceptions
       end
 

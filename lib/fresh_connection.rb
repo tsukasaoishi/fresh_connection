@@ -15,4 +15,11 @@ module FreshConnection
 end
 
 require 'fresh_connection/extend'
-require 'fresh_connection/railtie' if defined?(Rails)
+
+if defined?(Rails)
+  if Rails::VERSION::MAJOR == "4"
+    require 'fresh_connection/railtie_for_rails4'
+  else
+    require 'fresh_connection/railtie'
+  end
+end

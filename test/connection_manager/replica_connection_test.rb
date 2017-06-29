@@ -20,15 +20,16 @@ class ReplicaConnectionTest < Minitest::Test
     threads = []
     threads_num.times do |i|
       threads << Thread.new do
-        @cm.replica_connection
+        c = @cm.replica_connection
+        assert c.in_use?
       end
     end
     threads.each(&:join)
 
-    connections = @cm.instance_variable_get("@connections")
+    connections = @cm.instance_variable_get("@pool").connections
     assert_equal threads_num, connections.size
     before_connection = nil
-    connections.each_value do |c|
+    connections.each do |c|
       refute_equal before_connection, c
       before_connection = c
     end

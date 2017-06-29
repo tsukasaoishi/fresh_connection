@@ -1,47 +1,38 @@
-require 'concurrent'
 require 'fresh_connection/abstract_connection_manager'
-require 'fresh_connection/connection_factory'
+require 'fresh_connection/connection_specification'
 
 module FreshConnection
   class ConnectionManager < AbstractConnectionManager
     def initialize(*args)
       super
-      @connections = Concurrent::Map.new
+
+      spec = FreshConnection::ConnectionSpecification.new(spec_name).spec
+      @pool = ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
     end
 
     def replica_connection
-      @connections.fetch_or_store(current_thread_id) do |_|
-        connection_factory.new_connection
-      end
+      @pool.connection
     end
 
     def put_aside!
-      conn = @connections.delete(current_thread_id)
-      return unless conn
-      conn && conn.disconnect! rescue nil
+      return unless @pool.active_connection?
+
+      conn = replica_connection
+      return if conn.transaction_open?
+
+      @pool.release_connection
+      @pool.remove(conn)
+      conn.disconnect!
     end
 
     def clear_all_connections!
-      @connections.each_value do |conn|
-        conn.disconnect! rescue nil
-      end
-      @connections.clear
+      @pool.disconnect!
     end
 
     def recovery?
       return false if replica_connection.active?
       put_aside!
       true
-    end
-
-    private
-
-    def connection_factory
-      @connection_factory ||= ConnectionFactory.new(@replica_group)
-    end
-
-    def current_thread_id
-      Thread.current.object_id
     end
   end
 end

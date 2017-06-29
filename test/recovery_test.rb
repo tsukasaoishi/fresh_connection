@@ -1,55 +1,51 @@
 require "test_helper"
 
 class RecoveryTest < Minitest::Test
+  test "enable recovery" do
+    count = 0
+    raise_exception = lambda {|*args|
+      if count == 0
+        count += 1
+        raise ActiveRecord::StatementInvalid, "hoge"
+      end
+    }
 
-  class User3 < ActiveRecord::Base
-    self.table_name = "users"
+    FreshConnection::AccessControl.stub(:access, raise_exception) do
+      User.stub(:replica_connection_recovery?, true) do
+        assert User.take
+      end
+    end
+  end
 
-    class << self
-      attr_writer :limit_time, :access_time, :disconnect
+  test "raise exception when retry over" do
+    raise_exception = lambda {|*args|
+      raise ActiveRecord::StatementInvalid, "hoge"
+    }
 
-      def replica_connection
-        return super unless defined?(@access_time)
-
-        @access_time += 1
-        if @access_time > @limit_time
-          super
-        else
-          if @disconnect
-            c = super
-            c.disconnect!
-          end
-          raise ActiveRecord::StatementInvalid, "something error message"
+    FreshConnection::AccessControl.stub(:access, raise_exception) do
+      User.stub(:replica_connection_recovery?, true) do
+        assert_raises(ActiveRecord::StatementInvalid) do
+          User.take
         end
       end
     end
   end
 
-  test "enable recovery" do
-    User3.disconnect = true
-    User3.access_time = 0
-    User3.limit_time = 1
-
-    assert User3.take
-  end
-
-  test "raise exception when retry over" do
-    User3.disconnect = true
-    User3.access_time = 0
-    User3.limit_time = 100
-
-    assert_raises(ActiveRecord::StatementInvalid) do
-      User3.first
-    end
-  end
-
   test "raise exception when conection active" do
-    User3.disconnect = false
-    User3.access_time = 0
-    User3.limit_time = 1
+    count = 0
+    raise_exception = lambda {|*args|
+      if count == 0
+        count += 1
+        raise ActiveRecord::StatementInvalid, "hoge"
+      end
+    }
 
-    assert_raises(ActiveRecord::StatementInvalid) do
-      User3.first
+    FreshConnection::AccessControl.stub(:access, raise_exception) do
+      User.stub(:replica_connection_recovery?, false) do
+        assert_raises(ActiveRecord::StatementInvalid) do
+          User.take
+        end
+      end
     end
   end
 end

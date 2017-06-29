@@ -1,4 +1,4 @@
-require 'active_support/deprecation'
+require 'fresh_connection/deprecation'
 
 module FreshConnection
   module Extend
@@ -59,10 +59,7 @@ module FreshConnection
       end
 
       def enable_slave_access
-        ActiveSupport::Deprecation.warn(
-          "'enable_slave_access' is deprecated and will removed from version 2.4.0. use 'enable_replica_access' instead."
-        )
-
+        FreshConnection::Deprecation.warn(enable_slave_access: :enable_replica_access)
         enable_replica_access
       end
 

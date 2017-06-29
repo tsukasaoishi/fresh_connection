@@ -4,13 +4,11 @@ require 'rake/testtask'
 desc 'Run mysql2 and postgresql tests'
 task :test do
   Rake::Task["test:mysql2"].invoke
-  Rake::Task["test:mysql2_url"].invoke
   Rake::Task["test:postgresql"].invoke
-  Rake::Task["test:postgresql_url"].invoke
 end
 
 namespace :test do
-  %w(mysql2 postgresql mysql2_url postgresql_url).each do |test_name|
+  %w(mysql2 postgresql).each do |test_name|
     Rake::TestTask.new(test_name) do |t|
       t.libs << "test"
       t.libs << "lib"
