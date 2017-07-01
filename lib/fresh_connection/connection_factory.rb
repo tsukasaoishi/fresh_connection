@@ -5,12 +5,12 @@ module FreshConnection
   class ConnectionFactory
     def initialize(group, modify_spec = nil)
       deprecation_warn
-      @spec = FreshConnection::ConnectionSpecification.new(group, modify_spec: modify_spec)
+      @spec = FreshConnection::ConnectionSpecification.new(group, modify_spec: modify_spec).spec
     end
 
     def new_connection
       deprecation_warn
-      ActiveRecord::Base.__send__(@spec.adapter_method, @spec.confg)
+      ActiveRecord::Base.__send__(@spec.adapter_method, @spec.config)
     end
 
     private
