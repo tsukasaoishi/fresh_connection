@@ -30,7 +30,8 @@ module FreshConnection
     end
 
     def recovery?
-      return false if replica_connection.active?
+      c = replica_connection rescue nil
+      return false if c && c.active?
       put_aside!
       true
     end

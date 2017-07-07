@@ -62,7 +62,9 @@ module FreshConnection
     end
 
     def detect_connection_manager(spec_name)
-      owner_to_pool[spec_name.to_s]
+      owner_to_pool.fetch(spec_name.to_s) do
+        establish_connection(spec_name)
+      end
     end
 
     def owner_to_pool

@@ -17,7 +17,7 @@ end
 require 'fresh_connection/extend'
 
 if defined?(Rails)
-  if Rails::VERSION::MAJOR == "4"
+  if Rails::VERSION::MAJOR.to_i == 4
     require 'fresh_connection/railtie_for_rails4'
   else
     require 'fresh_connection/railtie'
