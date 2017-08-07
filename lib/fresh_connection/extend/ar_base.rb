@@ -77,7 +77,7 @@ module FreshConnection
         replica_connection
       end
 
-      def clear_all_slave_connections
+      def clear_all_slave_connections!
         FreshConnection::Deprecation.warn(clear_all_slave_connections!: :clear_all_replica_connections!)
         clear_all_replica_connections!
       end
