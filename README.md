@@ -72,7 +72,8 @@ old_article.destroy
 
 ## ActiveRecord Versions Supported
 
-- FreshConnection supports ActiveRecord version 4.2 or later.
+- FreshConnection supports ActiveRecord version 5.0 or later.
+- If you are using Rails 4.2, you can use FreshConnection version 2.4.4 or before.
 - If you are using Rails 4.1 or 4.0, you can use FreshConnection version 2.1.2 or before.
 - If you are using Rails 3.2, you can use FreshConnection version 1.0.0 or before.
 
