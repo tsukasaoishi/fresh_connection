@@ -1,4 +1,3 @@
-require 'fresh_connection/deprecation'
 require 'fresh_connection/access_control'
 require 'fresh_connection/replica_connection_handler'
 
@@ -70,36 +69,6 @@ module FreshConnection
 
       def replica_connection_recovery?
         replica_connection_handler.recovery?(replica_connection_specification_name)
-      end
-
-      def slave_connection
-        FreshConnection::Deprecation.warn(slave_connection: :replica_connection)
-        replica_connection
-      end
-
-      def clear_all_slave_connections!
-        FreshConnection::Deprecation.warn(clear_all_slave_connections!: :clear_all_replica_connections!)
-        clear_all_replica_connections!
-      end
-
-      def slave_connection_put_aside!
-        FreshConnection::Deprecation.warn(slave_connection_put_aside!: :replica_connection_put_aside!)
-        replica_connection_put_aside!
-      end
-
-      def slave_connection_recovery?
-        FreshConnection::Deprecation.warn(slave_connection_recovery?: :replica_connection_recovery?)
-        replica_connection_recovery?
-      end
-
-      def replica_group
-        FreshConnection::Deprecation.warn(replica_group: :replica_connection_specification_name)
-        replica_connection_specification_name
-      end
-
-      def slave_group
-        FreshConnection::Deprecation.warn(slave_group: :replica_connection_specification_name)
-        replica_connection_specification_name
       end
 
       private

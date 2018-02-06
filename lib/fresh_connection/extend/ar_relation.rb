@@ -1,5 +1,3 @@
-require 'fresh_connection/deprecation'
-
 module FreshConnection
   module Extend
     module ArRelation
@@ -56,11 +54,6 @@ module FreshConnection
 
       def enable_replica_access
         connection.open_transactions == 0 && !read_master_value
-      end
-
-      def enable_slave_access
-        FreshConnection::Deprecation.warn(enable_slave_access: :enable_replica_access)
-        enable_replica_access
       end
 
       private
