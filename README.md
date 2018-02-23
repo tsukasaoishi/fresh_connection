@@ -49,7 +49,7 @@ If you wish to ensure that queries are directed to the DB master, call `read_mas
 ```ruby
 Article.where(id: 1).read_master
 
-Account.count.read_master
+Account.read_master.count
 ```
 
 Within transactions, all queries are connected to the DB master.
