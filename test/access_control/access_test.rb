@@ -8,10 +8,10 @@ class AccessTest < Minitest::Test
 
   test "persisted first state(replica)" do
     ret = []
-    @ac.access(true) do
-      @ac.access(true) do
+    @ac.send(:access, true) do
+      @ac.send(:access, true) do
         ret << @ac.replica_access?
-        @ac.access(false) do
+        @ac.send(:access, false) do
           ret << @ac.replica_access?
         end
       end
@@ -22,10 +22,10 @@ class AccessTest < Minitest::Test
 
   test "persisted first state(master)" do
     ret = []
-    @ac.access(false) do
-      @ac.access(true) do
+    @ac.send(:access, false) do
+      @ac.send(:access, true) do
         ret << @ac.replica_access?
-        @ac.access(false) do
+        @ac.send(:access, false) do
           ret << @ac.replica_access?
         end
       end
@@ -37,7 +37,7 @@ class AccessTest < Minitest::Test
   test "outside is always master" do
     ret = []
     ret << @ac.replica_access?
-    @ac.access(true){}
+    @ac.send(:access, true) {}
     ret << @ac.replica_access?
 
     refute ret.all?{|item| item}

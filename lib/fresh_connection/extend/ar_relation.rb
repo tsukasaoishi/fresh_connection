@@ -1,29 +1,8 @@
-require 'fresh_connection/deprecation'
+# frozen_string_literal: true
 
 module FreshConnection
   module Extend
     module ArRelation
-      RETRY_LIMIT = 3
-      private_constant :RETRY_LIMIT
-
-      def manage_access(replica_access = enable_replica_access, &block)
-        if @klass.master_db_only?
-          FreshConnection::AccessControl.force_master_access(&block)
-        else
-          retry_count = 0
-          begin
-            FreshConnection::AccessControl.access(replica_access, &block)
-          rescue *FreshConnection::AccessControl.catch_exceptions
-            if @klass.replica_connection_recovery?
-              retry_count += 1
-              retry if retry_count < RETRY_LIMIT
-            end
-
-            raise
-          end
-        end
-      end
-
       def calculate(*args)
         manage_access { super }
       end
@@ -54,19 +33,22 @@ module FreshConnection
         @values[:read_master] = value
       end
 
-      def enable_replica_access
-        connection.open_transactions == 0 && !read_master_value
-      end
-
-      def enable_slave_access
-        FreshConnection::Deprecation.warn(enable_slave_access: :enable_replica_access)
-        enable_replica_access
+      def manage_access(replica_access: enable_replica_access, &block)
+        FreshConnection::AccessControl.manage_access(
+          model: @klass,
+          replica_access: replica_access,
+          &block
+        )
       end
 
       private
 
       def exec_queries
         manage_access { super }
+      end
+
+      def enable_replica_access
+        connection.open_transactions.zero? && !read_master_value
       end
     end
   end

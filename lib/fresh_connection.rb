@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'fresh_connection/connection_manager'
 
 module FreshConnection
@@ -11,15 +12,12 @@ module FreshConnection
         ConnectionManager
       end
     end
+
+    def rails_52?
+      [ActiveRecord::VERSION::MAJOR, ActiveRecord::VERSION::MINOR] == [5, 2]
+    end
   end
 end
 
 require 'fresh_connection/extend'
-
-if defined?(Rails)
-  if Rails::VERSION::MAJOR.to_i == 4
-    require 'fresh_connection/railtie_for_rails4'
-  else
-    require 'fresh_connection/railtie'
-  end
-end
+require 'fresh_connection/railtie' if defined?(Rails)

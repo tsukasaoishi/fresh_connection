@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'concurrent'
 require 'singleton'
 
@@ -72,4 +73,3 @@ module FreshConnection
     end
   end
 end
-

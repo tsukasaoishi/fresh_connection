@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'active_support'
 require 'active_support/core_ext'
 
@@ -18,9 +19,6 @@ module FreshConnection
       ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(@spec_name => build_config)
     end
 
-    # when building a spec from envars, there may be no database.yml file, so
-    # be careful to avoid implicit dependency on it or derived contents.
-
     def build_config
       config = base_config.with_indifferent_access
 
@@ -35,17 +33,7 @@ module FreshConnection
       if database_group_url
         config_from_url
       else
-        c = config[@spec_name]
-
-        if !c && @spec_name == "replica" && config.key?("slave")
-          # provide backward-compatibility with :slave profile
-          ActiveSupport::Deprecation.warn(
-            "'slave' in database.yml is deprecated and will ignored from version 2.5.0. use 'replica' instead."
-          )
-          c = config["slave"]
-        end
-
-        c
+        config[@spec_name]
       end
     end
 

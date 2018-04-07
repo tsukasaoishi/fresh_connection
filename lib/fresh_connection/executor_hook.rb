@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FreshConnection
   class ExecutorHook
     class << self

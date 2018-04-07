@@ -1,18 +1,7 @@
-require 'active_support/deprecation'
-require 'fresh_connection/deprecation'
+# frozen_string_literal: true
 
 module FreshConnection
   class AbstractConnectionManager
-    class << self
-      def method_added(name)
-        return unless name == :slave_connection
-
-        ActiveSupport::Deprecation.warn(
-          "'slave_connection' has been deprecated. use 'replica_connection' instead."
-        )
-      end
-    end
-
     attr_reader :spec_name
 
     def initialize(spec_name = nil)
@@ -33,16 +22,6 @@ module FreshConnection
 
     def recovery?
       raise NotImplementedError
-    end
-
-    def replica_group
-      FreshConnection::Deprecation.warn(replica_group: :spec_name)
-      spec_name
-    end
-
-    def slave_group
-      FreshConnection::Deprecation.warn(slave_group: :spec_name)
-      spec_name
     end
   end
 end
