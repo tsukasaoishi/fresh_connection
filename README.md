@@ -44,8 +44,6 @@ Account.count
 ### Access to the DB Master
 If you wish to ensure that queries are directed to the DB master, call `read_master`.
 
-> Note: Before version 0.4.3, `readonly(false)` must be used.
-
 ```ruby
 Article.where(id: 1).read_master
 
@@ -72,9 +70,8 @@ old_article.destroy
 
 ## ActiveRecord Versions Supported
 
-- FreshConnection supports ActiveRecord version 4.2 or later.
-- If you are using Rails 4.1 or 4.0, you can use FreshConnection version 2.1.2 or before.
-- If you are using Rails 3.2, you can use FreshConnection version 1.0.0 or before.
+- FreshConnection supports ActiveRecord version 5.0 or later.
+- If you are using Rails 4.2, you can use FreshConnection version 2.4.4 or before.
 
 ## Databases Supported
 FreshConnection currently supports MySQL and PostgreSQL.
@@ -98,61 +95,38 @@ Or install it manually with:
 $ gem install fresh_connection
 ```
 
-### Variant Installation For Use With Some Other ActiveRecord Gems
-
-If you are using NewRelic or other gems that insert themselves into the ActiveRecord call-chain using `method_alias`, then a slight variation on the installation and configuration is required.
-
-In the `Gemfile`, use:
-
-```ruby
-gem "fresh_connection", require: false
-```
-
-Then, in `config/application.rb`, add the following:
-
-```ruby
-config.after_initialize do
-  require 'fresh_connection'
-end
-```
-
 ## Configuration
 
 The FreshConnection database replica is configured within the standard Rails
 database configuration file, `config/database.yml`, using a `replica:` stanza.
-
-*Security Note*:
-
-> We strongly recommend against using secrets within the `config/database.yml`
-> file.  Instead, it is both convenient and advisable to use ERB substitutions with 
-> environment variables within the file.
-
-> Using the [`dotenv`](https://github.com/bkeepers/dotenv) gem to keep secrets in a `.env` file that is never committed 
-> to the source management repository will help make secrets manageable.
 
 Below is a sample such configuration file.
 
 ### `config/database.yml`
 
 ```yaml
+default: &default
+  adapter: mysql2
+  encoding: utf8
+  pool: <%%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  username: root
+  password:
+
 production:
-  adapter:   mysql2
-  encoding:  utf8
-  reconnect: true
-  database:  <%= ENV['DB_MASTER_NAME'] %>
-  pool:      5
-  username:  <%= ENV['DB_MASTER_USER'] %>
-  password:  <%= ENV['DB_MASTER_PASS'] %>
-  host:      <%= ENV['DB_MASTER_HOST'] %>
-  socket:    /var/run/mysqld/mysqld.sock
+  <<: *default
+  database: blog_production
+  username: master_db_user
+  password: <%= ENV['MASTER_DATABASE_PASSWORD'] %>
+  host: master_db
 
   replica:
-    username: <%= ENV['DB_REPLICA_USER'] %>
-    password: <%= ENV['DB_REPLICA_PASS'] %>
-    host:     <%= ENV['DB_REPLICA_HOST'] %>
+    username: replica_db_user
+    password: <%= ENV['REPLICA_DATABASE_PASSWORD'] %>
+    host: replica_db
 ```
 
 `replica` is the configuration used for connecting read-only queries to the database replica.  All other connections will use the database master settings.
+
 
 ### Multiple DB Replicas
 If you want to use multiple configured DB replicas, the configuration can contain multiple `replica` stanzas in the configuration file `config/database.yml`.
@@ -160,26 +134,29 @@ If you want to use multiple configured DB replicas, the configuration can contai
 For example:
 
 ```yaml
+default: &default
+  adapter: mysql2
+  encoding: utf8
+  pool: <%%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  username: root
+  password:
+
 production:
-  adapter:   mysql2
-  encoding:  utf8
-  reconnect: true
-  database:  <%= ENV['DB_MASTER_NAME'] %>
-  pool:      5
-  username:  <%= ENV['DB_MASTER_USER'] %>
-  password:  <%= ENV['DB_MASTER_PASS'] %>
-  host:      <%= ENV['DB_MASTER_HOST'] %>
-  socket:    /var/run/mysqld/mysqld.sock
+  <<: *default
+  database: blog_production
+  username: master_db_user
+  password: <%= ENV['MASTER_DATABASE_PASSWORD'] %>
+  host: master_db
 
   replica:
-    username: <%= ENV['DB_REPLICA_USER'] %>
-    password: <%= ENV['DB_REPLICA_PASS'] %>
-    host:     <%= ENV['DB_REPLICA_HOST'] %>
+    username: replica_db_user
+    password: <%= ENV['REPLICA_DATABASE_PASSWORD'] %>
+    host: replica_db
 
   admin_replica:
-    username: <%= ENV['DB_ADMIN_REPLICA_USER'] %>
-    password: <%= ENV['DB_ADMIN_REPLICA_PASS'] %>
-    host:     <%= ENV['DB_ADMIN_REPLICA_HOST'] %>
+    username: admin_replica_db_user
+    password: <%= ENV['ADMIN_REPLICA_DATABASE_PASSWORD'] %>
+    host: admin_replica_db
 ```
 
 The custom replica stanza can then be applied as an argument to the `establish_fresh_connection` method in the models that should use it.  For example:
@@ -211,46 +188,23 @@ The `AdminUser` and `Benefit` models will access the database configured for the
 
 The `Customer` model will use the default connections: read-only queries will connect to the standard DB replica, and state-changing queries will connect to the DB master.
 
-### Replica Configuration With Environment Variables
 
+### Replica Configuration With Environment Variables
 
 Alternative to using a configuration in the `database.yml` file, it is possible to completely specify the replica access components using environment variables.
 
-The environment variables corresponding to the `:replica` group are `DATABASE_REPLICA_URL` and `DATABASE_REPLICA1_URL`, with the latter being used only if the former is not defined.
+The environment variables corresponding to the `:replica` group are `DATABASE_REPLICA_URL`.  
+The URL string components is the same as Rails' `DATABASE_URL'.
 
-The URL value is a [URL](https://en.wikipedia.org/wiki/URL) string with the following components:
-
-   _adapter://dbuser:dbpass@dbhost:dbport/dbname?querypath_
-
-where the components are:
-
-| Component | Purpose | Examples  |
-| --------- | ------- | --------- |
-| _adapter_ | Declares the database adapter | `mysql`, `postgresql` |
-| _dbuser_  | The login for the database | `root`, `postgres` |
-| _dbpass_  | The password for the database | |
-| _dbhost_ | The hostname for the database | `db1`, `localhost` |
-| _dbport_ | The port for the database connection | `3306`, `5432` |
-| _dbname_ | The name of the database | `mydb`, `appdb`, etc. |
-| _querypath_ | One or more variable assignments: _var1=val1_, separated by '&' | `pools=5&reconnect=true` |
-
-
-For example, here is a URL appropriate for a connection to a test database on the local host, on a custom port:
-
-    export DATABASE_REPLICA_URL='postgresql://root:somepw@localhost:6432/test_db?pool=5&reconnect=true
-
-### Multiple Replica Environment Variables
+#### Multiple Replica Environment Variables
 
 To specific URLs for multiple replicas, replace the string `REPLICA` in the environment variable name with the replica name, in upper case. See the examples for replicas: `:replica1`, `:replica2`, and `:admin_replica`
 
 
-    ENVIRONMENT_REPLICA1_URL='mysql://localhost/dbreplica1?pool=5&reconnect=true'
-    ENVIRONMENT_REPLICA2_URL='postgresql://localhost:6432/ro_db?pool=5&reconnect=true'
-    ENVIRONMENT_ADMIN_REPLICA_URL='postgresql://localhost:6432/admin_db?pool=5&reconnect=true'
+    DATABASE_REPLICA1_URL='mysql://localhost/dbreplica1?pool=5&reconnect=true'
+    DATABASE_REPLICA2_URL='postgresql://localhost:6432/ro_db?pool=5&reconnect=true'
+    DATABASE_ADMIN_REPLICA_URL='postgresql://localhost:6432/admin_db?pool=5&reconnect=true'
 
-### Special-Case Replica URL
-
-When `:replica` is used but `DATABASE_REPLICA_URL` is *not* defined, then the value of `DATABASE_REPLICA1_URL` will be used if it is defined.
 
 ### Master-only Models
 
@@ -272,12 +226,6 @@ When using FreshConnection with Unicorn (or any other multi-processing web serve
 before_fork do |server, worker|
   ...
   ActiveRecord::Base.clear_all_replica_connections!
-  ...
-end
-
-after_fork do |server, worker|
-  ...
-  ActiveRecord::Base.establish_fresh_connection
   ...
 end
 ```
