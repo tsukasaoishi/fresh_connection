@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'fresh_connection/executor_hook'
 
 module FreshConnection

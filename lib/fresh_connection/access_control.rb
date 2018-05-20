@@ -1,16 +1,24 @@
+# frozen_string_literal: true
+
 module FreshConnection
   class AccessControl
     class << self
-      def force_master_access(&block)
-        switch_to(:master, &block)
-      end
+      RETRY_LIMIT = 3
+      private_constant :RETRY_LIMIT
 
-      def access(enable_replica_access, &block)
-        if access_db
-          block.call
-        else
-          db = enable_replica_access ? :replica : :master
-          switch_to(db, &block)
+      def manage_access(model:, replica_access:, &block)
+        return force_master_access(&block) if model.master_db_only?
+
+        retry_count = 0
+        begin
+          access(replica_access, &block)
+        rescue *catch_exceptions
+          if recovery?(model.replica_spec_name)
+            retry_count += 1
+            retry if retry_count < RETRY_LIMIT
+          end
+
+          raise
         end
       end
 
@@ -18,20 +26,18 @@ module FreshConnection
         access_db == :replica
       end
 
-      def catch_exceptions
-        return @catch_exceptions if defined?(@catch_exceptions)
-        @catch_exceptions = [ActiveRecord::StatementInvalid]
-        @catch_exceptions << ::Mysql2::Error if defined?(::Mysql2)
+      private
 
-        if defined?(::PG)
-          @catch_exceptions << ::PG::Error
-          @catch_exceptions << ::PGError if defined?(::PGError)
-        end
-
-        @catch_exceptions
+      def force_master_access(&block)
+        switch_to(:master, &block)
       end
 
-      private
+      def access(replica_access, &block)
+        return yield if access_db
+
+        db = replica_access ? :replica : :master
+        switch_to(db, &block)
+      end
 
       def switch_to(new_db)
         old_db = access_db
@@ -47,6 +53,23 @@ module FreshConnection
 
       def access_to(db)
         Thread.current[:fresh_connection_access_target] = db
+      end
+
+      def recovery?(spec_name)
+        FreshConnection::ReplicaConnectionHandler.instance.recovery?(spec_name)
+      end
+
+      def catch_exceptions
+        return @catch_exceptions if defined?(@catch_exceptions)
+        @catch_exceptions = [ActiveRecord::StatementInvalid]
+        @catch_exceptions << ::Mysql2::Error if defined?(::Mysql2)
+
+        if defined?(::PG)
+          @catch_exceptions << ::PG::Error
+          @catch_exceptions << ::PGError if defined?(::PGError)
+        end
+
+        @catch_exceptions
       end
     end
   end

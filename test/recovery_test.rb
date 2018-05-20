@@ -11,7 +11,7 @@ class RecoveryTest < Minitest::Test
     }
 
     FreshConnection::AccessControl.stub(:access, raise_exception) do
-      User.stub(:replica_connection_recovery?, true) do
+      FreshConnection::AccessControl.stub(:recovery?, true) do
         assert User.take
       end
     end
@@ -23,7 +23,7 @@ class RecoveryTest < Minitest::Test
     }
 
     FreshConnection::AccessControl.stub(:access, raise_exception) do
-      User.stub(:replica_connection_recovery?, true) do
+      FreshConnection::AccessControl.stub(:recovery?, true) do
         assert_raises(ActiveRecord::StatementInvalid) do
           User.take
         end
@@ -41,7 +41,7 @@ class RecoveryTest < Minitest::Test
     }
 
     FreshConnection::AccessControl.stub(:access, raise_exception) do
-      User.stub(:replica_connection_recovery?, false) do
+      FreshConnection::AccessControl.stub(:recovery?, false) do
         assert_raises(ActiveRecord::StatementInvalid) do
           User.take
         end

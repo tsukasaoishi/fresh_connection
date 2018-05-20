@@ -1,58 +1,40 @@
-require 'fresh_connection/deprecation'
+# frozen_string_literal: true
 require 'fresh_connection/access_control'
 require 'fresh_connection/replica_connection_handler'
 
 module FreshConnection
   module Extend
     module ArBase
-      def replica_connection_specification_name
-        if defined?(@replica_connection_specification_name)
-          return @replica_connection_specification_name
-        end
-
-        if self == ActiveRecord::Base
-          "replica"
-        else
-          superclass.replica_connection_specification_name
-        end
-      end
-
-      def replica_connection_specification_name=(spec_name)
-        spec_name = spec_name.to_s
-        spec_name = "replica" if spec_name.empty? || spec_name == "slave"
-
-        @replica_connection_specification_name = spec_name
-      end
-
-      def connection
-        master_c = super
-        return master_c unless FreshConnection::AccessControl.replica_access?
-
-        replica_c = replica_connection
-        replica_c.master_connection = master_c
-        replica_c.replica_spec_name = replica_connection_specification_name if logger && logger.debug?
-        replica_c
-      end
-
       def read_master
         all.read_master
       end
 
       def with_master(&block)
-        all.manage_access(false, &block)
+        FreshConnection::AccessControl.manage_access(
+          model: self,
+          replica_access: false,
+          &block
+        )
       end
 
-      def establish_fresh_connection(spec_name = "replica")
-        self.replica_connection_specification_name = spec_name
-        replica_connection_handler.establish_connection(replica_connection_specification_name)
+      def connection
+        super.tap {|c| c.model_class = self }
       end
 
       def replica_connection
-        replica_connection_handler.connection(replica_connection_specification_name)
+        __replica_handler.connection(replica_spec_name)
       end
 
       def clear_all_replica_connections!
-        replica_connection_handler.clear_all_connections!
+        __replica_handler.clear_all_connections!
+      end
+
+      def establish_fresh_connection(spec_name = nil)
+        spec_name = spec_name.to_s
+        spec_name = "replica" if spec_name.empty?
+        @_replica_spec_name = spec_name
+
+        __replica_handler.establish_connection(replica_spec_name)
       end
 
       def master_db_only!
@@ -64,47 +46,21 @@ module FreshConnection
           (self != ActiveRecord::Base && superclass.master_db_only?)
       end
 
-      def replica_connection_put_aside!
-        replica_connection_handler.put_aside!
-      end
-
-      def replica_connection_recovery?
-        replica_connection_handler.recovery?(replica_connection_specification_name)
-      end
-
-      def slave_connection
-        FreshConnection::Deprecation.warn(slave_connection: :replica_connection)
-        replica_connection
-      end
-
-      def clear_all_slave_connections!
-        FreshConnection::Deprecation.warn(clear_all_slave_connections!: :clear_all_replica_connections!)
-        clear_all_replica_connections!
-      end
-
-      def slave_connection_put_aside!
-        FreshConnection::Deprecation.warn(slave_connection_put_aside!: :replica_connection_put_aside!)
-        replica_connection_put_aside!
-      end
-
-      def slave_connection_recovery?
-        FreshConnection::Deprecation.warn(slave_connection_recovery?: :replica_connection_recovery?)
-        replica_connection_recovery?
-      end
-
-      def replica_group
-        FreshConnection::Deprecation.warn(replica_group: :replica_connection_specification_name)
-        replica_connection_specification_name
-      end
-
-      def slave_group
-        FreshConnection::Deprecation.warn(slave_group: :replica_connection_specification_name)
-        replica_connection_specification_name
+      def replica_spec_name
+        @_replica_spec_name ||= __search_replica_spec_name
       end
 
       private
 
-      def replica_connection_handler
+      def __search_replica_spec_name
+        if self == ActiveRecord::Base
+          "replica"
+        else
+          superclass.replica_spec_name
+        end
+      end
+
+      def __replica_handler
         FreshConnection::ReplicaConnectionHandler.instance
       end
     end

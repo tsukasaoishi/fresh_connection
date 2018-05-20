@@ -1,62 +1,46 @@
+# frozen_string_literal: true
+require 'fresh_connection/check_adapter'
+
 module FreshConnection
   module Extend
     module ArAbstractAdapter
+      def inherited(klass)
+        case FreshConnection::CheckAdapter.check(klass)
+        when :mysql
+          klass.prepend BaseAdapter
+          require 'fresh_connection/extend/adapters/m2_adapter'
+          klass.prepend M2Adapter
+        when :postgresql
+          klass.prepend BaseAdapter
+          require 'fresh_connection/extend/adapters/pg_adapter'
+          klass.prepend PgAdapter
+        end
+      end
+    end
+
+    module BaseAdapter
       def self.prepended(base)
-        base.send :attr_accessor, :replica_spec_name, :master_connection
+        base.send :attr_writer, :model_class
       end
 
       def log(*args)
-        args[1] = "[#{@replica_spec_name}] #{args[1]}" if defined?(@replica_spec_name)
+        args[1] = "[#{__replica_spec_name}] #{args[1]}" if __replica_spec_name
         super
-      end
-
-      def query_cache
-        return @query_cache unless master_connection
-        master_connection.query_cache
-      end
-
-      def query_cache_enabled
-        return @query_cache_enabled unless master_connection
-        master_connection.query_cache_enabled
-      end
-
-      def cache(&block)
-        return super unless master_connection
-        master_connection.cache(&block)
-      end
-
-      def enable_query_cache!
-        return super unless master_connection
-        master_connection.enable_query_cache!
-      end
-
-      def disable_query_cache!
-        return super unless master_connection
-        master_connection.disable_query_cache!
-      end
-
-      def uncached(&block)
-        return super unless master_connection
-        master_connection.uncached(&block)
-      end
-
-      def clear_query_cache
-        return super unless master_connection
-        master_conection.clear_query_cache
       end
 
       def select_all(*args)
-        return super unless master_connection
-        @query_cache_enabled = master_connection.query_cache_enabled
-        super
+        change_connection { super }
+      end
+
+      def select_value(*args)
+        change_connection { super }
       end
 
       private
 
-      def cache_sql(*args)
-        return super unless master_connection
-        @query_cache = master_connection.query_cache
-        super
+      def __replica_spec_name
+        return nil if !defined?(@model_class) || !@model_class
+        @model_class.replica_spec_name
       end
     end
   end

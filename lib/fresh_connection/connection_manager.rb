@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'fresh_connection/abstract_connection_manager'
 require 'fresh_connection/connection_specification'
 
