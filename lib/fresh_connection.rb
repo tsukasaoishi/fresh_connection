@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-require 'fresh_connection/connection_manager'
 
 module FreshConnection
   class << self
@@ -7,6 +6,7 @@ module FreshConnection
       if defined?(@connection_manager)
         @connection_manager
       else
+        require 'fresh_connection/connection_manager'
         ConnectionManager
       end
     end
@@ -18,5 +18,7 @@ module FreshConnection
   end
 end
 
+require 'fresh_connection/abstract_connection_manager'
+require 'fresh_connection/connection_specification'
 require 'fresh_connection/extend'
 require 'fresh_connection/railtie' if defined?(Rails)

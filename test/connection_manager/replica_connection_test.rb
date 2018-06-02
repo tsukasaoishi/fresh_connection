@@ -1,4 +1,5 @@
 require "test_helper"
+require "fresh_connection/connection_manager"
 
 class ReplicaConnectionTest < Minitest::Test
   def setup
