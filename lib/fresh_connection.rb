@@ -3,14 +3,17 @@ require 'fresh_connection/connection_manager'
 
 module FreshConnection
   class << self
-    attr_writer :connection_manager
-
     def connection_manager
       if defined?(@connection_manager)
         @connection_manager
       else
         ConnectionManager
       end
+    end
+
+    def connection_manager=(mgr)
+      FreshConnection::ReplicaConnectionHandler.instance.refresh_all
+      @connection_manager = mgr
     end
 
     def rails_52?

@@ -12,19 +12,12 @@ module FreshConnection
       end
     end
 
-    def establish_connection(spec_name)
-      spec_name = spec_name.to_s
-      remove_connection(spec_name)
+    def refresh_all
+      owner_to_pool.clear
+    end
 
-      message_bus = ActiveSupport::Notifications.instrumenter
-      payload = {
-        connection_id: object_id,
-        spec_name: spec_name
-      }
-
-      message_bus.instrument("!connection.active_record", payload) do
-        owner_to_pool[spec_name] = FreshConnection.connection_manager.new(spec_name)
-      end
+    def refresh_connection(spec_name)
+      remove_connection(spec_name.to_s)
     end
 
     def connection(spec_name)
@@ -64,7 +57,17 @@ module FreshConnection
 
     def detect_connection_manager(spec_name)
       owner_to_pool.fetch(spec_name.to_s) do
-        establish_connection(spec_name)
+        refresh_connection(spec_name)
+
+        message_bus = ActiveSupport::Notifications.instrumenter
+        payload = {
+          connection_id: object_id,
+          spec_name: spec_name
+        }
+
+        message_bus.instrument("!connection.active_record", payload) do
+          FreshConnection.connection_manager.new(spec_name)
+        end
       end
     end
 

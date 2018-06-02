@@ -34,7 +34,7 @@ module FreshConnection
         spec_name = "replica" if spec_name.empty?
         @_replica_spec_name = spec_name
 
-        __replica_handler.establish_connection(replica_spec_name)
+        __replica_handler.refresh_connection(replica_spec_name)
       end
 
       def master_db_only!
