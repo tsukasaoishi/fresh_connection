@@ -40,6 +40,7 @@ module FreshConnection
 
       def __replica_spec_name
         return nil if !defined?(@model_class) || !@model_class
+        return nil unless FreshConnection::AccessControl.replica_access?
         @model_class.replica_spec_name
       end
     end
