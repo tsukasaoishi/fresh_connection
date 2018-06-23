@@ -15,6 +15,10 @@ module FreshConnection
       FreshConnection::ReplicaConnectionHandler.instance.refresh_all
       @connection_manager = mgr
     end
+
+    def rails_52?
+      [ActiveRecord::VERSION::MAJOR, ActiveRecord::VERSION::MINOR] == [5, 2]
+    end
   end
 end
 
