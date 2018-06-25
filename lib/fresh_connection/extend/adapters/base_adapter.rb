@@ -1,23 +1,7 @@
 # frozen_string_literal: true
-require 'fresh_connection/check_adapter'
 
 module FreshConnection
   module Extend
-    module ArAbstractAdapter
-      def inherited(klass)
-        case FreshConnection::CheckAdapter.check(klass)
-        when :mysql
-          klass.prepend BaseAdapter
-          require 'fresh_connection/extend/adapters/m2_adapter'
-          klass.prepend M2Adapter
-        when :postgresql
-          klass.prepend BaseAdapter
-          require 'fresh_connection/extend/adapters/pg_adapter'
-          klass.prepend PgAdapter
-        end
-      end
-    end
-
     module BaseAdapter
       def self.prepended(base)
         base.send :attr_writer, :model_class
@@ -29,11 +13,11 @@ module FreshConnection
       end
 
       def select_all(*args)
-        change_connection { super }
+        __change_connection { super }
       end
 
       def select_value(*args)
-        change_connection { super }
+        __change_connection { super }
       end
 
       private

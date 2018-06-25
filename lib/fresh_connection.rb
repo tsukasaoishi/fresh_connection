@@ -22,6 +22,7 @@ module FreshConnection
   end
 end
 
+require 'fresh_connection/replica_connection_handler'
 require 'fresh_connection/abstract_connection_manager'
 require 'fresh_connection/connection_specification'
 require 'fresh_connection/extend'
