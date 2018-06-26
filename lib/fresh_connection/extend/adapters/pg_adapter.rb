@@ -1,11 +1,12 @@
 # frozen_string_literal: true
+require 'fresh_connection/extend/adapters/base_adapter'
 
 module FreshConnection
   module Extend
     module PgAdapter
       private
 
-      def change_connection
+      def __change_connection
         return yield unless FreshConnection::AccessControl.replica_access?
 
         master_connection = @connection
