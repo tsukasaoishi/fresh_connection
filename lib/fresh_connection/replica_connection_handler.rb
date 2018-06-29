@@ -56,19 +56,24 @@ module FreshConnection
     end
 
     def detect_connection_manager(spec_name)
-      owner_to_pool.fetch(spec_name.to_s) do
-        refresh_connection(spec_name)
+      spec_name = spec_name.to_s
 
-        message_bus = ActiveSupport::Notifications.instrumenter
-        payload = {
-          connection_id: object_id,
-          spec_name: spec_name
-        }
+      cm = owner_to_pool[spec_name]
+      return cm if cm
 
-        message_bus.instrument("!connection.active_record", payload) do
-          FreshConnection.connection_manager.new(spec_name)
-        end
+      refresh_connection(spec_name)
+
+      message_bus = ActiveSupport::Notifications.instrumenter
+      payload = {
+        connection_id: object_id,
+        spec_name: spec_name
+      }
+
+      message_bus.instrument("!connection.active_record", payload) do
+        cm = FreshConnection.connection_manager.new(spec_name)
       end
+
+      owner_to_pool[spec_name] = cm
     end
 
     def owner_to_pool
