@@ -31,6 +31,16 @@ FreshConnction connects one or more configured DB replicas, or with multiple rep
 
 If you wish to use multiple DB replicas on any given connection but do not have a load balancer (such as [`pgbouncer`](https://pgbouncer.github.io) for Posgres databases), you can use [EbisuConnection](https://github.com/tsukasaoishi/ebisu_connection).
 
+### Failover
+FreshConnection assumes that there is a load balancer in front of multi replica servers.  
+When what happens one of the replicas is unreachable for any reason, FreshConnection will try three retries to access to a replica via a load balancer.  
+
+Removing a trouble replica from a cluster is a work of the load balancer.  
+FreshConnection expects the load balancer to work during three retries.  
+
+If you would like access to multi replica servers without a load balancer, you should use [EbisuConnection](https://github.com/tsukasaoishi/ebisu_connection).  
+EbisuConnection has functions of load balancer.
+
 ## Usage
 ### Access to the DB Replica
 Read queries are automatically connected to the DB replica.
