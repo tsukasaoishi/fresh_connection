@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'activerecord', '>= 5.0.0', '< 5.3'
   spec.add_dependency 'activesupport', '>= 5.0.0', '< 5.3'
-  spec.add_dependency 'concurrent-ruby', '~> 1.0.0'
+  spec.add_dependency 'concurrent-ruby', '~> 1.0'
 
   spec.add_development_dependency 'mysql2', '>= 0.3.18', '< 0.6.0'
   spec.add_development_dependency 'pg', '>= 0.18', '< 2.0'
