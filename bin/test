@@ -2,16 +2,5 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-for dbname in fresh_connection_test_master fresh_connection_test_replica1 fresh_connection_test_replica2 ; do
-  if ! psql $dbname -c '\q' 2>/dev/null ; then
-    if [[ -n "`psql -l | grep \"$dbname\"`" ]]; then
-      echo "Dropping database $dbname .."
-      dropdb $dbname
-    fi
-    echo "Creating database $dbname .."
-    createdb $dbname
-  fi
-done
-
 set -vx
 bundle exec appraisal rake test

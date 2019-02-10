@@ -25,7 +25,6 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency 'mysql2', '>= 0.3.18', '< 0.6.0'
   spec.add_development_dependency 'pg', '>= 0.18', '< 2.0'
-  spec.add_development_dependency "bundler", ">= 1.3.0", "< 2.0"
   spec.add_development_dependency "rake", ">= 0.8.7"
   spec.add_development_dependency 'appraisal'
   spec.add_development_dependency "minitest", "~> 5.10.0"

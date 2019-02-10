@@ -5,6 +5,7 @@ test:
   pool: 5
   username: <%= ENV['MYSQL_USER'] || 'root' %>
   password: <%= ENV['MYSQL_PASS'] %>
+  host: <%= ENV['TEST_MYSQL_HOST'] || 'localhost' %>
 
   replica1:
     database: fresh_connection_test_replica1

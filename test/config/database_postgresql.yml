@@ -3,6 +3,7 @@ test:
   encoding: unicode
   database: fresh_connection_test_master
   pool: 5
+  host: <%= ENV['TEST_PSGR_HOST'] || 'localhost' %>
 
   replica1:
     database: fresh_connection_test_replica1

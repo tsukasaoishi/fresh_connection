@@ -8,12 +8,26 @@ REPLICA_NAMES = %w( replica1 replica2 fake_replica )
 case ENV['DB_ADAPTER']
 when 'mysql2'
   puts "[mysql2]"
-  system("mysql -uroot < test/config/mysql_schema.sql")
+  m_h = " -h #{ENV['TEST_MYSQL_HOST']} " if ENV['TEST_MYSQL_HOST']
+  system("mysql -uroot #{m_h} < test/config/mysql_schema.sql")
 when 'postgresql'
   puts "[postgresql]"
-  system("psql -q -f test/config/psql_test_master.sql   fresh_connection_test_master  ")
-  system("psql -q -f test/config/psql_test_replica1.sql fresh_connection_test_replica1")
-  system("psql -q -f test/config/psql_test_replica2.sql fresh_connection_test_replica2")
+  p_h = " -h #{ENV['TEST_PSGR_HOST']} " if ENV['TEST_PSGR_HOST']
+
+  {
+    fresh_connection_test_master: "psql_test_master.sql",
+    fresh_connection_test_replica1: "psql_test_replica1.sql",
+    fresh_connection_test_replica2: "psql_test_replica2.sql"
+  }.each do |db, file|
+    if system("psql -l #{p_h} | grep #{db}")
+      puts "Dropping database #{db}"
+      system("dropdb #{p_h} #{db}")
+    end
+
+    puts "Creating database #{db}"
+    system("createdb #{p_h} #{db}")
+    system("psql -q #{p_h} -f test/config/#{file} #{db}")
+  end
 end
 
 module ActiveRecord
