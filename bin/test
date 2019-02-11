@@ -3,4 +3,22 @@ set -euo pipefail
 IFS=$'\n\t'
 
 set -vx
-bundle exec appraisal rake test
+
+if [ -v DATABASE_URL ]; then
+  echo "[specified config]"
+  bundle exec appraisal rake test
+else
+  echo "[mysql]"
+  DATABASE_URL="mysql2://root@localhost/fresh_connection_test_master" \
+    DATABASE_REPLICA1_URL="mysql2://root@localhost/fresh_connection_test_replica1" \
+    DATABASE_REPLICA2_URL="mysql2://root@localhost/fresh_connection_test_replica2" \
+    DATABASE_FAKE_REPLICA_URL="mysql2://root@localhost/fresh_connection_test_master" \
+    bundle exec appraisal rake test
+
+  echo "[postgresql]"
+  DATABASE_URL="postgresql://localhost/fresh_connection_test_master" \
+    DATABASE_REPLICA1_URL="postgresql://localhost/fresh_connection_test_replica1" \
+    DATABASE_REPLICA2_URL="postgresql://localhost/fresh_connection_test_replica2" \
+    DATABASE_FAKE_REPLICA_URL="postgresql://localhost/fresh_connection_test_master" \
+    bundle exec appraisal rake test
+fi

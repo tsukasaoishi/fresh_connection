@@ -3,38 +3,49 @@ require 'erb'
 require 'active_record'
 require 'fresh_connection'
 
+db_config = ActiveRecord::ConnectionAdapters::ConnectionSpecification::ConnectionUrlResolver.new(ENV["DATABASE_URL"]).to_hash
+
 REPLICA_NAMES = %w( replica1 replica2 fake_replica )
 
-case ENV['DB_ADAPTER']
+case db_config['adapter']
 when 'mysql2'
-  puts "[mysql2]"
-  m_h = " -h #{ENV['TEST_MYSQL_HOST']} " if ENV['TEST_MYSQL_HOST']
-  system("mysql -uroot #{m_h} < test/config/mysql_schema.sql")
+  work = []
+  work << "-u#{db_config["username"]}" if db_config["username"]
+  work << "-p#{db_config["password"]}" if db_config["password"]
+  work << "-h#{db_config["host"]}" if db_config["host"]
+  work << "-P#{db_config["port"]}" if db_config["port"]
+  command = work.join(" ")
+
+  system("mysql #{command} < test/config/mysql_schema.sql")
 when 'postgresql'
   puts "[postgresql]"
-  p_h = " -h #{ENV['TEST_PSGR_HOST']} " if ENV['TEST_PSGR_HOST']
+  work = []
+  work << "-U#{db_config["username"]}" if db_config["username"]
+  work << "-W#{db_config["password"]}" if db_config["password"]
+  work << "-h#{db_config["host"]}" if db_config["host"]
+  work << "-p#{db_config["port"]}" if db_config["port"]
+  command = work.join(" ")
+
 
   {
     fresh_connection_test_master: "psql_test_master.sql",
     fresh_connection_test_replica1: "psql_test_replica1.sql",
     fresh_connection_test_replica2: "psql_test_replica2.sql"
   }.each do |db, file|
-    if system("psql -l #{p_h} | grep #{db}")
+    if system("psql -l #{command} | grep #{db}")
       puts "Dropping database #{db}"
-      system("dropdb #{p_h} #{db}")
+      system("dropdb #{command} #{db}")
     end
 
     puts "Creating database #{db}"
-    system("createdb #{p_h} #{db}")
-    system("psql -q #{p_h} -f test/config/#{file} #{db}")
+    system("createdb #{command} #{db}")
+    system("psql -q #{command} -f test/config/#{file} #{db}")
   end
 end
 
 module ActiveRecord
   class Base
-    configs = YAML.load(ERB.new(File.read(File.join(__dir__, "database_#{ENV['DB_ADAPTER']}.yml"))).result)
-    self.configurations = configs
-    establish_connection(configurations["test"])
+    establish_connection
     establish_fresh_connection :replica1
   end
 end
@@ -61,7 +72,7 @@ class Tel < Replica2
   belongs_to :user
 end
 
-if ENV['DB_ADAPTER'] == "postgresql"
+if db_config['adapter'] == "postgresql"
   ActiveRecord::Base.connection.execute("select setval('addresses_id_seq',(select max(id) from addresses))")
 end
 
