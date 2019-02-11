@@ -4,10 +4,6 @@ services:
   - postgresql
 before_script:
   - bundle update
-  - cp test/config/database_postgresql.yml.travis test/config/database_postgresql.yml
-  - psql -c 'create database fresh_connection_test_master;' -U postgres
-  - psql -c 'create database fresh_connection_test_replica1;' -U postgres
-  - psql -c 'create database fresh_connection_test_replica2;' -U postgres
 cache: bundler
 rvm:
   - 2.3.8
