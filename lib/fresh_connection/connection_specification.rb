@@ -16,7 +16,12 @@ module FreshConnection
     private
 
     def resolver
-      ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(@spec_name => build_config)
+      if ActiveRecord::VERSION::MAJOR == 6
+        config = ActiveRecord::DatabaseConfigurations.new(@spec_name => build_config)
+        ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(config)
+      else
+        ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(@spec_name => build_config)
+      end
     end
 
     def build_config

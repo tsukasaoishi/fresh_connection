@@ -3,7 +3,7 @@
 module FreshConnection
   module Extend
     module ArStatementCache
-      if FreshConnection.rails_52?
+      if FreshConnection.rails_52? || ActiveRecord::VERSION::MAJOR == 6
         def execute(params, connection, &block)
           klass.all.manage_access { super }
         end
