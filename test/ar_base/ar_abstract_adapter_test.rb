@@ -22,6 +22,9 @@ class AbstractAdapterTest < Minitest::Test
   end
 
   test "cache_query is correct after master update" do
+    if ActiveRecord::VERSION::MAJOR == 6
+      ActiveRecord::Base.connection_handlers = { ActiveRecord::Base.writing_role => ActiveRecord::Base.default_connection_handler }
+    end
     old_pref = SecureRandom.hex(3)
     a = FakeAddress.create(prefecture: old_pref)
 

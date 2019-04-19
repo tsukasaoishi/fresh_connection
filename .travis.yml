@@ -18,4 +18,7 @@ script:
   - "bin/test"
 matrix:
   fast_finish: true
+  exclude:
+    - rvm: 2.4.6
+      gemfile: gemfiles/rails60.gemfile
 bundler_args: --jobs 3 --retry 3
