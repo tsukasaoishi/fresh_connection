@@ -19,13 +19,11 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency 'activerecord', '>= 5.0.0', '< 5.3'
-  spec.add_dependency 'activesupport', '>= 5.0.0', '< 5.3'
-  spec.add_dependency 'concurrent-ruby', '~> 1.0'
+  spec.add_dependency 'activerecord', '>= 5.2.0', '< 6.1'
 
-  spec.add_development_dependency 'mysql2', '>= 0.3.18', '< 0.6.0'
+  spec.add_development_dependency 'mysql2', '>= 0.4.4'
   spec.add_development_dependency 'pg', '>= 0.18', '< 2.0'
-  spec.add_development_dependency "rake", ">= 0.8.7"
+  spec.add_development_dependency "rake"
   spec.add_development_dependency 'appraisal'
   spec.add_development_dependency "minitest", "~> 5.10.0"
   spec.add_development_dependency "minitest-reporters"
