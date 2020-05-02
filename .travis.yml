@@ -3,17 +3,15 @@ services:
   - mysql
   - postgresql
 before_install:
-  - gem uninstall -v '>= 2' -i $(rvm gemdir)@global -ax bundler || true
-  - gem install bundler -v '< 2'
+  - gem update --system
+  - gem --version
 rvm:
-  - 2.3.8
-  - 2.4.5
-  - 2.5.3
-  - 2.6.0
+  - 2.5.8
+  - 2.6.6
+  - 2.7.1
 gemfile:
-  - gemfiles/rails50.gemfile
-  - gemfiles/rails51.gemfile
   - gemfiles/rails52.gemfile
+  - gemfiles/rails60.gemfile
 script:
   - "bin/test"
 matrix:

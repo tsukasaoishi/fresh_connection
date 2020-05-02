@@ -29,8 +29,6 @@ FreshConnction connects one or more configured DB replicas, or with multiple rep
 - Write queries go to the DB master.
 - Within a transaction, all queries go to the DB master.
 
-If you wish to use multiple DB replicas on any given connection but do not have a load balancer (such as [`pgbouncer`](https://pgbouncer.github.io) for Posgres databases), you can use [EbisuConnection](https://github.com/tsukasaoishi/ebisu_connection).
-
 ### Failover
 FreshConnection assumes that there is a load balancer in front of multi replica servers.  
 When what happens one of the replicas is unreachable for any reason, FreshConnection will try three retries to access to a replica via a load balancer.  
@@ -80,8 +78,12 @@ old_article.destroy
 
 ## ActiveRecord Versions Supported
 
-- FreshConnection supports ActiveRecord version 5.0 or later.
-- If you are using Rails 4.2, you can use FreshConnection version 2.4.4 or before.
+- FreshConnection supports ActiveRecord version 5.2 or later.
+- If you are using Rails 5.1, you can use FreshConnection version 3.0.3 or before.
+
+### Not Support Multiple Database
+I haven't tested it in an environment using MultipleDB in Rails 6.
+I plan to enable use with MultipleDB in FreshConnection version 4.0 or later.
 
 ## Databases Supported
 FreshConnection currently supports MySQL and PostgreSQL.

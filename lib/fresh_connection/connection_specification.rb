@@ -16,7 +16,7 @@ module FreshConnection
     private
 
     def resolver
-      ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(@spec_name => build_config)
+      ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(build_config)
     end
 
     def build_config
@@ -26,7 +26,12 @@ module FreshConnection
       config = config.merge(s_config) if s_config
 
       config = config.merge(@modify_spec) if defined?(@modify_spec)
-      config
+
+      if defined?(ActiveRecord::DatabaseConfigurations)
+        ActiveRecord::DatabaseConfigurations.new(@spec_name => config)
+      else
+        { @spec_name => config }
+      end
     end
 
     def replica_config(config)
