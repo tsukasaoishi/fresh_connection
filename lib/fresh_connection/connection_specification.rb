@@ -27,7 +27,7 @@ module FreshConnection
 
       config = config.merge(@modify_spec) if defined?(@modify_spec)
 
-      if defined?("ActiveRecord::DatabaseConfigurations")
+      if defined?(ActiveRecord::DatabaseConfigurations)
         ActiveRecord::DatabaseConfigurations.new(@spec_name => config)
       else
         { @spec_name => config }
