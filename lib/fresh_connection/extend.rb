@@ -2,7 +2,7 @@
 require 'active_support'
 
 ActiveSupport.on_load(:active_record) do
-  if respond_to?(:connection_handlers) && connection_handlers.empty?
+  if connection_handlers.empty?
     self.connection_handlers = { writing_role => ActiveRecord::Base.default_connection_handler }
   end
 
