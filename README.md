@@ -36,9 +36,6 @@ When what happens one of the replicas is unreachable for any reason, FreshConnec
 Removing a trouble replica from a cluster is a work of the load balancer.  
 FreshConnection expects the load balancer to work during three retries.  
 
-If you would like access to multi replica servers without a load balancer, you should use [EbisuConnection](https://github.com/tsukasaoishi/ebisu_connection).  
-EbisuConnection has functions of load balancer.
-
 ## Usage
 ### Access to the DB Replica
 Read queries are automatically connected to the DB replica.
@@ -78,12 +75,8 @@ old_article.destroy
 
 ## ActiveRecord Versions Supported
 
-- FreshConnection supports ActiveRecord version 5.2 or later.
-- If you are using Rails 5.1, you can use FreshConnection version 3.0.3 or before.
-
-### Not Support Multiple Database
-I haven't tested it in an environment using MultipleDB in Rails 6.
-I plan to enable use with MultipleDB in FreshConnection version 4.0 or later.
+- FreshConnection supports ActiveRecord version 6.0 or later.
+- If you are using Rails 5.2, you can use FreshConnection version 3.1.0 or before.
 
 ## Databases Supported
 FreshConnection currently supports MySQL and PostgreSQL.
@@ -108,98 +101,10 @@ $ gem install fresh_connection
 ```
 
 ## Configuration
+FreshConnection uses [ActiveRecord Multiple Databases](https://guides.rubyonrails.org/active_record_multiple_databases.html) for connection management.  
+See the Rails documentation for how to set up a read replica.
 
-The FreshConnection database replica is configured within the standard Rails
-database configuration file, `config/database.yml`, using a `replica:` stanza.
-
-Below is a sample such configuration file.
-
-### `config/database.yml`
-
-```yaml
-default: &default
-  adapter: mysql2
-  encoding: utf8
-  pool: <%%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: root
-  password:
-
-production:
-  <<: *default
-  database: blog_production
-  username: master_db_user
-  password: <%= ENV['MASTER_DATABASE_PASSWORD'] %>
-  host: master_db
-
-  replica:
-    username: replica_db_user
-    password: <%= ENV['REPLICA_DATABASE_PASSWORD'] %>
-    host: replica_db
-```
-
-`replica` is the configuration used for connecting read-only queries to the database replica.  All other connections will use the database master settings.
-
-
-### Multiple DB Replicas
-If you want to use multiple configured DB replicas, the configuration can contain multiple `replica` stanzas in the configuration file `config/database.yml`.
-
-For example:
-
-```yaml
-default: &default
-  adapter: mysql2
-  encoding: utf8
-  pool: <%%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: root
-  password:
-
-production:
-  <<: *default
-  database: blog_production
-  username: master_db_user
-  password: <%= ENV['MASTER_DATABASE_PASSWORD'] %>
-  host: master_db
-
-  replica:
-    username: replica_db_user
-    password: <%= ENV['REPLICA_DATABASE_PASSWORD'] %>
-    host: replica_db
-
-  admin_replica:
-    username: admin_replica_db_user
-    password: <%= ENV['ADMIN_REPLICA_DATABASE_PASSWORD'] %>
-    host: admin_replica_db
-```
-
-The custom replica stanza can then be applied as an argument to the `establish_fresh_connection` method in the models that should use it.  For example:
-
-```ruby
-class AdminUser < ActiveRecord::Base
-  establish_fresh_connection :admin_replica
-end
-```
-
-The child (sub) classes of the configured model will inherit the same access as the parent class.  Example:
-
-```ruby
-class AdminBase < ActiveRecord::Base
-  establish_fresh_connection :admin_replica
-end
-
-class AdminUser < AdminBase
-end
-
-class Benefit < AdminBase
-end
-
-class Customer < ActiveRecord::Base
-end
-```
-
-The `AdminUser` and `Benefit` models will access the database configured for the `admin_replica` group.
-
-The `Customer` model will use the default connections: read-only queries will connect to the standard DB replica, and state-changing queries will connect to the DB master.
-
+`establish_fresh_connection` used by FreshConnection has been discontinued.
 
 ### Replica Configuration With Environment Variables
 
