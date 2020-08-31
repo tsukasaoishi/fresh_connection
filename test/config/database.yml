@@ -1,0 +1,45 @@
+default: &default
+  username: root
+  host: localhost
+
+mysql_default: &mysql_default
+  <<: *default
+  adapter: mysql2
+
+psgr_default: &psgr_default
+  <<: *default
+  adapter: postgresql
+
+mysql:
+  primary:
+    <<: *mysql_default
+    database: fresh_connection_test_master
+  replica1:
+    <<: *mysql_default
+    database: fresh_connection_test_replica1
+    replica: true
+  replica2:
+    <<: *mysql_default
+    database: fresh_connection_test_replica2
+    replica: true
+  fake_replica:
+    <<: *mysql_default
+    database: fresh_connection_test_master
+    replica: true
+
+psgl:
+  primary:
+    <<: *psgr_default
+    database: fresh_connection_test_master
+  replica1:
+    <<: *psgr_default
+    database: fresh_connection_test_replica1
+    replica: true
+  replica2:
+    <<: *psgr_default
+    database: fresh_connection_test_replica2
+    replica: true
+  fake_replica:
+    <<: *psgr_default
+    database: fresh_connection_test_master
+    replica: true

@@ -6,3 +6,4 @@ gemfiles/*.lock
 log/*
 .*.sw[a-z]
 /bin/test_local
+/test/config/database.local.yml

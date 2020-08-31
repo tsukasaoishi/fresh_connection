@@ -3,9 +3,21 @@ require 'erb'
 require 'active_record'
 require 'fresh_connection'
 
-db_config = ActiveRecord::ConnectionAdapters::ConnectionSpecification::ConnectionUrlResolver.new(ENV["DATABASE_URL"]).to_hash
+class DbConfig
+  def self.config
+    return @config if defined?(@config)
+    c = YAML.load_file(File.join(__dir__, config_file))[ENV["FC_TEST_ADAPTER"]]
+    @config = { test: c }
+  end
 
-REPLICA_NAMES = %w( replica1 replica2 fake_replica )
+  def self.config_file
+    %w(database.local.yml database.yml).detect do |f|
+      File.exist?(File.join(__dir__, f))
+    end
+  end
+end
+
+db_config = DbConfig.config
 
 case db_config['adapter']
 when 'mysql2'
@@ -45,8 +57,9 @@ end
 
 module ActiveRecord
   class Base
+    self.configurations = DbConfig.config
     establish_connection
-    establish_fresh_connection :replica1
+    connects_to database: { writing: :primary, reading: :replica1 }
   end
 end
 
@@ -56,7 +69,7 @@ end
 
 class Replica2 < ActiveRecord::Base
   self.abstract_class = true
-  establish_fresh_connection :replica2
+  connects_to database: { writing: :primary, reading: :replica2 }
 end
 
 class User < ActiveRecord::Base
