@@ -10,7 +10,6 @@ rvm:
   - 2.6.6
   - 2.7.1
 gemfile:
-  - gemfiles/rails52.gemfile
   - gemfiles/rails60.gemfile
 script:
   - "bin/test"
