@@ -59,25 +59,29 @@ module ActiveRecord
   class Base
     self.configurations = DbConfig.config
     establish_connection
-    connects_to database: { writing: :primary, reading: :replica1 }
   end
 end
 
-class Parent < ActiveRecord::Base
+class ApplicationRecord < ActiveRecord::Base
+  self.abstract_class = true
+  connects_to database: { writing: :primary, reading: :replica1 }
+end
+
+class Parent < ApplicationRecord
   self.abstract_class = true
 end
 
-class Replica2 < ActiveRecord::Base
+class Replica2 < ApplicationRecord
   self.abstract_class = true
   connects_to database: { writing: :primary, reading: :replica2 }
 end
 
-class User < ActiveRecord::Base
+class User < ApplicationRecord
   has_one :address
   has_many :tels
 end
 
-class Address < ActiveRecord::Base
+class Address < ApplicationRecord
   belongs_to :user
 end
 

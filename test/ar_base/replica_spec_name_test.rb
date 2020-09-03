@@ -9,9 +9,4 @@ class ReplicaSpecNameTest < Minitest::Test
     assert_equal "replica1", User.replica_spec_name
     assert_equal "replica2", Tel.replica_spec_name
   end
-
-  test "equal 'replica' when not specific replica_spec_name" do
-    Tel2.establish_fresh_connection
-    assert_equal "replica", Tel2.replica_spec_name
-  end
 end

@@ -7,11 +7,15 @@ class AccessTest < Minitest::Test
   end
 
   test "persisted first state(replica)" do
+    model = MiniTest::Mock.new
+    model.expect(:reading_role, :reading)
+    model.expect(:connected_to, nil, [{role: :reading}])
+
     ret = []
-    @ac.send(:access, true) do
-      @ac.send(:access, true) do
+    @ac.send(:access, true, model: model) do
+      @ac.send(:access, true, model: model) do
         ret << @ac.replica_access?
-        @ac.send(:access, false) do
+        @ac.send(:access, false, model: model) do
           ret << @ac.replica_access?
         end
       end
@@ -22,10 +26,10 @@ class AccessTest < Minitest::Test
 
   test "persisted first state(master)" do
     ret = []
-    @ac.send(:access, false) do
-      @ac.send(:access, true) do
+    @ac.send(:access, false, model: nil) do
+      @ac.send(:access, true, model: nil) do
         ret << @ac.replica_access?
-        @ac.send(:access, false) do
+        @ac.send(:access, false, model: nil) do
           ret << @ac.replica_access?
         end
       end
@@ -35,9 +39,13 @@ class AccessTest < Minitest::Test
   end
 
   test "outside is always master" do
+    model = MiniTest::Mock.new
+    model.expect(:reading_role, :reading)
+    model.expect(:connected_to, nil, [{role: :reading}])
+
     ret = []
     ret << @ac.replica_access?
-    @ac.send(:access, true) {}
+    @ac.send(:access, true, model: model) {}
     ret << @ac.replica_access?
 
     refute ret.all?{|item| item}

@@ -12,14 +12,6 @@ module FreshConnection
         super
       end
 
-      def select_all(*args)
-        __change_connection { super }
-      end
-
-      def select_value(*args)
-        __change_connection { super }
-      end
-
       private
 
       def __replica_spec_name
