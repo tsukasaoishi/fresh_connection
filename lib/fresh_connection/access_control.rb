@@ -7,11 +7,11 @@ module FreshConnection
       private_constant :RETRY_LIMIT
 
       def manage_access(model:, replica_access:, &block)
-        return force_master_access(&block) if model.master_db_only?
+        return force_master_access(model: model, &block) if model.master_db_only?
 
         retry_count = 0
         begin
-          access(replica_access, &block)
+          access(replica_access, model: model, &block)
         rescue *catch_exceptions
           if recovery?(model.replica_spec_name)
             retry_count += 1
@@ -28,21 +28,26 @@ module FreshConnection
 
       private
 
-      def force_master_access(&block)
-        switch_to(:master, &block)
+      def force_master_access(model: , &block)
+        switch_to(:master, model: model, &block)
       end
 
-      def access(replica_access, &block)
+      def access(replica_access, model: , &block)
         return yield if access_db
 
         db = replica_access ? :replica : :master
-        switch_to(db, &block)
+        switch_to(db, model: model, &block)
       end
 
-      def switch_to(new_db)
+      def switch_to(new_db, model:)
         old_db = access_db
         access_to(new_db)
-        yield
+
+        if replica_access?
+          model.connected_to(role: model.reading_role) { yield }
+        else
+          yield
+        end
       ensure
         access_to(old_db)
       end

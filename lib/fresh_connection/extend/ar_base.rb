@@ -47,18 +47,20 @@ module FreshConnection
       end
 
       def replica_spec_name
-        @_replica_spec_name ||= __search_replica_spec_name
-      end
-
-      private
-
-      def __search_replica_spec_name
-        if self == ActiveRecord::Base
-          "replica"
+        if defined?(@_database)
+          @_database[reading_role]
         else
           superclass.replica_spec_name
         end
       end
+
+      def connects_to(database: {})
+        @_database = {}
+        database.each {|k,v| @_database[k] = v.to_s }
+        super
+      end
+
+      private
 
       def __replica_handler
         FreshConnection::ReplicaConnectionHandler.instance

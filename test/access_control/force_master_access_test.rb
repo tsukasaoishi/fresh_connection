@@ -8,7 +8,11 @@ class ForceMasterAccessTest < Minitest::Test
   end
 
   test "forced master state" do
-    @ac.send(:access, true) do
+    model = MiniTest::Mock.new
+    model.expect(:reading_role, :reading)
+    model.expect(:connected_to, nil, [{role: :reading}])
+
+    @ac.send(:access, true, model: model) do
       @ac.send(:force_master_access) do
         refute @ac.replica_access?
       end
@@ -16,7 +20,11 @@ class ForceMasterAccessTest < Minitest::Test
   end
 
   test "not effect outside" do
-    @ac.send(:access, true) do
+    model = MiniTest::Mock.new
+    model.expect(:reading_role, :reading)
+    model.expect(:connected_to, nil, [{role: :reading}])
+
+    @ac.send(:access, true, model: model) do
       @ac.send(:force_master_access) {}
       assert @ac.replica_access?
     end
