@@ -6,12 +6,13 @@ before_install:
   - gem update --system
   - gem --version
 rvm:
-  - 2.5.8
-  - 2.6.6
-  - 2.7.1
+  - 2.6.8
+  - 2.7.4
+  - 3.0.2
 gemfile:
   - gemfiles/rails52.gemfile
   - gemfiles/rails60.gemfile
+  - gemfiles/rails61.gemfile
 script:
   - "bin/test"
 matrix:
