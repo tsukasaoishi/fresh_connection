@@ -9,15 +9,7 @@ module FreshConnection
       @modify_spec = modify_spec.with_indifferent_access if modify_spec
     end
 
-    def spec
-      resolver.spec(@spec_name.to_sym)
-    end
-
     private
-
-    def resolver
-      ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(build_config)
-    end
 
     def build_config
       config = base_config.with_indifferent_access
@@ -27,11 +19,7 @@ module FreshConnection
 
       config = config.merge(@modify_spec) if defined?(@modify_spec)
 
-      if defined?(ActiveRecord::DatabaseConfigurations)
-        ActiveRecord::DatabaseConfigurations.new(@spec_name => config)
-      else
-        { @spec_name => config }
-      end
+      config
     end
 
     def replica_config(config)
@@ -40,14 +28,6 @@ module FreshConnection
       else
         config[@spec_name]
       end
-    end
-
-    def config_from_url
-      ActiveRecord::ConnectionAdapters::ConnectionSpecification::ConnectionUrlResolver.new(database_group_url).to_hash
-    end
-
-    def base_config
-      ActiveRecord::Base.connection_pool.spec.config
     end
 
     def database_group_url

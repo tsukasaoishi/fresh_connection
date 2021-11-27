@@ -17,7 +17,7 @@ class DatabaseReplicaUrlTest < Minitest::Test
 
     s = FreshConnection::ConnectionSpecification.new(:replica)
     s.stub(:base_config, { replica: test_config }) do
-      config = s.spec.config
+      config = s.spec.respond_to?(:config) ? s.spec.config : s.spec.db_config.configuration_hash
 
       assert_equal test_config[:host], config[:host]
       assert_equal test_config[:database], config[:database]
@@ -45,7 +45,7 @@ class DatabaseReplicaUrlTest < Minitest::Test
 
     s = FreshConnection::ConnectionSpecification.new(:replica)
     s.stub(:base_config, {}) do
-      config = s.spec.config
+      config = s.spec.respond_to?(:config) ? s.spec.config : s.spec.db_config.configuration_hash
 
       assert_equal test_config[:host], config[:host]
       assert_equal test_config[:database], config[:database]
@@ -90,7 +90,7 @@ class DatabaseReplicaUrlTest < Minitest::Test
     %i(mysql2 postgresql).each do |spec_name|
       s = FreshConnection::ConnectionSpecification.new("replica_#{spec_name}")
       s.stub(:base_config, {}) do
-        config = s.spec.config
+        config = s.spec.respond_to?(:config) ? s.spec.config : s.spec.db_config.configuration_hash
         tc = test_config[spec_name]
 
         assert_equal spec_name.to_s, config[:adapter]
@@ -126,7 +126,7 @@ class DatabaseReplicaUrlTest < Minitest::Test
 
     s = FreshConnection::ConnectionSpecification.new(:replica)
     s.stub(:base_config, base_config) do
-      config = s.spec.config
+      config = s.spec.respond_to?(:config) ? s.spec.config : s.spec.db_config.configuration_hash
 
       tc = base_config.merge!(test_config)
       assert_equal tc[:host], config[:host]

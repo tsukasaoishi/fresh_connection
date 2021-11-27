@@ -3,14 +3,14 @@ require "test_helper"
 class RecoveryTest < Minitest::Test
   test "enable recovery" do
     count = 0
-    raise_exception = lambda {|*args|
+    raise_exception = lambda {|*args, &block|
       if count == 0
         count += 1
         raise ActiveRecord::StatementInvalid, "hoge"
       end
     }
 
-    FreshConnection::AccessControl.stub(:access, raise_exception) do
+    FreshConnection::AccessControl.exception_or_super(:access, raise_exception) do
       FreshConnection::AccessControl.stub(:recovery?, true) do
         assert User.take
       end
@@ -33,14 +33,14 @@ class RecoveryTest < Minitest::Test
 
   test "raise exception when conection active" do
     count = 0
-    raise_exception = lambda {|*args|
+    raise_exception = lambda {|*args, &block|
       if count == 0
         count += 1
         raise ActiveRecord::StatementInvalid, "hoge"
       end
     }
 
-    FreshConnection::AccessControl.stub(:access, raise_exception) do
+    FreshConnection::AccessControl.exception_or_super(:access, raise_exception) do
       FreshConnection::AccessControl.stub(:recovery?, false) do
         assert_raises(ActiveRecord::StatementInvalid) do
           User.take
