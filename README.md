@@ -139,6 +139,9 @@ production:
 
 `replica` is the configuration used for connecting read-only queries to the database replica.  All other connections will use the database master settings.
 
+**NOTE:** 
+The 'replica' stanza has a special meaning in Rails6.  
+In Rails6, use a name other than 'replica', and specify that name using establish_fresh_connection in ApplicationRecord etc.
 
 ### Multiple DB Replicas
 If you want to use multiple configured DB replicas, the configuration can contain multiple `replica` stanzas in the configuration file `config/database.yml`.

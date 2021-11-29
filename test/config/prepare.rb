@@ -1,9 +1,14 @@
 require 'yaml'
 require 'erb'
 require 'active_record'
+require 'active_record/base'
 require 'fresh_connection'
 
-db_config = ActiveRecord::ConnectionAdapters::ConnectionSpecification::ConnectionUrlResolver.new(ENV["DATABASE_URL"]).to_hash
+if ActiveRecord::VERSION::MAJOR == 6 && ActiveRecord::VERSION::MINOR == 1
+  db_config = ActiveRecord::DatabaseConfigurations::ConnectionUrlResolver.new(ENV["DATABASE_URL"]).to_hash
+else
+  db_config = ActiveRecord::ConnectionAdapters::ConnectionSpecification::ConnectionUrlResolver.new(ENV["DATABASE_URL"]).to_hash
+end
 
 REPLICA_NAMES = %w( replica1 replica2 fake_replica )
 
