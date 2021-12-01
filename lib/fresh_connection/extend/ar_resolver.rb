@@ -13,6 +13,9 @@ module FreshConnection
         when "postgresql"
           require 'fresh_connection/extend/adapters/pg_adapter'
           __extend_adapter_by_fc(::ActiveRecord::ConnectionAdapters::PostgreSQLAdapter, PgAdapter)
+        when "postgis"
+          require 'fresh_connection/extend/adapters/pg_adapter'
+          __extend_adapter_by_fc(::ActiveRecord::ConnectionAdapters::PostGISAdapter, PgAdapter)
         else
           raise NotImplementedError, "This adapter('#{specification.config[:adapter]}') is not supported. If you specified the mysql or postgres adapter, it's probably a bug in FreshConnection. Please teach me (https://github.com/tsukasaoishi/fresh_connection/issues/new)"
         end
