@@ -3,15 +3,15 @@
 module FreshConnection
   module Extend
     module ArRelation
-      def calculate(*args)
+      def calculate(*)
         manage_access { super }
       end
 
-      def exists?(*args)
+      def exists?(*)
         manage_access { super }
       end
 
-      def pluck(*args)
+      def pluck(*)
         manage_access { super }
       end
 
