@@ -1,0 +1,50 @@
+name: CI
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby:
+          - '2.6'
+          - '2.7'
+          - '3.0'
+        rails:
+          - 'rails52'
+          - 'rails60'
+          - 'rails61'
+        exclude:
+          - ruby: '3.0'
+            rails: 'rails52'
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+      mysql:
+        image: mysql
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_USER: root
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Setup Ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - name: Bundle
+        env:
+          RAILS_VERSION: ${{ matrix.rails }}
+        run: |
+          export BUNDLE_GEMFILE="${GITHUB_WORKSPACE}/gemfiles/${RAILS_VERSION}.gemfile"
+          bundle install --jobs 4 --retry 3
+      - name: Test
+        run: bin/test
