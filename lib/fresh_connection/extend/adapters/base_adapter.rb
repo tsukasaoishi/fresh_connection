@@ -12,11 +12,11 @@ module FreshConnection
         super
       end
 
-      def select_all(*args)
+      def select_all(*, **)
         __change_connection { super }
       end
 
-      def select_value(*args)
+      def select_value(*)
         __change_connection { super }
       end
 
