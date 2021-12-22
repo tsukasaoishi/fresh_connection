@@ -9,10 +9,10 @@ if [ -v DATABASE_URL ]; then
   bundle exec rake test
 else
   echo "[mysql]"
-  DATABASE_URL="mysql2://root@127.0.0.1/fresh_connection_test_master" \
-    DATABASE_REPLICA1_URL="mysql2://root@127.0.0.1/fresh_connection_test_replica1" \
-    DATABASE_REPLICA2_URL="mysql2://root@127.0.0.1/fresh_connection_test_replica2" \
-    DATABASE_FAKE_REPLICA_URL="mysql2://root@127.0.0.1/fresh_connection_test_master" \
+  DATABASE_URL="mysql2://root@127.0.0.1:3306/fresh_connection_test_master" \
+    DATABASE_REPLICA1_URL="mysql2://root@127.0.0.1:3306/fresh_connection_test_replica1" \
+    DATABASE_REPLICA2_URL="mysql2://root@127.0.0.1:3306/fresh_connection_test_replica2" \
+    DATABASE_FAKE_REPLICA_URL="mysql2://root@127.0.0.1:3306/fresh_connection_test_master" \
     bundle exec rake test
 
   echo "[postgresql]"
