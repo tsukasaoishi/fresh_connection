@@ -62,6 +62,7 @@ module FreshConnection
       def catch_exceptions
         return @catch_exceptions if defined?(@catch_exceptions)
         @catch_exceptions = [ActiveRecord::StatementInvalid]
+        @catch_exceptions << ActiveRecord::ConnectionNotEstablished
         @catch_exceptions << ::Mysql2::Error if defined?(::Mysql2)
 
         if defined?(::PG)
