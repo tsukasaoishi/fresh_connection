@@ -14,7 +14,12 @@ module FreshConnection
           require 'fresh_connection/extend/adapters/pg_adapter'
           __extend_adapter_by_fc(::ActiveRecord::ConnectionAdapters::PostgreSQLAdapter, PgAdapter)
         else
-          raise NotImplementedError, "This adapter('#{specification.config[:adapter]}') is not supported. If you specified the mysql or postgres adapter, it's probably a bug in FreshConnection. Please teach me (https://github.com/tsukasaoishi/fresh_connection/issues/new)"
+          require 'fresh_connection/extend/adapters/other_adapter_proxy'
+          base_adapter_name = "#{specification.config[:adapter].to_s}_adapter".camelize
+          __extend_adapter_by_fc(
+            "::ActiveRecord::ConnectionAdapters::#{base_adapter_name}".constantize,
+            OtherAdapterProxy
+          )
         end
 
         specification
