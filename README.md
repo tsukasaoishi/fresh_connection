@@ -1,5 +1,5 @@
 # FreshConnection
-[![Gem Version](https://badge.fury.io/rb/fresh_connection.svg)](http://badge.fury.io/rb/fresh_connection) [![Build Status](https://travis-ci.org/tsukasaoishi/fresh_connection.svg?branch=master)](https://travis-ci.org/tsukasaoishi/fresh_connection) [![Code Climate](https://codeclimate.com/github/tsukasaoishi/fresh_connection/badges/gpa.svg)](https://codeclimate.com/github/tsukasaoishi/fresh_connection)
+[![Gem Version](https://badge.fury.io/rb/fresh_connection.svg)](http://badge.fury.io/rb/fresh_connection) [![test](https://github.com/tsukasaoishi/fresh_connection/actions/workflows/test.yml/badge.svg)](https://github.com/tsukasaoishi/fresh_connection/actions/workflows/test.yml) [![Code Climate](https://codeclimate.com/github/tsukasaoishi/fresh_connection/badges/gpa.svg)](https://codeclimate.com/github/tsukasaoishi/fresh_connection)
 
 **FreshConnection** provides access to one or more configured database replicas.
 
@@ -78,12 +78,9 @@ old_article.destroy
 
 ## ActiveRecord Versions Supported
 
-- FreshConnection supports ActiveRecord version 5.2 or later.
+- FreshConnection supports ActiveRecord 6.1, 7.2, 8.0 and 8.1.
+- If you are using ActiveRecord 5.2 / 6.0, you can use FreshConnection version 3.1.3 or before.
 - If you are using Rails 5.1, you can use FreshConnection version 3.0.3 or before.
-
-### Not Support Multiple Database
-I haven't tested it in an environment using MultipleDB in Rails 6.
-I plan to enable use with MultipleDB in FreshConnection version 4.0 or later.
 
 ## Databases Supported
 FreshConnection currently supports MySQL and PostgreSQL.

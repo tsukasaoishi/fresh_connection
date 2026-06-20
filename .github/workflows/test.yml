@@ -1,0 +1,124 @@
+name: test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Each Rails line is tested against the Ruby versions it supports
+          # (gemspec minimum .. known maximum). 6.1 tops out at 3.2; 7.2 at 3.4;
+          # 8.0/8.1 require >= 3.2 and cover the current Ruby line incl. 4.0.
+          - { ruby: "3.1", gemfile: "gemfiles/rails61.gemfile" }
+          - { ruby: "3.2", gemfile: "gemfiles/rails61.gemfile" }
+          - { ruby: "3.1", gemfile: "gemfiles/rails72.gemfile" }
+          - { ruby: "3.2", gemfile: "gemfiles/rails72.gemfile" }
+          - { ruby: "3.3", gemfile: "gemfiles/rails72.gemfile" }
+          - { ruby: "3.4", gemfile: "gemfiles/rails72.gemfile" }
+          - { ruby: "3.2", gemfile: "gemfiles/rails80.gemfile" }
+          - { ruby: "3.3", gemfile: "gemfiles/rails80.gemfile" }
+          - { ruby: "3.4", gemfile: "gemfiles/rails80.gemfile" }
+          - { ruby: "4.0", gemfile: "gemfiles/rails80.gemfile" }
+          - { ruby: "3.2", gemfile: "gemfiles/rails81.gemfile" }
+          - { ruby: "3.3", gemfile: "gemfiles/rails81.gemfile" }
+          - { ruby: "3.4", gemfile: "gemfiles/rails81.gemfile" }
+          - { ruby: "4.0", gemfile: "gemfiles/rails81.gemfile" }
+
+    env:
+      BUNDLE_GEMFILE: ${{ matrix.gemfile }}
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # prepare.rb shells out to the mysql / psql / createdb / dropdb CLIs, and
+      # the mysql2 / pg gems need client headers to build native extensions.
+      - name: Install database clients and build headers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            default-mysql-client default-libmysqlclient-dev \
+            postgresql-client libpq-dev
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      # Create the test databases explicitly so any client/auth problem fails
+      # loudly here instead of surfacing as a NoDatabaseError during the suite.
+      - name: Set up mysql databases
+        run: |
+          which mysql || true
+          mysql --version || true
+          mysql -h 127.0.0.1 -u root -e "SELECT VERSION();"
+          mysql -h 127.0.0.1 -u root < test/config/mysql_schema.sql
+          mysql -h 127.0.0.1 -u root -e "SHOW DATABASES;"
+
+      - name: Run tests on mysql
+        env:
+          DB_ADAPTER: "mysql2"
+          DATABASE_URL: "mysql2://root@127.0.0.1/fresh_connection_test_master"
+          DATABASE_REPLICA1_URL: "mysql2://root@127.0.0.1/fresh_connection_test_replica1"
+          DATABASE_REPLICA2_URL: "mysql2://root@127.0.0.1/fresh_connection_test_replica2"
+          DATABASE_FAKE_REPLICA_URL: "mysql2://root@127.0.0.1/fresh_connection_test_master"
+        run: bundle exec rake test
+
+      # Same as mysql: create and load the databases explicitly so failures are
+      # visible here rather than as a NoDatabaseError during the suite.
+      - name: Set up postgresql databases
+        env:
+          PGHOST: "127.0.0.1"
+          PGUSER: "postgres"
+        run: |
+          psql --version
+          createdb fresh_connection_test_master
+          createdb fresh_connection_test_replica1
+          createdb fresh_connection_test_replica2
+          psql -v ON_ERROR_STOP=1 -q -d fresh_connection_test_master   -f test/config/psql_test_master.sql
+          psql -v ON_ERROR_STOP=1 -q -d fresh_connection_test_replica1 -f test/config/psql_test_replica1.sql
+          psql -v ON_ERROR_STOP=1 -q -d fresh_connection_test_replica2 -f test/config/psql_test_replica2.sql
+          # The schema setup leaves sequences at 1 (is_called=false); advance them
+          # past the COPY-loaded rows so inserts don't collide on the primary key.
+          for db in master replica1 replica2; do
+            psql -v ON_ERROR_STOP=1 -q -d "fresh_connection_test_$db" -c "
+              SELECT setval('addresses_id_seq', (SELECT COALESCE(MAX(id), 1) FROM addresses));
+              SELECT setval('tels_id_seq',      (SELECT COALESCE(MAX(id), 1) FROM tels));
+              SELECT setval('users_id_seq',     (SELECT COALESCE(MAX(id), 1) FROM users));"
+          done
+
+      - name: Run tests on postgresql
+        env:
+          DB_ADAPTER: "postgresql"
+          DATABASE_URL: "postgresql://postgres@127.0.0.1/fresh_connection_test_master"
+          DATABASE_REPLICA1_URL: "postgresql://postgres@127.0.0.1/fresh_connection_test_replica1"
+          DATABASE_REPLICA2_URL: "postgresql://postgres@127.0.0.1/fresh_connection_test_replica2"
+          DATABASE_FAKE_REPLICA_URL: "postgresql://postgres@127.0.0.1/fresh_connection_test_master"
+          PGHOST: "127.0.0.1"
+          PGUSER: "postgres"
+        run: bundle exec rake test

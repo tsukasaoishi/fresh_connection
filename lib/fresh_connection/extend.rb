@@ -16,25 +16,25 @@ ActiveSupport.on_load(:active_record) do
   ActiveRecord::Relation::Merger.prepend FreshConnection::Extend::ArRelationMerger
   ActiveRecord::StatementCache.prepend FreshConnection::Extend::ArStatementCache
 
-  if ActiveRecord::VERSION::MAJOR == 6 && ActiveRecord::VERSION::MINOR == 1
-    require 'fresh_connection/extend/ar_connection_handler'
-    ActiveRecord::ConnectionAdapters::ConnectionHandler.prepend(
-      FreshConnection::Extend::ArConnectionHandler
-    )
+  require 'fresh_connection/extend/ar_connection_handler'
+  ActiveRecord::ConnectionAdapters::ConnectionHandler.prepend(
+    FreshConnection::Extend::ArConnectionHandler
+  )
 
+  major = ActiveRecord::VERSION::MAJOR
+  minor = ActiveRecord::VERSION::MINOR
+
+  if major == 6 && minor == 1
     require 'fresh_connection/connection_specification/rails_61'
     FreshConnection::ConnectionSpecification.include(
       FreshConnection::ConnectionSpecification::Rails61
     )
-  else
-    require 'fresh_connection/extend/ar_resolver'
-    ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.prepend(
-      FreshConnection::Extend::ArResolver
-    )
-
-    require 'fresh_connection/connection_specification/rails_60'
+  elsif (major == 7 && minor == 2) || major == 8
+    require 'fresh_connection/connection_specification/rails_72'
     FreshConnection::ConnectionSpecification.include(
-      FreshConnection::ConnectionSpecification::Rails60
+      FreshConnection::ConnectionSpecification::Rails72
     )
+  else
+    raise "fresh_connection #{FreshConnection::VERSION} supports ActiveRecord 6.1, 7.2, 8.0, 8.1 (current: #{ActiveRecord::VERSION::STRING})"
   end
 end
