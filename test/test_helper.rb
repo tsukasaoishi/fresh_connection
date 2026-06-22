@@ -1,4 +1,10 @@
+# ActiveRecord 6.1 does not depend on the `logger` gem, and recent
+# concurrent-ruby no longer requires it transitively, so require it
+# explicitly before ActiveSupport is loaded.
+require "logger"
+
 require "minitest/autorun"
+require "minitest/mock"
 
 require "minitest/reporters"
 Minitest::Reporters.use!

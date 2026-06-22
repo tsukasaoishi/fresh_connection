@@ -9,14 +9,8 @@ module FreshConnection
       def __change_connection
         return yield unless FreshConnection::AccessControl.replica_access?
 
-        master_connection = @connection
-        begin
-          replica_connection = @model_class.replica_connection
-          @connection = replica_connection.raw_connection
-          yield
-        ensure
-          @connection = master_connection
-        end
+        replica_connection = @model_class.replica_connection
+        __with_replica_raw_connection(replica_connection) { yield }
       end
     end
   end

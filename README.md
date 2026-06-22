@@ -1,5 +1,5 @@
 # FreshConnection
-[![Gem Version](https://badge.fury.io/rb/fresh_connection.svg)](http://badge.fury.io/rb/fresh_connection) [![Build Status](https://travis-ci.org/tsukasaoishi/fresh_connection.svg?branch=master)](https://travis-ci.org/tsukasaoishi/fresh_connection) [![Code Climate](https://codeclimate.com/github/tsukasaoishi/fresh_connection/badges/gpa.svg)](https://codeclimate.com/github/tsukasaoishi/fresh_connection)
+[![Gem Version](https://badge.fury.io/rb/fresh_connection.svg)](http://badge.fury.io/rb/fresh_connection) [![test](https://github.com/tsukasaoishi/fresh_connection/actions/workflows/test.yml/badge.svg)](https://github.com/tsukasaoishi/fresh_connection/actions/workflows/test.yml) [![Code Climate](https://codeclimate.com/github/tsukasaoishi/fresh_connection/badges/gpa.svg)](https://codeclimate.com/github/tsukasaoishi/fresh_connection)
 
 **FreshConnection** provides access to one or more configured database replicas.
 
@@ -31,10 +31,10 @@ FreshConnction connects one or more configured DB replicas, or with multiple rep
 
 ### Failover
 FreshConnection assumes that there is a load balancer in front of multi replica servers.  
-When what happens one of the replicas is unreachable for any reason, FreshConnection will try three retries to access to a replica via a load balancer.  
+When one of the replicas becomes unreachable for any reason, FreshConnection retries the query, making up to three attempts in total to reach a replica via the load balancer.  
 
 Removing a trouble replica from a cluster is a work of the load balancer.  
-FreshConnection expects the load balancer to work during three retries.  
+FreshConnection expects the load balancer to route around the failed replica within those attempts.  
 
 If you would like access to multi replica servers without a load balancer, you should use [EbisuConnection](https://github.com/tsukasaoishi/ebisu_connection).  
 EbisuConnection has functions of load balancer.
@@ -78,12 +78,9 @@ old_article.destroy
 
 ## ActiveRecord Versions Supported
 
-- FreshConnection supports ActiveRecord version 5.2 or later.
+- FreshConnection supports ActiveRecord 6.1, 7.2, 8.0 and 8.1.
+- If you are using ActiveRecord 5.2 / 6.0, you can use FreshConnection version 3.1.3 or before.
 - If you are using Rails 5.1, you can use FreshConnection version 3.0.3 or before.
-
-### Not Support Multiple Database
-I haven't tested it in an environment using MultipleDB in Rails 6.
-I plan to enable use with MultipleDB in FreshConnection version 4.0 or later.
 
 ## Databases Supported
 FreshConnection currently supports MySQL and PostgreSQL.
@@ -110,7 +107,9 @@ $ gem install fresh_connection
 ## Configuration
 
 The FreshConnection database replica is configured within the standard Rails
-database configuration file, `config/database.yml`, using a `replica:` stanza.
+database configuration file, `config/database.yml`. Give the replica its own
+name (for example `db_replica`) and connect your models to it with
+`establish_fresh_connection`.
 
 Below is a sample such configuration file.
 
@@ -131,20 +130,29 @@ production:
   password: <%= ENV['MASTER_DATABASE_PASSWORD'] %>
   host: master_db
 
-  replica:
+  db_replica:
     username: replica_db_user
     password: <%= ENV['REPLICA_DATABASE_PASSWORD'] %>
     host: replica_db
 ```
 
-`replica` is the configuration used for connecting read-only queries to the database replica.  All other connections will use the database master settings.
+Then connect your models to the replica, usually once in `ApplicationRecord`:
+
+```ruby
+class ApplicationRecord < ActiveRecord::Base
+  self.abstract_class = true
+  establish_fresh_connection :db_replica
+end
+```
+
+`db_replica` is the configuration used for connecting read-only queries to the database replica. All other connections use the database master settings.
 
 **NOTE:** 
-The 'replica' stanza has a special meaning in Rails6.  
-In Rails6, use a name other than 'replica', and specify that name using establish_fresh_connection in ApplicationRecord etc.
+Do not name the stanza `replica`; it has a special meaning in the Rails 6+ multi-database configuration.  
+Use a different name (such as `db_replica`) and reference it with `establish_fresh_connection`, as shown above.
 
 ### Multiple DB Replicas
-If you want to use multiple configured DB replicas, the configuration can contain multiple `replica` stanzas in the configuration file `config/database.yml`.
+If you want to use multiple configured DB replicas, the configuration can contain multiple replica stanzas in the configuration file `config/database.yml`.
 
 For example:
 
@@ -163,7 +171,7 @@ production:
   password: <%= ENV['MASTER_DATABASE_PASSWORD'] %>
   host: master_db
 
-  replica:
+  db_replica:
     username: replica_db_user
     password: <%= ENV['REPLICA_DATABASE_PASSWORD'] %>
     host: replica_db
@@ -195,7 +203,7 @@ end
 class Benefit < AdminBase
 end
 
-class Customer < ActiveRecord::Base
+class Customer < ApplicationRecord
 end
 ```
 
@@ -208,15 +216,15 @@ The `Customer` model will use the default connections: read-only queries will co
 
 Alternative to using a configuration in the `database.yml` file, it is possible to completely specify the replica access components using environment variables.
 
-The environment variables corresponding to the `:replica` group are `DATABASE_REPLICA_URL`.  
-The URL string components is the same as Rails' `DATABASE_URL'.
+The environment variable corresponding to the `:db_replica` group is `DATABASE_DB_REPLICA_URL`.  
+The URL string components are the same as Rails' `DATABASE_URL`.
 
 #### Multiple Replica Environment Variables
 
-To specific URLs for multiple replicas, replace the string `REPLICA` in the environment variable name with the replica name, in upper case. See the examples for replicas: `:replica1`, `:replica2`, and `:admin_replica`
+To specify URLs for multiple replicas, set `DATABASE_<NAME>_URL`, where `<NAME>` is the replica name in upper case. See the examples for replicas `:replica1`, `:replica2`, and `:admin_replica`:
 
 
-    DATABASE_REPLICA1_URL='mysql://localhost/dbreplica1?pool=5&reconnect=true'
+    DATABASE_REPLICA1_URL='mysql2://localhost/dbreplica1?pool=5&reconnect=true'
     DATABASE_REPLICA2_URL='postgresql://localhost:6432/ro_db?pool=5&reconnect=true'
     DATABASE_ADMIN_REPLICA_URL='postgresql://localhost:6432/admin_db?pool=5&reconnect=true'
 
@@ -260,9 +268,9 @@ The `MyOwnReplicaConnection` class should inherit from `FreshConnection::Abstrac
 class MyOwnReplicaConnection < FreshConnection::AbstractConnectionManager
 
   def replica_connection
-    # must return an instance of a subclass of ActiveRecord::ConnectionAdapters
-    # eg: ActiveRecord::ConnectionAdapter::Mysql2Adapter
-    # or: ActiveRecord::ConnectionAdapter::PostgresqlAdapter
+    # must return an instance of a subclass of ActiveRecord::ConnectionAdapters::AbstractAdapter
+    # eg: ActiveRecord::ConnectionAdapters::Mysql2Adapter
+    # or: ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
   end
 
   def clear_all_connections!
@@ -292,14 +300,11 @@ end
 
 ## Test
 
-I'm glad that you would like to test!
-To run the test suite, both `mysql` and `postgresql` must be installed.
+To run the test suite, local `mysql` and `postgresql` servers must be running.
 
-### Test Configuration
+### Setup
 
-First, configure the test servers in `test/config/*.yml`
-
-Then, run:
+Install the dependencies (gems and the Appraisal gemfiles):
 
 ```bash
 ./bin/setup
@@ -307,8 +312,12 @@ Then, run:
 
 ### Running Tests
 
-To run the spec suite for all supported versions of rails:
+Run the suite against both MySQL and PostgreSQL for all supported versions of Rails:
 
 ```bash
 ./bin/test
 ```
+
+By default `bin/test` connects to MySQL and PostgreSQL on `localhost`. To point at
+different servers, set `DATABASE_URL`, `DATABASE_REPLICA1_URL`,
+`DATABASE_REPLICA2_URL` and `DATABASE_FAKE_REPLICA_URL` before running it.

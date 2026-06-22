@@ -35,7 +35,7 @@ module FreshConnection
 
       def manage_access(replica_access: enable_replica_access, &block)
         FreshConnection::AccessControl.manage_access(
-          model: @klass,
+          model: klass,
           replica_access: replica_access,
           &block
         )
