@@ -13,13 +13,13 @@ class RailtieTest < Minitest::Test
 
       module Rails
         class Railtie
-          @initializers = []
-
           class << self
-            attr_reader :initializers
+            def initializers
+              @initializers ||= []
+            end
 
             def initializer(name, opts = {}, &block)
-              @initializers << { name: name, opts: opts, block: block }
+              initializers << { name: name, opts: opts, block: block }
             end
           end
         end

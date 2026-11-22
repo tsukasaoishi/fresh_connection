@@ -115,6 +115,17 @@ if FreshConnection::RailsReplica.supported?
       assert_equal 2, NativeUser.read_master.maximum(:id)
     end
 
+    if ActiveRecord::Relation.private_method_defined?(:compute_cache_version)
+      test "cache_version accesses replica1 and respects read_master" do
+        original = NativeUser.collection_cache_versioning
+        NativeUser.collection_cache_versioning = true
+        assert NativeUser.all.cache_version.start_with?("3-")
+        assert NativeUser.read_master.cache_version.start_with?("2-")
+      ensure
+        NativeUser.collection_cache_versioning = original
+      end
+    end
+
     test "preload and eager_load access respective replicas and respect read_master" do
       user = NativeUser.where(id: 1).preload(:native_tels, :native_address).first
       assert_includes user.name, "replica1"

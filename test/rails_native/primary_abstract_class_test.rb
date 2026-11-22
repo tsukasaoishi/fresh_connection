@@ -16,6 +16,7 @@ if ActiveRecord::Base.respond_to?(:primary_abstract_class)
         FreshConnection.deprecator.behavior = ->(message, *_args) { warnings << message }
 
         require "active_record"
+        require "active_record/base"
         require "fresh_connection"
         require "fresh_connection/executor_hook"
 
@@ -81,10 +82,10 @@ if ActiveRecord::Base.respond_to?(:primary_abstract_class)
         assert_true PureTel.first.number.include?("replica2"), "PureTel should read replica2"
         assert_true PureUnreplicatedUser.where(id: 1).first.name.include?("master"), "PureUnreplicatedUser should read master"
 
-        # connected_to(role: :writing) on ApplicationRecord and ActiveRecord::Base
-        ApplicationRecord.connected_to(role: :writing) do
-          assert_true PureUser.where(id: 1).first.name.include?("master"), "ApplicationRecord.connected_to(:writing) should route PureUser to master"
-          unless FreshConnection::RailsReplica.send(:legacy_connection_handling?)
+        # connected_to(role: :writing) on ApplicationRecord (modern connection handling) and ActiveRecord::Base
+        unless FreshConnection::RailsReplica.send(:legacy_connection_handling?)
+          ApplicationRecord.connected_to(role: :writing) do
+            assert_true PureUser.where(id: 1).first.name.include?("master"), "ApplicationRecord.connected_to(:writing) should route PureUser to master"
             assert_true PureTel.first.number.include?("replica2"), "ApplicationRecord.connected_to(:writing) should keep PureTel on replica2"
           end
         end

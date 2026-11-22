@@ -16,6 +16,10 @@ module FreshConnection
           manage_access { super }
         end
 
+        def ids(*, **, &block)
+          manage_access { super }
+        end
+
         if ActiveRecord::Relation.method_defined?(:load_async)
           def load_async(*, **, &block)
             if FreshConnection::RailsReplica.use_rails_replica?(klass)
@@ -44,6 +48,10 @@ module FreshConnection
           manage_access { super(*args, &block) }
         end
 
+        def ids(*args, &block)
+          manage_access { super(*args, &block) }
+        end
+
         if ActiveRecord::Relation.method_defined?(:load_async)
           def load_async(*args, &block)
             if FreshConnection::RailsReplica.use_rails_replica?(klass)
@@ -63,6 +71,7 @@ module FreshConnection
           ruby2_keywords :calculate
           ruby2_keywords :exists?
           ruby2_keywords :pluck
+          ruby2_keywords :ids
           ruby2_keywords :load_async if method_defined?(:load_async)
         end
       end
@@ -104,6 +113,19 @@ module FreshConnection
 
       def exec_queries(&block)
         manage_access { super(&block) }
+      end
+
+      if ActiveRecord::Relation.private_method_defined?(:compute_cache_version)
+        if RUBY_VERSION >= "3.0"
+          def compute_cache_version(*, **, &block)
+            manage_access { super }
+          end
+        else
+          def compute_cache_version(*args, &block)
+            manage_access { super(*args, &block) }
+          end
+          ruby2_keywords :compute_cache_version if respond_to?(:ruby2_keywords, true)
+        end
       end
 
       def force_master_access?
