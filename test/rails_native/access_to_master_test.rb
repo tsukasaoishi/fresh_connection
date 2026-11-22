@@ -145,5 +145,104 @@ if FreshConnection::RailsReplica.supported?
         assert_includes NativeUser.lock.where(id: 1).first.name, "master"
       end
     end
+
+    test "top-level CRUD operations write to master without ReadOnlyError while reads stay on replica" do
+      created = nil
+      created2 = nil
+      created = NativeAddress.create!(user_id: 1, prefecture: "Osaka (write)")
+      assert created.persisted?
+      assert_equal "Osaka (write)", NativeAddress.read_master.find(created.id).prefecture
+      refute NativeAddress.where(id: created.id).exists?
+
+      created.update!(prefecture: "Kyoto (write)")
+      assert_equal "Kyoto (write)", NativeAddress.read_master.find(created.id).prefecture
+
+      NativeAddress.where(id: created.id).update_all(prefecture: "Kobe (write)")
+      assert_equal "Kobe (write)", NativeAddress.read_master.find(created.id).prefecture
+
+      created.destroy!
+      refute NativeAddress.read_master.where(id: created.id).exists?
+      created = nil
+
+      created2 = NativeAddress.find_or_create_by!(user_id: 1, prefecture: "Sapporo (write)")
+      assert created2.persisted?
+      assert_equal "Sapporo (write)", NativeAddress.read_master.find(created2.id).prefecture
+
+      NativeAddress.where(id: created2.id).delete_all
+      refute NativeAddress.read_master.where(id: created2.id).exists?
+      created2 = nil
+    ensure
+      created.destroy if created && created.persisted?
+      created2.destroy if created2 && created2.persisted?
+    end
+
+    test "SELECT inside before_save and after_create callbacks accesses master via implicit transaction" do
+      observed = []
+      callback_address_class = Class.new(NativeRecord) do
+        def self.name
+          "NativeCallbackAddress"
+        end
+        self.table_name = :addresses
+        before_save -> { observed << [:before_save, NativeUser.where(id: 1).first.name] }
+        after_create -> { observed << [:after_create, NativeUser.find(1).name] }
+      end
+
+      created = callback_address_class.create!(user_id: 1, prefecture: "Callback (write)")
+      assert_equal 2, observed.size
+      assert_equal :before_save, observed[0][0]
+      assert_includes observed[0][1], "master"
+      assert_equal :after_create, observed[1][0]
+      assert_includes observed[1][1], "master"
+    ensure
+      NativeAddress.where(id: created.id).delete_all if created && created.persisted?
+    end
+
+    test "StatementCache find and find_by switch cleanly across repeated alternating roles" do
+      assert_includes NativeUser.find(1).name, "replica1"
+      assert_includes NativeUser.find_by(id: 1).name, "replica1"
+
+      NativeUser.with_master do
+        assert_includes NativeUser.find(1).name, "master"
+        assert_includes NativeUser.find_by(id: 1).name, "master"
+      end
+
+      assert_includes NativeUser.read_master.find(1).name, "master"
+      assert_includes NativeUser.read_master.find_by(id: 1).name, "master"
+
+      NativeUser.transaction do
+        assert_includes NativeUser.find(1).name, "master"
+        assert_includes NativeUser.find_by(id: 1).name, "master"
+      end
+
+      assert_includes NativeUser.find(1).name, "replica1"
+      assert_includes NativeUser.find_by(id: 1).name, "replica1"
+    end
+
+    test "exceptions inside with_master, connected_to, manage_access, and transaction do not leak routing state" do
+      assert_raises(RuntimeError) { NativeUser.with_master { raise "boom" } }
+      refute FreshConnection::AccessControl.managed?
+      assert_includes NativeUser.where(id: 1).first.name, "replica1"
+
+      assert_raises(RuntimeError) { ActiveRecord::Base.connected_to(role: :writing) { raise "boom" } }
+      refute FreshConnection::RailsReplica.explicitly_connected_to_writing?(NativeUser)
+      assert_includes NativeUser.where(id: 1).first.name, "replica1"
+
+      assert_raises(RuntimeError) { NativeUser.all.manage_access { raise "boom" } }
+      refute FreshConnection::AccessControl.managed?
+      assert_includes NativeUser.where(id: 1).first.name, "replica1"
+
+      assert_raises(RuntimeError) { NativeUser.transaction { raise "boom" } }
+      refute FreshConnection::RailsReplica.in_transaction?(NativeUser)
+      assert_includes NativeUser.where(id: 1).first.name, "replica1"
+    end
+
+    test "transaction on a different writing database does not force primary models off replica" do
+      NativeSecondaryDbUser.transaction do
+        assert FreshConnection::RailsReplica.in_transaction?(NativeSecondaryDbUser)
+        refute FreshConnection::RailsReplica.in_transaction?(NativeUser)
+        assert_includes NativeSecondaryDbUser.where(id: 1).first.name, "replica2"
+        assert_includes NativeUser.where(id: 1).first.name, "replica1"
+      end
+    end
   end
 end

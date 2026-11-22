@@ -97,6 +97,9 @@ if FreshConnection::RailsReplica.supported?
 
     native_configs[name] = resolve_database_url(url).merge("replica" => true)
   end
+  if ENV["DATABASE_REPLICA2_URL"]
+    native_configs["secondary_primary"] = resolve_database_url(ENV["DATABASE_REPLICA2_URL"])
+  end
 
   ActiveRecord::Base.configurations = { env_name => native_configs }
 
@@ -118,6 +121,11 @@ if FreshConnection::RailsReplica.supported?
   class NativeUnreplicatedRecord < ActiveRecord::Base
     self.abstract_class = true
     connects_to database: { writing: :primary }
+  end
+
+  class NativeSecondaryDbRecord < ActiveRecord::Base
+    self.abstract_class = true
+    connects_to database: { writing: :secondary_primary }
   end
 
   class NativeUser < NativeRecord
@@ -159,6 +167,10 @@ if FreshConnection::RailsReplica.supported?
 
   class NativeUnreplicatedAddress < NativeUnreplicatedRecord
     self.table_name = :addresses
+  end
+
+  class NativeSecondaryDbUser < NativeSecondaryDbRecord
+    self.table_name = :users
   end
 end
 

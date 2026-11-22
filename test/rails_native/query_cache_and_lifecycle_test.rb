@@ -49,6 +49,25 @@ if FreshConnection::RailsReplica.supported?
       end
     end
 
+    if ActiveRecord::VERSION::MAJOR >= 8 || (ActiveRecord::VERSION::MAJOR == 7 && ActiveRecord::VERSION::MINOR >= 2)
+      test "ActiveRecord::Base.uncached(dirties: false) preserves reading pool query cache" do
+        reading_pool = FreshConnection::RailsReplica.reading_pool_for(NativeAddress)
+        filename = File.join(__dir__, "../../log/sql.log")
+
+        ActiveRecord::Base.cache do
+          NativeAddress.find(1)
+          ActiveRecord::Base.uncached(dirties: false) do
+            refute reading_pool.query_cache_enabled
+            NativeAddress.find(1)
+          end
+          assert reading_pool.query_cache_enabled
+          NativeAddress.find(1)
+          last_line = `tail -1 #{filename}`
+          assert_match(/CACHE/, last_line)
+        end
+      end
+    end
+
     test "query cache is invalidated after master write" do
       old_pref = SecureRandom.hex(3)
       a = NativeFakeAddress.create!(prefecture: old_pref)
@@ -249,6 +268,88 @@ if FreshConnection::RailsReplica.supported?
           end
         end
       end
+    end
+
+    test "ActiveSupport::Executor.wrap automatically puts aside reading connection via ExecutorHook" do
+      require "active_support/executor"
+      executor_class = Class.new(ActiveSupport::Executor)
+      executor_class.register_hook(FreshConnection::ExecutorHook)
+      reading_pool = FreshConnection::RailsReplica.reading_pool_for(NativeUser)
+
+      FreshConnection.put_aside = true
+      reading_pool.disconnect!
+      executor_class.wrap do
+        assert_includes NativeUser.where(id: 1).first.name, "replica1"
+        assert_equal 1, reading_pool.connections.size
+      end
+      assert_empty reading_pool.connections
+
+      FreshConnection.put_aside = false
+      executor_class.wrap do
+        assert_includes NativeUser.where(id: 1).first.name, "replica1"
+      end
+      assert_equal 1, reading_pool.connections.size
+    end
+
+    test "RailsReplica.recovery? discards real dead idle reading connection and reconnects" do
+      FreshConnection.recovery = true
+      FreshConnection.retry_limit = 3
+      reading_pool = FreshConnection::RailsReplica.reading_pool_for(NativeUser)
+      reading_pool.disconnect!
+
+      assert_includes NativeUser.where(id: 1).first.name, "replica1"
+      reading_pool.release_connection
+
+      idle_conn = reading_pool.connections.first
+      assert idle_conn
+      refute idle_conn.in_use?
+
+      close_raw_connection!(idle_conn)
+      refute connection_active?(idle_conn)
+
+      assert FreshConnection::RailsReplica.recovery?(
+        NativeUser,
+        exception: ActiveRecord::StatementInvalid.new("server closed connection")
+      )
+      refute_includes reading_pool.connections, idle_conn
+      assert_includes NativeUser.where(id: 1).first.name, "replica1"
+    end
+
+    test "RailsReplica.recovery? discards real dead leased reading connection and query recovers end-to-end" do
+      FreshConnection.recovery = true
+      FreshConnection.retry_limit = 3
+      reading_pool = FreshConnection::RailsReplica.reading_pool_for(NativeUser)
+
+      conn = NativeUser.replica_connection
+      conn.verify!
+      close_raw_connection!(conn)
+      refute connection_active?(conn)
+
+      assert FreshConnection::RailsReplica.recovery?(
+        NativeUser,
+        exception: ActiveRecord::StatementInvalid.new("lost connection")
+      )
+      refute_includes reading_pool.connections, conn
+      assert_includes NativeUser.where(id: 1).first.name, "replica1"
+
+      # Also verify end-to-end query execution after closing the leased socket directly
+      conn2 = NativeUser.replica_connection
+      conn2.verify!
+      close_raw_connection!(conn2)
+      assert_includes NativeUser.where(id: 1).first.name, "replica1"
+    end
+
+    private
+
+    def connection_active?(conn)
+      conn.active?
+    rescue StandardError
+      false
+    end
+
+    def close_raw_connection!(conn)
+      raw = conn.instance_variable_get(:@raw_connection) || conn.instance_variable_get(:@connection)
+      raw.close if raw && raw.respond_to?(:close)
     end
   end
 end
