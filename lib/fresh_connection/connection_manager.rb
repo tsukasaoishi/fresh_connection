@@ -12,7 +12,11 @@ module FreshConnection
     end
 
     def replica_connection
-      @pool.connection
+      if @pool.respond_to?(:lease_connection)
+        @pool.lease_connection
+      else
+        @pool.connection
+      end
     end
 
     def put_aside!
@@ -21,8 +25,8 @@ module FreshConnection
       conn = replica_connection
       return if conn.transaction_open?
 
-      @pool.release_connection
       @pool.remove(conn)
+      conn.expire if conn.respond_to?(:expire)
       conn.disconnect!
     end
 

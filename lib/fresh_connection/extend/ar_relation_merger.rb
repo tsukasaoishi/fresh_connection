@@ -6,7 +6,7 @@ module FreshConnection
       private
 
       def merge_single_values
-        relation.read_master_value = values[:read_master] unless relation.read_master_value
+        relation.read_master_value = values[:read_master] if values[:read_master] && !relation.read_master_value
         super
       end
     end

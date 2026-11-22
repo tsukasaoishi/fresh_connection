@@ -1,12 +1,12 @@
 # FreshConnection
-[![Gem Version](https://badge.fury.io/rb/fresh_connection.svg)](http://badge.fury.io/rb/fresh_connection) [![Build Status](https://travis-ci.org/tsukasaoishi/fresh_connection.svg?branch=master)](https://travis-ci.org/tsukasaoishi/fresh_connection) [![Code Climate](https://codeclimate.com/github/tsukasaoishi/fresh_connection/badges/gpa.svg)](https://codeclimate.com/github/tsukasaoishi/fresh_connection)
+[![Gem Version](https://badge.fury.io/rb/fresh_connection.svg)](http://badge.fury.io/rb/fresh_connection)
 
-**FreshConnection** provides access to one or more configured database replicas.
+**FreshConnection** automatically routes ActiveRecord read queries to read replica databases and write/transaction queries to the primary (master) database — without requiring developers to think about master vs. replica in application code.
 
 For example:
 
 ```text
-Rails ------------ DB Master
+Rails ------------ DB Primary (Master)
              |
              +---- DB Replica
 ```
@@ -14,7 +14,7 @@ Rails ------------ DB Master
 or
 
 ```text
-Rails -------+---- DB Master
+Rails -------+---- DB Primary (Master)
              |
              |                     +------ DB Replica1
              |                     |
@@ -23,23 +23,22 @@ Rails -------+---- DB Master
                                    +------ DB Replica2
 ```
 
-FreshConnction connects one or more configured DB replicas, or with multiple replicas behind a DB query load balancer.
-
-- Read queries go to the DB replica.
-- Write queries go to the DB master.
-- Within a transaction, all queries go to the DB master.
+- Read queries automatically go to the DB replica (in controllers, ActiveJob, Sidekiq, Rake tasks, and console alike).
+- Write queries automatically go to the DB primary (master).
+- Within a transaction, all queries automatically go to the DB primary (master).
+- On Rails 6.1+, FreshConnection seamlessly builds on top of Rails' native multiple database / read replica support (`connects_to` / `connected_to`).
 
 ### Failover
-FreshConnection assumes that there is a load balancer in front of multi replica servers.  
-When what happens one of the replicas is unreachable for any reason, FreshConnection will try three retries to access to a replica via a load balancer.  
+FreshConnection assumes that there is a load balancer in front of multi replica servers.
+When one of the replicas is unreachable for any reason, FreshConnection will retry (3 times by default) to access a replica via a load balancer.
 
-Removing a trouble replica from a cluster is a work of the load balancer.  
-FreshConnection expects the load balancer to work during three retries.  
+Removing a troubled replica from a cluster is the responsibility of the load balancer.
+FreshConnection expects the load balancer to route around the troubled replica during retries.
 
-If you would like access to multi replica servers without a load balancer, you should use [EbisuConnection](https://github.com/tsukasaoishi/ebisu_connection).  
-EbisuConnection has functions of load balancer.
+If you would like to access multi replica servers without a load balancer, you can use [EbisuConnection](https://github.com/tsukasaoishi/ebisu_connection).
 
 ## Usage
+
 ### Access to the DB Replica
 Read queries are automatically connected to the DB replica.
 
@@ -49,13 +48,21 @@ Article.where(id: 1)
 Account.count
 ```
 
-### Access to the DB Master
+### Access to the DB Master (Primary)
 If you wish to ensure that queries are directed to the DB master, call `read_master`.
 
 ```ruby
 Article.where(id: 1).read_master
 
 Account.read_master.count
+```
+
+You can also use `with_master` (or Rails' native `ActiveRecord::Base.connected_to(role: :writing)`):
+
+```ruby
+Article.with_master do
+  Article.where(id: 1).first
+end
 ```
 
 Within transactions, all queries are connected to the DB master.
@@ -66,7 +73,7 @@ Article.transaction do
 end
 ```
 
-Create, update and delete queries are connected to the DB master.
+Create, update, and delete queries are connected to the DB master.
 
 ```ruby
 new_article = Article.create(...)
@@ -76,17 +83,88 @@ new_article.save
 old_article.destroy
 ```
 
+Row-locking queries (`lock` / `SELECT ... FOR UPDATE`) and raw SQL methods (`find_by_sql`, `count_by_sql`) are also directed to the DB master.
+
+> **Notes & Known Limitations:**
+> - **`after_find` / `after_initialize` callbacks (Rails Native mode):** Read queries run inside Rails' `connected_to(role: :reading, prevent_writes: true)`. If an `after_find` or `after_initialize` callback performs a database write, wrap it in `Model.with_master { ... }` or `ActiveRecord::Base.connected_to(role: :writing) { ... }`.
+> - **`belongs_to` with `-> { read_master }` scope:** `belongs_to` uses ActiveRecord's `StatementCache`, so a `read_master` inside a `belongs_to` scope lambda is not applied; use `with_master` or `master_db_only!` when master reads are required.
+> - **`connected_to_many` / async calculation helpers (`async_count`, `async_pluck`, etc.):** Use `Model.with_master` or `ActiveRecord::Base.connected_to(role: :writing)` for explicit master blocks (`connected_to_many` is not intercepted). `Relation#load_async` is supported in Rails Native mode; standalone `async_count` / `async_pluck` helpers are not yet automatically routed.
+> - **Rails 6.1–7.1 `uncached`:** Because `ConnectionPool#disable_query_cache` (block form) was introduced in Rails 7.2, `uncached` on Rails 6.1–7.1 uses `disable_query_cache!` on reading pools (which also clears cached entries).
+
+### Master-only Models
+It is possible to declare that specific models always use the DB master for all connections, using the `master_db_only!` method:
+
+```ruby
+class CustomerState < ApplicationRecord
+  master_db_only!
+end
+```
+
+All queries generated by methods on the `CustomerState` model (and its subclasses) will be directed to the DB master, even when preloaded via `includes` from a replica query.
+
 ## ActiveRecord Versions Supported
 
-- FreshConnection supports ActiveRecord version 5.2 or later.
+- FreshConnection **3.1.4** supports ActiveRecord versions **5.2 through 8.1** (Rails 5.2, 6.0, 6.1, 7.0, 7.1, 7.2, 8.0, 8.1).
 - If you are using Rails 5.1, you can use FreshConnection version 3.0.3 or before.
 
-### Not Support Multiple Database
-I haven't tested it in an environment using MultipleDB in Rails 6.
-I plan to enable use with MultipleDB in FreshConnection version 4.0 or later.
+### Deprecation Notice (Removal in FreshConnection 3.2.0)
+
+In **FreshConnection 3.1.4**, all legacy FreshConnection-specific configuration styles remain supported for backward compatibility, **and will emit deprecation warnings to your Rails deprecation log** (`FreshConnection.deprecator`):
+
+- `establish_fresh_connection`
+- Nested replica stanzas inside `config/database.yml` (e.g., `replica:` / `replica1:` nested under `production:`)
+- `DATABASE_REPLICA_URL` / `DATABASE_<NAME>_URL` environment variables
+- Custom `FreshConnection.connection_manager=`
+- ActiveRecord / Rails versions older than 7.0 (Rails 5.2, 6.0, 6.1)
+
+In **FreshConnection 3.2.0**, these legacy configuration methods and support for Rails < 7.0 will be **removed**, consolidating replica configuration onto Rails' native 3-tier `config/database.yml` and `connects_to`. Please migrate to Rails' native configuration while on 3.1.4.
+
+#### Migration Guide (Legacy → Rails Native `connects_to`)
+
+Before (Legacy — deprecated in 3.1.4, removed in 3.2.0):
+
+```yaml
+# config/database.yml
+production:
+  adapter: mysql2
+  database: blog_production
+  host: master_db
+  replica1:
+    host: replica_db
+```
+
+```ruby
+class ApplicationRecord < ActiveRecord::Base
+  self.abstract_class = true
+  establish_fresh_connection :replica1
+end
+```
+
+After (Recommended — Rails native):
+
+```yaml
+# config/database.yml
+production:
+  primary:
+    adapter: mysql2 # or trilogy / postgresql
+    database: blog_production
+    host: master_db
+  primary_replica:
+    adapter: mysql2 # or trilogy / postgresql
+    database: blog_production
+    host: replica_db
+    replica: true
+```
+
+```ruby
+class ApplicationRecord < ActiveRecord::Base
+  primary_abstract_class
+  connects_to database: { writing: :primary, reading: :primary_replica }
+end
+```
 
 ## Databases Supported
-FreshConnection currently supports MySQL and PostgreSQL.
+FreshConnection supports MySQL (`mysql2` and `trilogy` on Rails 7.1+) and PostgreSQL (`pg`).
 
 ## Installation
 Add this line to your application's `Gemfile`:
@@ -97,65 +175,102 @@ gem "fresh_connection"
 
 And then execute:
 
-```
-$ bundle
+```bash
+$ bundle install
 ```
 
 Or install it manually with:
 
-```
+```bash
 $ gem install fresh_connection
 ```
 
-## Configuration
+## Configuration (Recommended: Rails Native `connects_to`)
 
-The FreshConnection database replica is configured within the standard Rails
-database configuration file, `config/database.yml`, using a `replica:` stanza.
-
-Below is a sample such configuration file.
+On Rails 6.1 / 7.x / 8.x, configure your primary and read replica databases using Rails' standard `config/database.yml` and `connects_to`. FreshConnection automatically detects the `:reading` role and routes read queries to it using Rails' own `connected_to` and connection pools.
 
 ### `config/database.yml`
 
 ```yaml
 default: &default
-  adapter: mysql2
-  encoding: utf8
-  pool: <%%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: root
-  password:
+  adapter: trilogy # or mysql2 / postgresql
+  encoding: utf8mb4
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
 production:
-  <<: *default
-  database: blog_production
-  username: master_db_user
-  password: <%= ENV['MASTER_DATABASE_PASSWORD'] %>
-  host: master_db
+  primary:
+    <<: *default
+    database: blog_production
+    username: master_db_user
+    password: <%= ENV['MASTER_DATABASE_PASSWORD'] %>
+    host: master_db
 
-  replica:
+  primary_replica:
+    <<: *default
+    database: blog_production
     username: replica_db_user
     password: <%= ENV['REPLICA_DATABASE_PASSWORD'] %>
     host: replica_db
+    replica: true
 ```
 
-`replica` is the configuration used for connecting read-only queries to the database replica.  All other connections will use the database master settings.
+### `app/models/application_record.rb`
 
-**NOTE:** 
-The 'replica' stanza has a special meaning in Rails6.  
-In Rails6, use a name other than 'replica', and specify that name using establish_fresh_connection in ApplicationRecord etc.
+```ruby
+class ApplicationRecord < ActiveRecord::Base
+  primary_abstract_class
 
-### Multiple DB Replicas
-If you want to use multiple configured DB replicas, the configuration can contain multiple `replica` stanzas in the configuration file `config/database.yml`.
+  connects_to database: { writing: :primary, reading: :primary_replica }
+end
+```
 
-For example:
+### Multiple DB Replicas / Multiple Databases (Rails Native)
+
+You can configure different replicas or separate databases per abstract model class using standard Rails `connects_to`:
+
+```ruby
+class AdminRecord < ActiveRecord::Base
+  self.abstract_class = true
+
+  connects_to database: { writing: :primary, reading: :admin_replica }
+end
+
+class AdminUser < AdminRecord
+end
+```
+
+Models whose abstract class has no `:reading` role configured (for example, a secondary database without a replica) will safely stay on their `:writing` connection.
+
+## FreshConnection Options
+
+You can customize FreshConnection's behavior in an initializer (`config/initializers/fresh_connection.rb`):
+
+```ruby
+FreshConnection.configure do |config|
+  # Disconnect replica connections at the end of each request/job so the next
+  # request opens a fresh connection through a load balancer.
+  # Set to false to let Rails' connection pool keep connections alive (e.g. with RDS Proxy / ProxySQL).
+  # Default: true
+  config.put_aside = true
+
+  # Enable automatic failover recovery & retries on replica connection errors.
+  # Default: true
+  config.recovery = true
+
+  # Maximum total attempts (1 initial attempt + retries) when recovering from a replica connection error.
+  # For example, 3 means 1 initial attempt + up to 2 retries. Set to 0 or 1 to disable retries.
+  # Default: 3
+  config.retry_limit = 3
+end
+```
+
+## Legacy Configuration (Deprecated in 3.1.4 — will be removed in 3.2.0)
+
+For backward compatibility with Rails 5.2 / 6.0 and existing FreshConnection setups, the legacy configuration style continues to work in **3.1.4** across Rails 5.2 through 8.1 and emits deprecation warnings to the Rails deprecation log (`FreshConnection.deprecator`). These legacy configuration options will be removed in **3.2.0**.
+
+### Legacy `config/database.yml`
 
 ```yaml
-default: &default
-  adapter: mysql2
-  encoding: utf8
-  pool: <%%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: root
-  password:
-
 production:
   <<: *default
   database: blog_production
@@ -163,79 +278,29 @@ production:
   password: <%= ENV['MASTER_DATABASE_PASSWORD'] %>
   host: master_db
 
-  replica:
+  replica1:
     username: replica_db_user
     password: <%= ENV['REPLICA_DATABASE_PASSWORD'] %>
     host: replica_db
-
-  admin_replica:
-    username: admin_replica_db_user
-    password: <%= ENV['ADMIN_REPLICA_DATABASE_PASSWORD'] %>
-    host: admin_replica_db
 ```
-
-The custom replica stanza can then be applied as an argument to the `establish_fresh_connection` method in the models that should use it.  For example:
 
 ```ruby
-class AdminUser < ActiveRecord::Base
-  establish_fresh_connection :admin_replica
+class ApplicationRecord < ActiveRecord::Base
+  self.abstract_class = true
+  establish_fresh_connection :replica1
 end
 ```
 
-The child (sub) classes of the configured model will inherit the same access as the parent class.  Example:
+### Legacy Replica Configuration With Environment Variables
 
-```ruby
-class AdminBase < ActiveRecord::Base
-  establish_fresh_connection :admin_replica
-end
-
-class AdminUser < AdminBase
-end
-
-class Benefit < AdminBase
-end
-
-class Customer < ActiveRecord::Base
-end
+```text
+DATABASE_REPLICA_URL='mysql2://localhost/dbreplica?pool=5'
+DATABASE_REPLICA1_URL='mysql2://localhost/dbreplica1?pool=5'
+DATABASE_REPLICA2_URL='postgresql://localhost:6432/ro_db?pool=5'
+DATABASE_ADMIN_REPLICA_URL='postgresql://localhost:6432/admin_db?pool=5'
 ```
 
-The `AdminUser` and `Benefit` models will access the database configured for the `admin_replica` group.
-
-The `Customer` model will use the default connections: read-only queries will connect to the standard DB replica, and state-changing queries will connect to the DB master.
-
-
-### Replica Configuration With Environment Variables
-
-Alternative to using a configuration in the `database.yml` file, it is possible to completely specify the replica access components using environment variables.
-
-The environment variables corresponding to the `:replica` group are `DATABASE_REPLICA_URL`.  
-The URL string components is the same as Rails' `DATABASE_URL'.
-
-#### Multiple Replica Environment Variables
-
-To specific URLs for multiple replicas, replace the string `REPLICA` in the environment variable name with the replica name, in upper case. See the examples for replicas: `:replica1`, `:replica2`, and `:admin_replica`
-
-
-    DATABASE_REPLICA1_URL='mysql://localhost/dbreplica1?pool=5&reconnect=true'
-    DATABASE_REPLICA2_URL='postgresql://localhost:6432/ro_db?pool=5&reconnect=true'
-    DATABASE_ADMIN_REPLICA_URL='postgresql://localhost:6432/admin_db?pool=5&reconnect=true'
-
-
-### Master-only Models
-
-It is possible to declare that specific models always use the DB master for all connections, using the `master_db_only!` method:
-
-```ruby
-class CustomerState < ActiveRecord::Base
-  master_db_only!
-end
-```
-
-All queries generated by methods on the `CustomerState` model will be directed to the DB master.
-
-### Using FreshConnection With Unicorn
-
-When using FreshConnection with Unicorn (or any other multi-processing web server which restarts processes on the fly), connection management needs special attention during startup:
+### Using FreshConnection With Unicorn / Multi-Process Servers
 
 ```ruby
 before_fork do |server, worker|
@@ -245,42 +310,14 @@ before_fork do |server, worker|
 end
 ```
 
-### Replica Connection Manager
-The default replica connection manager is `FreshConnection::ConnectionManager`. If an alternative (custom) replica connection manager is desired, this can be done with a simple assignment within a Rails initializer:
-
-`config/initializers/fresh_connection.rb`:
+### Custom Replica Connection Manager (Deprecated)
 
 ```ruby
+# config/initializers/fresh_connection.rb
 FreshConnection.connection_manager = MyOwnReplicaConnection
 ```
 
-The `MyOwnReplicaConnection` class should inherit from `FreshConnection::AbstractConnectionManager`, which has this interface:
-
-```ruby
-class MyOwnReplicaConnection < FreshConnection::AbstractConnectionManager
-
-  def replica_connection
-    # must return an instance of a subclass of ActiveRecord::ConnectionAdapters
-    # eg: ActiveRecord::ConnectionAdapter::Mysql2Adapter
-    # or: ActiveRecord::ConnectionAdapter::PostgresqlAdapter
-  end
-
-  def clear_all_connections!
-    # called to disconnect all connections
-  end
-
-  def put_aside!
-    # called when end of Rails controller action
-  end
-
-  def recovery?
-    # called when raising exceptions on access to the DB replica
-    # access will be retried when this method returns true
-  end
-
-end
-```
-
+`MyOwnReplicaConnection` should inherit from `FreshConnection::AbstractConnectionManager` and implement `replica_connection`, `clear_all_connections!`, `put_aside!`, and `recovery?`.
 
 ## Contributing
 
@@ -292,14 +329,9 @@ end
 
 ## Test
 
-I'm glad that you would like to test!
-To run the test suite, both `mysql` and `postgresql` must be installed.
+To run the test suite, MySQL and PostgreSQL must be installed.
 
-### Test Configuration
-
-First, configure the test servers in `test/config/*.yml`
-
-Then, run:
+### Setup
 
 ```bash
 ./bin/setup
@@ -307,8 +339,14 @@ Then, run:
 
 ### Running Tests
 
-To run the spec suite for all supported versions of rails:
+To run the test suite:
 
 ```bash
 ./bin/test
+```
+
+Or for a specific Appraisal / Rails version:
+
+```bash
+BUNDLE_GEMFILE=gemfiles/rails80.gemfile ./bin/test
 ```

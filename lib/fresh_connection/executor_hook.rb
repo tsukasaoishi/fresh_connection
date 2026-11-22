@@ -6,8 +6,11 @@ module FreshConnection
       def run
       end
 
-      def complete(*args)
+      def complete(*_args)
+        return unless FreshConnection.put_aside
+
         ReplicaConnectionHandler.instance.put_aside!
+        RailsReplica.put_aside!
       end
 
       def install_executor_hooks

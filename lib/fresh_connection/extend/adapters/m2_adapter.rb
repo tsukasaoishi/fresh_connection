@@ -6,17 +6,8 @@ module FreshConnection
     module M2Adapter
       private
 
-      def __change_connection
-        return yield unless FreshConnection::AccessControl.replica_access?
-
-        master_connection = @connection
-        begin
-          replica_connection = @model_class.replica_connection
-          @connection = replica_connection.raw_connection
-          yield
-        ensure
-          @connection = master_connection
-        end
+      def __change_connection(&block)
+        __swap_raw_connection(swap_statements: true, &block)
       end
     end
   end
