@@ -7,7 +7,11 @@ class AbstractAdapterTest < Minitest::Test
   end
 
   def setup
-    ActiveRecord::Base.connection.clear_query_cache
+    if ActiveRecord::Base.respond_to?(:clear_query_caches_for_current_thread)
+      ActiveRecord::Base.clear_query_caches_for_current_thread
+    else
+      ActiveRecord::Base.connection.clear_query_cache
+    end
   end
 
   test "cache_query is correct after select once" do

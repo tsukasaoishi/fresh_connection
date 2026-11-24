@@ -1,0 +1,127 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ruby: "2.7"
+            os: ubuntu-22.04
+            gemfile: gemfiles/rails52.gemfile
+          - ruby: "2.7"
+            os: ubuntu-22.04
+            gemfile: gemfiles/rails60.gemfile
+          - ruby: "3.0"
+            gemfile: gemfiles/rails60.gemfile
+          - ruby: "3.0"
+            gemfile: gemfiles/rails61.gemfile
+          - ruby: "3.2"
+            gemfile: gemfiles/rails61.gemfile
+          - ruby: "3.1"
+            gemfile: gemfiles/rails70.gemfile
+          - ruby: "3.3"
+            gemfile: gemfiles/rails70.gemfile
+          - ruby: "3.2"
+            gemfile: gemfiles/rails71.gemfile
+            trilogy: true
+          - ruby: "3.3"
+            gemfile: gemfiles/rails71.gemfile
+            trilogy: true
+          - ruby: "3.2"
+            gemfile: gemfiles/rails72.gemfile
+            trilogy: true
+          - ruby: "3.4"
+            gemfile: gemfiles/rails72.gemfile
+            trilogy: true
+          - ruby: "3.2"
+            gemfile: gemfiles/rails80.gemfile
+            trilogy: true
+          - ruby: "3.4"
+            gemfile: gemfiles/rails80.gemfile
+            trilogy: true
+          - ruby: "3.2"
+            gemfile: gemfiles/rails81.gemfile
+            trilogy: true
+          - ruby: "3.4"
+            gemfile: gemfiles/rails81.gemfile
+            trilogy: true
+
+    env:
+      BUNDLE_GEMFILE: ${{ github.workspace }}/${{ matrix.gemfile }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install database client libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-mysql-client libmysqlclient-dev libpq-dev postgresql-client
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: Run tests (MySQL2)
+        env:
+          DB_ADAPTER: mysql2
+          DATABASE_URL: mysql2://root@127.0.0.1/fresh_connection_test_master
+          DATABASE_REPLICA1_URL: mysql2://root@127.0.0.1/fresh_connection_test_replica1
+          DATABASE_REPLICA2_URL: mysql2://root@127.0.0.1/fresh_connection_test_replica2
+          DATABASE_FAKE_REPLICA_URL: mysql2://root@127.0.0.1/fresh_connection_test_master
+        run: bundle exec rake test
+
+      - name: Run tests (Trilogy)
+        if: ${{ matrix.trilogy }}
+        env:
+          DB_ADAPTER: trilogy
+          DATABASE_URL: trilogy://root@127.0.0.1/fresh_connection_test_master
+          DATABASE_REPLICA1_URL: trilogy://root@127.0.0.1/fresh_connection_test_replica1
+          DATABASE_REPLICA2_URL: trilogy://root@127.0.0.1/fresh_connection_test_replica2
+          DATABASE_FAKE_REPLICA_URL: trilogy://root@127.0.0.1/fresh_connection_test_master
+        run: bundle exec rake test
+
+      - name: Run tests (PostgreSQL)
+        env:
+          DB_ADAPTER: postgresql
+          DATABASE_URL: postgresql://postgres@127.0.0.1/fresh_connection_test_master
+          DATABASE_REPLICA1_URL: postgresql://postgres@127.0.0.1/fresh_connection_test_replica1
+          DATABASE_REPLICA2_URL: postgresql://postgres@127.0.0.1/fresh_connection_test_replica2
+          DATABASE_FAKE_REPLICA_URL: postgresql://postgres@127.0.0.1/fresh_connection_test_master
+        run: bundle exec rake test

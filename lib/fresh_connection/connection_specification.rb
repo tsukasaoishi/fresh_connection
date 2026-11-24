@@ -24,9 +24,17 @@ module FreshConnection
 
     def replica_config(config)
       if database_group_url
+        FreshConnection.deprecator.warn(
+          "Configuring read replicas via ENV['DATABASE_#{@spec_name.upcase}_URL'] is deprecated and will be removed in FreshConnection 3.2.0. " \
+          "Please configure read replicas using Rails' native `config/database.yml` and `connects_to` (database: { writing: ..., reading: ... }) instead."
+        )
         config_from_url
-      else
-        config[@spec_name]
+      elsif (nested_config = config[@spec_name])
+        FreshConnection.deprecator.warn(
+          "Configuring read replicas via the nested '#{@spec_name}' stanza in config/database.yml is deprecated and will be removed in FreshConnection 3.2.0. " \
+          "Please configure read replicas using Rails' native 3-tier `config/database.yml` and `connects_to` (database: { writing: ..., reading: ... }) instead."
+        )
+        nested_config
       end
     end
 

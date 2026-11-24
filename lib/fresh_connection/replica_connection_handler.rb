@@ -13,6 +13,7 @@ module FreshConnection
     end
 
     def refresh_all
+      clear_all_connections!
       owner_to_pool.clear
     end
 

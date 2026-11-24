@@ -20,8 +20,6 @@ SET search_path = public, pg_catalog;
 
 SET default_tablespace = '';
 
-SET default_with_oids = false;
-
 DROP TABLE IF EXISTS addresses CASCADE;
 DROP TABLE IF EXISTS tels      CASCADE;
 DROP TABLE IF EXISTS users     CASCADE;
